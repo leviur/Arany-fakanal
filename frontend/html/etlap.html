@@ -1,0 +1,446 @@
+<!doctype html>
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Étlap – Arany Fakanál</title>
+    <link rel="stylesheet" href="../css/components.css" />
+    <link rel="stylesheet" href="../css/etlap.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@700&family=Charm:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <link rel="icon" href="../images/favicon.ico" />
+  </head>
+  <body>
+    <!-- Külső komponensek (fetch-elt fájlok) -->
+    <div id="navbar"></div>
+    <div id="login"></div>
+    <div id="cart"></div>
+
+    <div class="page">
+      <!-- KERET SARKOK -->
+      <div class="corner corner-tl">❧</div>
+      <div class="corner corner-tr">❧</div>
+      <div class="corner corner-bl">❧</div>
+      <div class="corner corner-br">❧</div>
+
+      <!-- VÍZSZINTES DÍSZÍTŐ VONALAK -->
+      <div class="border-line top"></div>
+      <div class="border-line bottom"></div>
+
+      <!-- FEJLÉC -->
+      <header class="menu-header">
+        <h1 class="restaurant-name">Arany Fakanál Étterem</h1>
+        <p class="slogan">Ízek, amelyek hazahoznak</p>
+        <div class="gold-divider"></div>
+        <h2 class="menu-year">Étlapunk - 2026</h2>
+
+        <!-- KATEGÓRIA NAVIGÁCIÓ -->
+        <nav class="cat-nav">
+          <a href="#eloetelek">ELŐÉTELEK</a>
+          <span class="sep">|</span>
+          <a href="#levesek">LEVESEK</a>
+          <span class="sep">|</span>
+          <a href="#haletelek-szarnyasok">Halételek & Szárnyasok</a>
+          <span class="sep">|</span>
+          <a href="#rantott-toltott">Hagyományos Rántott & Töltött Húsok</a>
+          <span class="sep">|</span>
+          <a href="#kemences">Szaftos & Kemencés Sültek</a>
+          <span class="sep">|</span>
+          <a href="#egytaletelek">Egytálételek</a>
+          <span class="sep">|</span>
+          <a href="#desszertek">DESSZERTEK</a>
+          <span class="sep">|</span>
+          <a href="#italok">ITALOK</a>
+        </nav>
+        <div class="cat-underline"></div>
+      </header>
+
+      <!-- ÉTLAP TARTALOM -->
+      <main class="menu-content">
+        <!-- ELŐÉTELEK -->
+        <section class="menu-section" id="eloetelek">
+          <h3 class="section-title">ELŐÉTELEK</h3>
+          <div class="section-rule"></div>
+
+          <div class="menu-row">
+            <span class="dish-left"
+              >Kézműves krémvariációk friss kenyérrel</span
+            >
+            <span class="dots"></span>
+            <span class="dish-price">2690 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Mangalica tepertőkrém, fűszeres körözött és padlizsánkrém házi
+            kovászos kenyérrel és friss kerti zöldségekkel.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left">Érlelt bélszíntatár a kert legjavával</span>
+            <span class="dots"></span>
+            <span class="dish-price">3990 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Hagyományos recept alapján fűszerezett, selymes textúrájú
+            marhabélszín, friss idényzöldségekkel, vajjal/kacsazsírral és
+            ropogós házi kovászos kenyérrel.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left"
+              >Kemencés velős csont lilahagyma-lekvárral</span
+            >
+            <span class="dots"></span>
+            <span class="dish-price">3190 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Fűszeres velős csont, házi készítésű, édeskés-savanykás
+            lilahagyma-lekvárral és ropogós házi kovászos kenyérrel.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left">A kamra kincsei</span>
+            <span class="dots"></span>
+            <span class="dish-price">4490 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Füstölt kolbász, pikáns paprikás szalámi és omlós sonkaszeletek. A
+            húsok mellé 6 hónapig érlelt, karakteres tehénsajt, valamint egy
+            intenzív, fás füstölésű sajt társul, házi savanyúságokkal és ropogós
+            kovászos kenyérrel.
+          </p>
+        </section>
+
+        <!-- LEVESEK -->
+        <section class="menu-section" id="levesek">
+          <h3 class="section-title">LEVESEK</h3>
+          <div class="section-rule"></div>
+
+          <div class="menu-row">
+            <span class="dish-left">Gulyásleves</span>
+            <span class="dots"></span>
+            <span class="dish-price">3490 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Omlós marhahúsból, lassú tűzön főzött, gazdag és selymes gulyásleves
+            zsenge gyökérzöldségekkel, házi készítésű csipetkével és friss,
+            ropogós kenyérrel.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left">Füstölt csülkös Jókai bableves</span>
+            <span class="dots"></span>
+            <span class="dish-price">3190 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Tartalmas, tejföllel habart bableves omlós füstölt csülökdarabkákkal
+            és házi kolbásszal, friss házi tejföllel és finomra vágott
+            petrezselyemmel a tetején.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left">Marhahúsleves gazdagon</span>
+            <span class="dots"></span>
+            <span class="dish-price">2790 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Kristálytiszta, órákon át gyöngyöző, mély ízű húsleves
+            marhafartővel, vele főtt zsenge zöldségekkel és finom házi csiga
+            tésztával.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left"
+              >Tavaszi zöldborsóleves vajas galuskával</span
+            >
+            <span class="dots"></span>
+            <span class="dish-price">2790 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Könnyed, édeskés zöldségleves roppanós zsenge borsóból és kerti
+            zöldségekből, házi, pillekönnyű vajas galuskával szaggatva.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left">Szegedi halászlé szaftos pontyfilével</span>
+            <span class="dots"></span>
+            <span class="dish-price">3490 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Intenzív, sűrű halalaplé prémium fűszerpaprikával, szálkamentes,
+            omlós pontyfilé-szeletekkel és frissen sült házi fehér kenyérrel.
+          </p>
+        </section>
+
+        <!-- FŐÉTELEK -->
+        <section class="menu-section" id="haletelek-szarnyasok">
+          <h3 class="section-title">Halételek & Szárnyasok</h3>
+          <div class="section-rule"></div>
+
+          <div class="menu-row">
+            <span class="dish-left">Mandulás bundában sült fogasfilé</span>
+            <span class="dots"></span>
+            <span class="dish-price">4890 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Finom, roppanós mandulaforgácsba forgatott, omlós fogasfilé, krémes,
+            házi majonézes burgonyasalátával tálalva.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left">Harcsapaprikás túrós csuszával</span>
+            <span class="dots"></span>
+            <span class="dish-price">5890 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Szaftos omlós harcsadarabok bársonyos, fűszerpaprikás mártásban,
+            hagyományos túrós csuszával.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left"
+              >Tanyasi paprikás csirke vajas galuskával</span
+            >
+            <span class="dots"></span>
+            <span class="dish-price">5490 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Lassan főzött, tejföllel habart selymes paprikás mártás omlós
+            csirkehússal, frissen szaggatott, pillekönnyű galuskával.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left">Mátrai borzas csirkemell</span>
+            <span class="dots"></span>
+            <span class="dish-price">5690 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Ropogós, fokhagymás burgonyás bundában sült csirkemellfilé, hűs
+            fokhagymás tejföllel és intenzív füstölt sajttal borítva, zöldborsós
+            rizi-bizivel.
+          </p>
+        </section>
+
+        <!-- Hagyományos Rántott & Töltött Húsok -->
+        <section class="menu-section" id="rantott-toltott">
+          <h3 class="section-title">Hagyományos Rántott & Töltött Húsok</h3>
+          <div class="section-rule"></div>
+
+          <div class="menu-row">
+            <span class="dish-left">Klasszikus rántott szelet</span>
+            <span class="dots"></span>
+            <span class="dish-price">5690 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Aranybarna, ropogós panko morzsában sült porhanyós hús szelet,
+            vajas-petrezselymes újkrumplival és házi uborkasalátával.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left">Pásztorok kedvence karaj rántva</span>
+            <span class="dots"></span>
+            <span class="dish-price">5890 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Füstölt kolbásszal és krémes, snidlinges juhtúróval gazdagon töltött
+            karaj ropogós bundában, selymes, vajas burgonyapürével.
+          </p>
+        </section>
+
+        <!-- Szaftos & Kemencés Sültek -->
+        <section class="menu-section" id="kemences">
+          <h3 class="section-title">Szaftos & Kemencés Sültek</h3>
+          <div class="section-rule"></div>
+
+          <div class="menu-row">
+            <span class="dish-left">Marhapörkölt galuskával</span>
+            <span class="dots"></span>
+            <span class="dish-price">5980 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Omlós marhalábszárból, sűrű szafttal, vörösborral és
+            fűszerpaprikával lassan főzött pörkölt, tojásos házi galuskával és
+            roppanós kovászosuborkával.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left">Cigánypecsenye kakastaréjjal</span>
+            <span class="dots"></span>
+            <span class="dish-price">5890 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Fokhagymás pácban érlelt, szaftos sertéstarja ropogósra sült
+            szalonnataréjjal, fűszeres házi rósejbnivel (karika burgonyával).
+          </p>
+          <div class="menu-row">
+            <span class="dish-left">Kemencés csülök Pékné módra</span>
+            <span class="dots"></span>
+            <span class="dish-price">6590 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Kívül ropogós, belül omlósra sült bőrös csülök, szaftos, hagymával
+            és fokhagymával egybesütött kemencés burgonyával.
+          </p>
+        </section>
+
+        <!-- Egytálételek -->
+        <section class="menu-section" id="egytaletelek">
+          <h3 class="section-title">Egytálételek</h3>
+          <div class="section-rule"></div>
+
+          <div class="menu-row">
+            <span class="dish-left">Kolozsvári töltött káposzta</span>
+            <span class="dots"></span>
+            <span class="dish-price">5690 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Savanyú káposzta ágyon, füstölt csülökkel és házi kolbásszal lassan
+            összefőzött, szaftos töltelékek, tejföllel és friss kenyérrel.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left"
+              >Házi töltött paprika és paradicsomos húsgombóc</span
+            >
+            <span class="dots"></span>
+            <span class="dish-price">5390 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Fűszeres húsos rizzsel töltött zsenge tölteni való paprika és omlós
+            húsgombócok, selymes, édeskés házi paradicsommártásban rottyantva,
+            sós főtt burgonyával tálalva.
+          </p>
+        </section>
+
+        <!-- DESSZERTEK -->
+        <section class="menu-section" id="desszertek">
+          <h3 class="section-title">DESSZERTEK</h3>
+          <div class="section-rule"></div>
+
+          <div class="menu-row">
+            <span class="dish-left">Somlói galuska</span>
+            <span class="dots"></span>
+            <span class="dish-price">2590 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Puha dió-, sárga- és kakaós piskótalapok selymes vaníliakrémmel,
+            rumba áztatott mazsolával, roppanós dióval, valódi belga
+            csokoládéöntettel és friss tejszínhabbal.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left">Pillekönnyű túrógombóc édes tejföllel</span>
+            <span class="dots"></span>
+            <span class="dish-price">2150 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Lágy túrógombócok aranybarnára pirított, ropogós morzsában
+            megforgatva, vaníliás házi tejföllel és porcukorral tálalva.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left">Rákóczi túrós</span>
+            <span class="dots"></span>
+            <span class="dish-price">2790 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Omlós tésztaágyon nyugvó krémes, citromos túrókrém, házi
+            sárgabaracklekvárral és sütőben aranybarnára pirított, könnyű
+            tojásfehérje-habbal.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left">Aranygaluska selymes vaníliasodóval</span>
+            <span class="dots"></span>
+            <span class="dish-price">2790 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Foszlós, kelt tésztafalatok darált dióval és vajjal rétegezve,
+            aranybarnára sütve, valódi Bourbon vaníliából főzött, meleg sodóval
+            nyakon öntve.
+          </p>
+          <div class="menu-row">
+            <span class="dish-left">Mákos guba vaníliaöntettel</span>
+            <span class="dots"></span>
+            <span class="dish-price">2190 Ft</span>
+          </div>
+          <p class="dish-desc">
+            Langyos tejbe áztatott, szikkadt kiflik darált mákkal és porcukorral
+            rétegezve, vaníliás tojásos öntettel meglocsolva, sütőben
+            aranybarnára sütve.
+          </p>
+        </section>
+
+        <!-- ITALOK -->
+        <section class="menu-section" id="italok">
+          <h3 class="section-title">ITALOK</h3>
+          <div class="section-rule"></div>
+
+          <div class="menu-row">
+            <span class="dish-left">Meggypálinka</span>
+            <span class="dots"></span>
+            <span class="dish-price">2190 Ft</span>
+          </div>
+          <div class="menu-row">
+            <span class="dish-left">Szilvapálinka</span>
+            <span class="dots"></span>
+            <span class="dish-price">2490 Ft</span>
+          </div>
+          <div class="menu-row">
+            <span class="dish-left">Kajszibarack Pálinka</span>
+            <span class="dots"></span>
+            <span class="dish-price">3690 Ft</span>
+          </div>
+          <div class="menu-row">
+            <span class="dish-left">Villányi Portugieser</span>
+            <span class="dots"></span>
+            <span class="dish-price">6890 Ft</span>
+          </div>
+          <div class="menu-row">
+            <span class="dish-left">Tokaji Furmint</span>
+            <span class="dots"></span>
+            <span class="dish-price">9990 Ft</span>
+          </div>
+          <div class="menu-row">
+            <span class="dish-left">Tokaji Aszú 5 Puttonyos</span>
+            <span class="dots"></span>
+            <span class="dish-price">13890 Ft</span>
+          </div>
+          <div class="menu-row">
+            <span class="dish-left">Soproni</span>
+            <span class="dots"></span>
+            <span class="dish-price">1090 Ft</span>
+          </div>
+          <div class="menu-row">
+            <span class="dish-left">Pilsner Urquell</span>
+            <span class="dots"></span>
+            <span class="dish-price">1190 Ft</span>
+          </div>
+          <div class="menu-row">
+            <span class="dish-left">Dreher Bak (Barna sör)</span>
+            <span class="dots"></span>
+            <span class="dish-price">1390 Ft</span>
+          </div>
+          <div class="menu-row">
+            <span class="dish-left">Házi Limonádé szódával</span>
+            <span class="dots"></span>
+            <span class="dish-price">1190 Ft</span>
+          </div>
+        </section>
+      </main>
+
+      <!-- LÁBLÉC -->
+      <footer class="menu-footer">
+        <div class="gold-divider"></div>
+
+        <p class="footer-thanks">Köszönjük, hogy minket választott!</p>
+        <p class="footer-info">
+          Az árak forintban értendők és az ÁFA-t tartalmazzák.
+          <br />
+          Árainkra 12% felszolgálási díjat számítunk fel.
+          <br />
+          Allergiás kérések esetén kérjük, értesítse felszolgálóinkat.
+        </p>
+        <p class="footer-copy">&copy; 2020 Arany Fakanál Étterem</p>
+      </footer>
+    </div>
+    <footer class="page-footer">
+      <a href="../html/homepage.html" class="back-link">← Vissza a főoldalra</a>
+      <p>&copy; 2020 Arany Fakanál Étterem – Minden jog fenntartva.</p>
+    </footer>
+
+    <!-- Külső komponensek (fetch-elt fájlok) -->
+    <script src="../js/navbar.js"></script>
+    <script src="../js/cart.js"></script>
+    <script src="../js/login.js"></script>
+  </body>
+</html>

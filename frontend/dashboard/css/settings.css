@@ -1,0 +1,123 @@
+/* ================= SETTINGS LAYOUT ================= */
+
+#settings-section .table-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.settings-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.settings-block {
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px;
+  border: 1px solid rgba(200, 155, 99, 0.15);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+  
+  display: flex;
+  flex-direction: column;
+  height: 100%; 
+  gap: 16px;
+}
+
+.settings-block h3 {
+  font-family: "Playfair Display", serif;
+  font-size: 20px;
+  color: #2d221b;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.settings-block h3::after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 3px;
+  margin-top: 8px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #c89b63, #f5d6a3);
+}
+
+.settings-grid {
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.setting-row {
+  display: flex;
+  flex-direction: column; 
+  background: #f7f3ee;
+  padding: 14px 16px;
+  border-radius: 12px;
+  transition: 0.2s;
+  gap: 6px; 
+}
+
+.setting-row:hover {
+  transform: translateY(-1px);
+}
+
+.setting-row-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.setting-row-main label {
+  font-weight: 600;
+  flex: 1;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.setting-row input {
+  width: 70px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: white;
+  text-align: center;
+  font-weight: 600;
+  outline: none;
+}
+
+.setting-row span {
+  margin-left: 10px;
+  color: #777;
+  font-size: 13px;
+}
+
+/* ALSÓ SOR: A magyarázó szöveg */
+.helper-text {
+  font-size: 0.75em;
+  color: #888;
+  font-style: italic;
+  font-weight: normal;
+  line-height: 1.2;
+  border-top: 1px solid rgba(0,0,0,0.05);
+  padding-top: 6px;
+}
+
+.save-menu-btn {
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #c89b63, #8b5e3c);
+  color: white;
+  font-weight: 600;
+  width: 100%;
+  cursor: pointer;
+  margin-top: 10px;
+}

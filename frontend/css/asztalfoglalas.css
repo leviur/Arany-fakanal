@@ -1,0 +1,387 @@
+:root {
+    /* Eltérő értékek (felülírják a components.css-t) */
+    --text-dark:  #1a1a1a;
+    --text-light: #888888;
+    --shadow:     0 8px 32px rgba(0,0,0,0.10);
+
+    /* Oldal-specifikus változók */
+    --gold-dark:  #b8924e;
+    --text-mid:   #555555;
+    --bg:         #f7f4ef;
+    --border:     #e8e0d0;
+    --radius-sm:  8px;
+    --radius-md:  16px;
+  }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text-dark);
+    min-height: 100vh;
+  }
+
+  .btn-gold:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(201, 168, 76, 0.4);
+  }
+
+  /* ===================================
+     HERO
+  =================================== */
+  .hero {
+    position: relative;
+    height: 340px;
+    overflow: hidden;
+  }
+  
+  .hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 30%;
+  }
+  
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.65) 100%);
+  }
+  
+  .hero-content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--white);
+    padding: 20px;
+  }
+  
+  .hero-label {
+    font-size: 0.85rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+  
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.4rem, 6vw, 3.6rem);
+    font-weight: 700;
+    line-height: 1.15;
+    margin-bottom: 10px;
+  }
+  
+  .hero-sub {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.75);
+    font-weight: 300;
+  }
+  
+  /* ===================================
+     MAIN
+  =================================== */
+  .booking-main {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 48px 20px 60px;
+  }
+  
+  /* ===================================
+     BOOKING CARD
+  =================================== */
+  .booking-card {
+    background: var(--white);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow);
+    padding: 48px 52px;
+    margin-bottom: 32px;
+  }
+  
+  .booking-header {
+    margin-bottom: 36px;
+  }
+  
+  .booking-header h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.9rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 6px;
+  }
+  
+  .booking-header p {
+    font-size: 0.9rem;
+    color: var(--text-light);
+  }
+  
+  /* ===================================
+     FORM
+  =================================== */
+  .booking-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+  
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  
+  .form-row--three {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  
+  .form-group--full {
+    grid-column: 1 / -1;
+  }
+  
+  label {
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-mid);
+  }
+  
+  .req {
+    color: var(--gold);
+  }
+  
+  input, select, textarea {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    color: var(--text-dark);
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    width: 100%;
+  }
+  
+  input:focus-visible, select:focus, textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(197,160,89,0.12);
+  }
+  
+  select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23C5A059' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+  }
+  
+  textarea {
+    resize: vertical;
+    min-height: 90px;
+  }
+  
+  /* ── Stepper ── */
+  .stepper {
+    display: flex;
+    align-items: center;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    height: 48px;
+  }
+  
+  .step-btn {
+    width: 48px;
+    height: 100%;
+    background: var(--bg);
+    border: none;
+    font-size: 1.3rem;
+    color: var(--gold);
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  
+  .step-btn:hover {
+    background: var(--gold-light);
+  }
+  
+  #guest-count {
+    flex: 1;
+    text-align: center;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-dark);
+  }
+  
+  /* ── Submit gomb ── */
+  .submit-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: var(--gold);
+    color: var(--white);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 16px 28px;
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+    transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+    margin-top: 8px;
+    align-self: flex-end;
+    min-width: 220px;
+  }
+  
+  .submit-btn:hover {
+    background: var(--gold-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(197,160,89,0.35);
+  }
+  
+  .submit-btn:disabled {
+    cursor: default;
+    transform: none;
+  }
+  
+  /* ===================================
+     INFO SÁV
+  =================================== */
+  .info-strip {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+  
+  .info-item {
+    background: var(--white);
+    border-radius: var(--radius-sm);
+    padding: 28px 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+    border: 1.5px solid transparent;
+    transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s;
+    cursor: default;
+  }
+  
+  .info-item:hover {
+    border-color: var(--gold);
+    box-shadow: 0 6px 24px rgba(197,160,89,0.18);
+    transform: translateY(-3px);
+  }
+  
+  .info-icon {
+    width: 36px;
+    height: 36px;
+    color: var(--gold);
+  }
+  
+  .info-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+  
+  .info-item strong {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-dark);
+  }
+  
+  .info-item p {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    line-height: 1.7;
+  }
+  
+  /* ── Közösségi ikonok ── */
+  .info-socials {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+  }
+  
+  .info-socials a {
+    width: 32px;
+    height: 32px;
+    color: var(--text-light);
+    transition: color 0.2s;
+  }
+  
+  .info-socials a:hover {
+    color: var(--gold);
+  }
+  
+  .info-socials svg {
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* ── Nyitvatartás sorok ── */
+  .hours {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .hours-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.83rem;
+    color: var(--text-light);
+    padding: 0 4px;
+  }
+  
+  .hours-row span:last-child {
+    font-weight: 500;
+    color: var(--text-dark);
+  }
+  
+  /* ===================================
+     FOOTER
+  =================================== */
+
+  
+  /* ===================================
+     RESZPONZÍV
+  =================================== */
+  @media (max-width: 700px) {
+    .hero { height: 260px; }
+  
+    .booking-card {
+      padding: 32px 24px;
+    }
+  
+    .form-row,
+    .form-row--three {
+      grid-template-columns: 1fr;
+    }
+  
+    .info-strip {
+      grid-template-columns: 1fr;
+    }
+  
+    .submit-btn {
+      width: 100%;
+    }
+  }
+

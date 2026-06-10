@@ -1,0 +1,266 @@
+/* =========================
+   DASHBOARD LAYOUT
+========================= */
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: stretch;
+  height: calc(100vh - 140px);
+}
+
+/* =========================
+   MAIN CARDS (Arany Fakanál style)
+========================= */
+
+.dashboard-card {
+  position: relative;
+  background: linear-gradient(180deg, #ffffff 0%, #fbf7f2 100%);
+
+  border: 1px solid rgba(200, 155, 99, 0.15);
+  border-radius: 26px;
+
+  box-shadow:
+    0 12px 30px rgba(45, 34, 27, 0.08),
+    0 2px 8px rgba(200, 155, 99, 0.08);
+
+  padding: 22px;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+}
+
+.dashboard-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 4px;
+  width: 100%;
+
+  background: linear-gradient(90deg, #c89b63,#f5d6a3, #c89b63);
+}
+
+/* =========================
+   HEADER FEEL
+========================= */
+.card-header{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+.card-header h2{
+  font-family:"Playfair Display",serif;
+  font-size:28px;
+  color:#2d221b;
+  margin-bottom:10px;
+}
+
+.card-header h3 {
+  font-family: "Playfair Display", serif;
+  font-size: 22px;
+  color: #2d221b;
+  letter-spacing: 0.3px;
+  margin-bottom: 10px;
+}
+
+.card-header::after{
+  content:"";
+  display:block;
+  width:80px;
+  height:3px;
+  margin:0 auto;
+  border-radius:10px;
+
+  background:linear-gradient(
+    90deg,
+    transparent,
+    #c89b63,
+    transparent
+  );
+}
+
+
+/* =========================
+   STATS GRID (bal oldal)
+========================= */
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.stat-card {
+  background: #fff;
+  border-radius: 18px;
+  padding: 16px;
+  border: 1px solid rgba(200, 155, 99, 0.12);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;   /* függőleges közép */
+  align-items: center;       /* vízszintes közép */
+  text-align: center;
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(200, 155, 99, 0.15);
+}
+
+.stat-card i {
+  color: #c89b63;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.stat-card h3 {
+  font-size: 13px;
+  color: #777;
+  font-weight: 500;
+  margin: 5px 0;
+}
+
+.stat-card p {
+  font-size: 22px;
+  font-weight: 600;
+  color: #2d221b;
+  margin: 0;
+}
+
+.problem-section h3 {
+  font-size: 14px;
+  color: #8b5e3c;
+  margin-bottom: 10px;
+}
+
+/* item */
+.problem-item {
+  background: #fff;
+  border-left: 4px solid #c89b63;
+  border-radius: 12px;
+
+  padding: 10px 12px;
+  margin-bottom: 8px;
+
+  font-size: 13px;
+
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+
+  box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+}
+
+.row-warning {
+  background: var(--row-warning-background);
+  border-left: 4px solid #e74c3c;
+  position: relative;
+}
+
+
+/* =========================
+   BOOKINGS CARD (jobb oldal)
+========================= */
+
+.booking-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+
+  margin-bottom: 18px;
+}
+
+.stat-mini {
+  background: linear-gradient(135deg, #fff, #fbf7f2);
+
+  border: 1px solid rgba(200, 155, 99, 0.12);
+  border-radius: 14px;
+
+  padding: 12px;
+
+  text-align: center;
+
+  box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+}
+
+.stat-mini span {
+  display: block;
+  font-size: 11px;
+  color: #777;
+}
+
+.stat-mini b {
+  font-size: 18px;
+  color: #2d221b;
+}
+
+/* =========================
+   SCROLL ZÓNÁK
+========================= */
+
+.problem-section {
+  max-height: auto;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+/* scrollbar finomítás */
+.orders-card::-webkit-scrollbar,
+.bookings-card::-webkit-scrollbar {
+  width: 6px;
+}
+
+.orders-card::-webkit-scrollbar-thumb,
+.bookings-card::-webkit-scrollbar-thumb {
+  background: rgba(200, 155, 99, 0.4);
+  border-radius: 10px;
+}
+
+
+html {
+  overflow: hidden;
+}
+
+.scroll-table {
+  max-height: 70vh;
+  overflow: auto;
+}
+
+/* grid fix */
+.dashboard-grid {
+  width: 100%;
+  max-width: 100%;
+}
+
+#orders-section,
+#bookings-dashboard {
+  contain: layout paint;
+}
+
+#orders-section table,
+#bookings-dashboard table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+#orders-section tr:hover td,
+#bookings-dashboard tr:hover td {
+  background: #faf7f2;
+  transition: background-color 0.12s ease;
+}
+
+#orders-section tr,
+#bookings-dashboard tr {
+  transform: translateZ(0);
+  will-change: background-color;
+}
+

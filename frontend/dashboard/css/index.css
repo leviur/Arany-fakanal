@@ -1,0 +1,385 @@
+/* ================= RESET ================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ================= VARIABLES ================= */
+:root {
+  --bg-dark: #2d221b;
+  --gold: #c89b63;
+  --gold-light: #f5d6a3;
+  --text-dark: #2d221b;
+  --row-warning-background: #fff3f3;
+  --row-problem: #ffe5e5;
+}
+
+/* ================= BASE ================= */
+body {
+  font-family: "Poppins", sans-serif;
+  background: #f7f3ee;
+  color: var(--text-dark);
+}
+
+/* ================= LOGO ================= */
+.logo {
+  width: 220px !important;
+  height: auto !important;
+  display: block;
+  margin: 0 auto 20px;
+}
+
+/* ================= LAYOUT ================= */
+.dashboard {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+  width: 280px;
+  background: var(--bg-dark);
+  color: white;
+  padding: 30px 22px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  text-align: center;
+}
+
+.sidebar-top h2 {
+  font-family: "Playfair Display", serif;
+  font-size: 2rem;
+  color: var(--gold);
+  margin-bottom: 5px;
+}
+
+.sidebar-top p {
+  color: #c8b8a7;
+  margin-bottom: 40px;
+  font-size: 14px;
+}
+
+/* ================= MENU ================= */
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.menu a {
+  position: relative;
+  padding: 14px 18px;
+  border-radius: 14px;
+  color: #eee;
+  text-decoration: none;
+  transition: 0.25s ease;
+}
+
+.menu a:hover {
+  color: #fff;
+}
+
+.menu a.active {
+  text-shadow: 0 0 10px rgba(200, 155, 99, 0.25);
+}
+
+/* underline effect */
+.menu a::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  bottom: 8px;
+  width: 0;
+  height: 2px;
+  background: var(--gold);
+  transition: width 0.3s ease;
+}
+
+.menu a:hover::after,
+.menu a.active::after {
+  width: calc(100% - 36px);
+}
+
+/* ================= LOGOUT BUTTON ================= */
+.admin-logout-btn {
+  margin-top: auto;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(200, 155, 99, 0.4);
+  background: linear-gradient(135deg, var(--gold), #8b5e3c);
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.admin-logout-btn:hover {
+  transform: translateY(-3px);
+}
+
+/* ================= MAIN ================= */
+.main {
+  flex: 1;
+  padding: 35px;
+}
+
+/* ================= TOPBAR ================= */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 35px;
+}
+
+.topbar h1 {
+  font-family: "Playfair Display", serif;
+  font-size: 34px;
+}
+
+.admin-badge {
+  background: white;
+  padding: 12px 18px;
+  border-radius: 14px;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+/* ================= STATUS ================= */
+.status-select, .booking-status-select {
+  width: 100%;
+  max-width: 18vh;
+  padding: 5px 6px;
+  font-size: 11px;
+
+  border-radius: 8px;
+  border: 2px solid #c89b63;
+  background: #fff;
+  color: #2d221b;
+  font-weight: 600;
+}
+
+.status-select:hover, .booking-status-select:hover {
+  background-color: #efdcd9;
+  border-color: #c89b63;
+}
+
+.status-select:focus, .booking-status-select:focus {
+  outline: none;
+  border-color: #c89b63;
+  box-shadow: 0 0 0 2px rgba(200, 155, 99, 0.2);
+}
+
+.status-new {
+  background: #fff3cd;
+  color: #856404;}
+.status-confirmed {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+.status-cancelled {
+  background: #f8d7da;
+  color: #721c24;
+}
+.status-done {
+  background: #d4edda;
+  color: #155724;
+}
+.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+.status-accepted {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+.status-preparing {
+  background: #ffe5b4;
+  color: #8a4b08;
+}
+.status-delivery {
+  background: #e2d6ff;
+  color: #5a35a5;
+}
+.status-failed {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* ================= MODAL ================= */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  backdrop-filter: blur(5px);
+}
+
+.modal-hidden { display: none !important; }
+
+#modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex; justify-content: center; align-items: center; z-index: 1000;
+}
+
+.modal-content {
+  width: 90%;
+  max-width: 600px;
+  background: #f6f8fd;
+  border: 1px solid #d4af37;
+  border-radius: 20px;
+  padding: 30px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  max-height: 90vh;
+  overflow-y: auto;
+
+  box-shadow: 0 20px 40px rgba(0,0,0,.2);
+}
+
+.modal-content h2 {
+  margin-bottom: 15px;
+  margin-top: 5px;
+  color: #2c241e;
+}
+
+.modal-content label { 
+  font-weight: bold;
+  color: #2c241e;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.modal-content input, .modal-content textarea {
+    padding: 12px;
+    border: 1px solid #eaddcc;
+    border-radius: 6px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modal-content p {
+  margin-bottom: 10px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.modal-grid label {
+  font-weight: bold;
+  color: #2c241e;
+  margin-bottom: 4px;
+}
+
+.modal-grid input, 
+.modal-grid textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #efe6d9;
+  border-radius: 10px;
+  background: #fcfbf9;
+  box-sizing: border-box;
+}
+
+.modal-grid .full {
+  grid-column: span 2;
+}
+
+.modal-grid textarea {
+  height: 80px;
+  resize: none;
+}
+
+/* Akció gombok */
+.modal-actions {
+  margin-top: 25px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.modal-box {
+  width: 360px;
+  background: rgba(255,255,255,0.95);
+  border-radius: 22px;
+  padding: 35px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  animation: fadeIn 0.4s ease;
+}
+
+.modal-box label {
+  font-weight: bold;
+  color: #2c241e;
+}
+
+
+.modal-box input {
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: #f3f0ea;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ================= BUTTONS (MODAL miatt) ================= */
+.login-btn {
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, var(--gold), #8b5e3c);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(200, 155, 99, 0.5);
+  background: transparent;
+  color: #8b5e3c;
+  cursor: pointer;
+}
+
+/* ================= SECTION SYSTEM ================= */
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+}
+
+.hidden {
+  display: none !important;
+}
+
+html, body {
+  overflow-x: hidden;
+}
+

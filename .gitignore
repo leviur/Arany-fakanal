@@ -1,0 +1,12 @@
+# Dokumentumok
+*.docx
+
+# Saját jegyzetek
+Git.txt
+
+# Terv mappa kihagyása
+Terv/
+
+# Windows
+Thumbs.db
+Desktop.ini

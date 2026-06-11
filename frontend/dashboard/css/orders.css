@@ -66,13 +66,13 @@
 /* ================= HEADER (ARANY) ================= */
 
 #orders-section th {
-  background: #f5d6a3;
+  background: var(--gold-light);
   color: #2d221b;
   padding: 10px 8px;
   font-size: 12px;
   font-weight: 700;
   text-align: left;
-  border-bottom: 2px solid #c89b63;
+  border-bottom: 2px solid var(--gold);
   white-space: nowrap;
 }
 
@@ -81,7 +81,7 @@
 #orders-section td {
   padding: 10px 8px;
   font-size: 12px;
-  border-bottom: 1px solid #c89b63;
+  border-bottom: 1px solid var(--gold);
   vertical-align: top;
 }
 
@@ -148,7 +148,7 @@
 }
 
 #orders-section .edit-btn {
-  background: #c89b63;
+  background: var(--gold);
 }
 
 #orders-section .orders-delete-btn {

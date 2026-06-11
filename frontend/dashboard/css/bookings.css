@@ -66,13 +66,13 @@
 }
 
 #bookings-section th {
-  background: #f5d6a3;
+  background: var(--gold-light);
   color: #2d221b;
   padding: 12px 8px;
   font-size: 11px;
   font-weight: 700;
   text-align: left;
-  border-bottom: 2px solid #c89b63;
+  border-bottom: 2px solid var(--gold);
   white-space: nowrap;
 }
 
@@ -108,7 +108,7 @@
 }
 
 .bookings-edit-btn {
-  background: #c89b63;
+  background: var(--gold);
 }
 
 .bookings-delete-btn {
@@ -117,7 +117,7 @@
 
 /* A foglalás időpontját jelző sáv */
 .booking-summary-banner {
-  background: #f5d6a3;
+  background: var(--gold-light);
   padding: 12px;
   border-radius: 12px;
   margin-bottom: 20px;
@@ -125,7 +125,7 @@
   color: #2d221b;
   font-size: 14px;
   font-weight: 500;
-  border: 1px solid #c89b63;
+  border: 1px solid var(--gold);
 }
 
 /* Időválasztó (Stepper) stílusa */
@@ -147,7 +147,7 @@
 }
 
 .login-btn {
-  background: #c89b63;
+  background: var(--gold);
   color: white;
   border: none;
   padding: 10px 20px;

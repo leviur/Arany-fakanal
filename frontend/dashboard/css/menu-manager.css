@@ -248,7 +248,7 @@
     transition: 0.2s ease;
 }
 .actions .edit-btn{
-    background: #c89b63;
+    background: var(--gold);
 }
 
 .actions .delete-btn {
@@ -265,7 +265,7 @@
         padding:10px 16px;
         border:none;
         border-radius:12px;
-        background:linear-gradient(135deg,#c89b63,#8b5e3c);
+        background:linear-gradient(135deg,var(--gold),#8b5e3c);
         color:white;
         font-weight:600;
         cursor:pointer;
@@ -300,7 +300,7 @@
 
 .cancel-btn:hover{
       background: rgba(200, 155, 99, 0.12);
-      border-color: #c89b63;
+      border-color: var(--gold);
       color: #2d221b;
       transform: translateY(-1px);
 }

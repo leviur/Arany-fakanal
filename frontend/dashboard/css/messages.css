@@ -6,6 +6,11 @@
   height: 95vh;
 }
 
+.msg-header {
+  min-height: 22px;
+  margin-bottom: 10px;
+}
+
 .msg-scroll {
   flex: 1;
   overflow-y: auto;
@@ -155,7 +160,7 @@
 
 /* primary */
 .msg-btn-open {
-  background: linear-gradient(135deg, #c89b63, #8b5e3c);
+  background: linear-gradient(135deg, var(--gold), #8b5e3c);
   color: white;
   width: 100%;
   margin-top: 6px;
@@ -191,7 +196,7 @@
   flex: 1;
   padding: 9px;
   border-radius: 10px;
-  border: 1px solid #c89b63;
+  border: 1px solid var(--gold);
   background: transparent;
   color: #8b5e3c;
   font-weight: 600;

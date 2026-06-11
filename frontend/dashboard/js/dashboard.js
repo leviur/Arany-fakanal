@@ -294,5 +294,17 @@ window.refreshDashboard = function () {
   renderProblemOrders();
   renderProblemBookings();
   updateBookingDashboardStats();
+
+  const topbarUpdated = document.getElementById("topbarUpdated");
+  if (topbarUpdated) {
+    const now = new Date();
+    const time = now.toLocaleTimeString("hu-HU", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+    topbarUpdated.classList.add("flash");
+    requestAnimationFrame(() => {
+      topbarUpdated.textContent = `Frissítve: ${time}`;
+      topbarUpdated.classList.remove("flash");
+    });
+  }
 }
 

@@ -80,6 +80,8 @@ function setActiveSidebar() {
  **********************/
 const Auth = (() => {
   function logout() {
+    if (!confirm("Biztosan kijelentkezel?")) return;
+
     localStorage.removeItem("isAdmin");
     localStorage.removeItem("userName");
     window.location.href = "../html/homepage.html";
@@ -127,6 +129,15 @@ let appData = Store.load();
 /**********************
  * 🎛️ UI MODULE
  **********************/
+const SECTION_TITLES = {
+  "dashboard-section": "Dashboard",
+  "orders-section": "Rendelések",
+  "menu-section": "Menü kezelés",
+  "bookings-section": "Foglalások",
+  "messages-section": "Üzenetek",
+  "settings-section": "Beállítások",
+};
+
 const UI = (() => {
   function switchSection(targetId) {
     document.querySelectorAll(".section").forEach(s => {
@@ -138,6 +149,12 @@ const UI = (() => {
       target.classList.add("active");
     }
 
+    // topbar cím frissítése
+    const pageTitle = document.getElementById("pageTitle");
+    if (pageTitle && SECTION_TITLES[targetId]) {
+      pageTitle.textContent = SECTION_TITLES[targetId];
+    }
+
     // sidebar szinkronizálása
     document.querySelectorAll(".menu a").forEach(a => {
       a.classList.toggle("active", a.dataset.target === targetId);
@@ -147,6 +164,19 @@ const UI = (() => {
      if (targetId === "orders-section") {
         refreshDashboard({ times: true }); //belépéskor is legyen random idő
       }
+
+    updateTopbarAction();
+  }
+
+  // topbar akció-gomb láthatósága a jelenlegi szekció/tab alapján
+  function updateTopbarAction() {
+    const addFoodBtn = document.getElementById("topbarAddFood");
+    if (!addFoodBtn) return;
+
+    const inMenuSection = document.getElementById("menu-section")?.classList.contains("active");
+    const etelekTabActive = document.querySelector('.tab-btn[data-target="etelek"]')?.classList.contains("active");
+
+    addFoodBtn.classList.toggle("hidden", !(inMenuSection && etelekTabActive));
   }
 
   function switchTab(tabId, btn) {
@@ -170,7 +200,8 @@ const UI = (() => {
 
   return {
     switchSection,
-    switchTab
+    switchTab,
+    updateTopbarAction
   };
 })();
 
@@ -294,6 +325,60 @@ const App = (() => {
 
     document.querySelector(".admin-logout-btn")
       ?.addEventListener("click", Auth.logout);
+
+    // Profil-chip kitöltése
+    const userName = localStorage.getItem("userName");
+    if (userName) {
+      const initials = userName
+        .split(" ")
+        .map(word => word[0])
+        .join("")
+        .toUpperCase();
+
+      const profileAvatar = document.getElementById("profileAvatar");
+      const profileName = document.getElementById("profileName");
+
+      if (profileAvatar) profileAvatar.textContent = initials;
+      if (profileName) profileName.textContent = userName;
+    }
+
+    // Sidebar összecsukás
+    const sidebar = document.querySelector(".sidebar");
+    const sidebarToggle = document.getElementById("sidebarToggle");
+
+    if (sidebar && sidebarToggle) {
+      if (localStorage.getItem("sidebarCollapsed") === "true") {
+        sidebar.classList.add("collapsed");
+        sidebarToggle.setAttribute("aria-expanded", "false");
+      }
+
+      sidebarToggle.addEventListener("click", () => {
+        const collapsed = sidebar.classList.toggle("collapsed");
+        sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+        localStorage.setItem("sidebarCollapsed", String(collapsed));
+      });
+    }
+
+    // Topbar manuális frissítés gomb
+    const refreshBtn = document.getElementById("refreshBtn");
+    let refreshRotation = 0;
+    refreshBtn?.addEventListener("click", () => {
+      refreshDashboard({ times: true });
+      refreshRotation += 360;
+      refreshBtn.querySelector("i").style.transform = `rotate(${refreshRotation}deg)`;
+    });
+
+    // Topbar "Új étel hozzáadása" gomb -> meglévő .add-btn flow indítása
+    document.getElementById("topbarAddFood")?.addEventListener("click", () => {
+      document.querySelector(".add-btn")?.click();
+    });
+
+    // Menü kezelés tabváltáskor frissítsük a topbar akció-gomb láthatóságát
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        setTimeout(() => UI.updateTopbarAction(), 0);
+      });
+    });
 
     document.querySelectorAll(".tab").forEach(btn => {
       btn.addEventListener("click", () => {

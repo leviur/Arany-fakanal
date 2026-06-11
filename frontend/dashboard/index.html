@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
   <link rel="stylesheet" href="./css/index.css">
@@ -35,52 +35,70 @@
 <!-- ================= DASHBOARD ================= -->
 <div id="dashboard" class="dashboard">
 
-<!-- HAMBURGER -->
-<button class="nav-toggle" id="navToggle" title="Menü">
-      <span></span>
-      <span></span>
-      <span></span>
-</button>
-
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-top">
 
+      <button class="sidebar-toggle" id="sidebarToggle" title="Menü összecsukása" aria-label="Menü összecsukása" aria-expanded="true">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
       <img src="../images/logo2.png" alt="Arany Fakanál Étterem" class="logo" />
 
     <nav class="menu">
-        <a href="#" data-target="dashboard-section" class="active">Dashboard</a>
-        <a href="#" data-target="orders-section">Rendelések</a>
-        <a href="#" data-target="menu-section">Menü kezelés</a>
-        <a href="#" data-target="bookings-section">Foglalások</a>
-        <a href="#" data-target="messages-section">Üzenetek</a>
-        <a href="#" data-target="settings-section">Beállítások</a>
+        <span class="menu-group-label">Napi működés</span>
+        <a href="#" data-target="dashboard-section" class="active" title="Dashboard"><i class="fa-solid fa-gauge-high"></i> <span class="link-text">Dashboard</span></a>
+        <a href="#" data-target="orders-section" title="Rendelések"><i class="fa-solid fa-cart-shopping"></i> <span class="link-text">Rendelések</span></a>
+        <a href="#" data-target="bookings-section" title="Foglalások"><i class="fa-solid fa-calendar-check"></i> <span class="link-text">Foglalások</span></a>
+        <a href="#" data-target="messages-section" title="Üzenetek"><i class="fa-solid fa-comments"></i> <span class="link-text">Üzenetek</span></a>
+
+        <span class="menu-group-label">Tartalom és beállítások</span>
+        <a href="#" data-target="menu-section" title="Menü kezelés"><i class="fa-solid fa-utensils"></i> <span class="link-text">Menü kezelés</span></a>
+        <a href="#" data-target="settings-section" title="Beállítások"><i class="fa-solid fa-gear"></i> <span class="link-text">Beállítások</span></a>
     </nav>
 
     
 
     </div>
 
-    <button class="admin-logout-btn">
-      <i class="fa-solid fa-right-from-bracket"></i>
-      Kijelentkezés
+    <button class="admin-logout-btn" title="Kijelentkezés">
+      <i class="fa-solid fa-power-off"></i>
+      <span class="link-text">Kijelentkezés</span>
     </button>
   </aside>
-
-  <div class="sidebar-overlay"></div>
 
   <!-- MAIN -->
   <main class="main">
 
-  <!-- ================= DASHBOARD ================= -->
-<section id="dashboard-section" class="section active">
-
+  <!-- ================= TOPBAR (állandó, minden szekcióhoz) ================= -->
   <div class="topbar">
-    <h1>Dashboard</h1>
-    <div class="admin-badge">
-      👨‍🍳 Bejelentkezve: Adminisztrátor
+    <div class="topbar-left">
+      <h1 id="pageTitle">Dashboard</h1>
+      <div class="topbar-updated-row">
+        <span class="topbar-updated" id="topbarUpdated">Frissítve: --:--</span>
+        <button class="refresh-btn" id="refreshBtn" title="Frissítés">
+          <i class="fa-solid fa-rotate-right"></i>
+        </button>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <button class="topbar-action-btn hidden" id="topbarAddFood">
+        <i class="fa-solid fa-plus"></i> <span>Új étel hozzáadása</span>
+      </button>
+      <div class="profile-chip">
+      <div class="profile-avatar" id="profileAvatar">A</div>
+      <div class="profile-info">
+        <span class="profile-name" id="profileName">Adminisztrátor</span>
+        <span class="profile-role">Adminisztrátor</span>
+      </div>
+      </div>
     </div>
   </div>
+
+  <!-- ================= DASHBOARD ================= -->
+<section id="dashboard-section" class="section active">
 
   <div class="dashboard-grid">
 
@@ -198,8 +216,6 @@
   <section class="table-card">
 
     <div class="table-header">
-      <h2>Rendelések</h2>
-
       <div class="table-actions">
         <input type="text" id="searchInput" placeholder="Keresés..."/>
 
@@ -271,8 +287,6 @@
 <!-- ================= MENÜ KEZELÉS ================= -->
 <section id="menu-section" class="section">
   <main class="content">
-            <h1>Menü kezelés</h1>
-            
             <div class="tabs">
                 <button class="tab-btn active" data-target="heti-menu">Heti menü szerkesztés</button>
                 <button class="tab-btn" data-target="etelek">Ételek kezelése</button>
@@ -311,8 +325,6 @@
 
   <!-- ================= FOGLALÁSOK ================= -->
 <section id="bookings-section" class="section">
-    <h2>Foglalások</h2>
-    
     <div class="table-card">
         <div class="table-header" style="display: flex; justify-content: space-between; margin-bottom: 20px;">
             <div class="table-actions">
@@ -422,9 +434,7 @@
 
     <!-- FIX HEADER -->
     <div class="msg-header">
-      <h2>
-        Üzenetek <span class="msg-count" id="msg-count"></span>
-      </h2>
+      <span class="msg-count" id="msg-count"></span>
     </div>
 
     <!-- SCROLL ZÓNA -->
@@ -439,7 +449,6 @@
 <!-- ================= BEÁLLÍTÁSOK ================= -->
 <section id="settings-section" class="section">
   <div class="table-card">
-    <h2>⚙️ Beállítások</h2>
     <p>Rendelések és foglalások időkezelési szabályai</p>
 
     <div class="settings-wrapper">

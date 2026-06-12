@@ -46,7 +46,8 @@ h1, h2, h3 {
 /* ================= LAYOUT ================= */
 .dashboard {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* ================= SIDEBAR ================= */
@@ -147,9 +148,24 @@ h1, h2, h3 {
   width: 84px;
 }
 
-.sidebar.collapsed .logo,
+.sidebar.collapsed .logo {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.menu-group-label {
+  max-height: 40px;
+  overflow: hidden;
+  transition: opacity 150ms ease, max-height 200ms ease, padding 200ms ease, margin 200ms ease, border-color 200ms ease;
+}
+
 .sidebar.collapsed .menu-group-label {
   opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-top: 0;
+  border-color: transparent;
   pointer-events: none;
 }
 
@@ -160,6 +176,14 @@ h1, h2, h3 {
 .sidebar.collapsed .menu a,
 .sidebar.collapsed .admin-logout-btn {
   gap: 0;
+}
+
+.sidebar-top {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .sidebar-top h2 {
@@ -180,6 +204,18 @@ h1, h2, h3 {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.menu::-webkit-scrollbar-thumb {
+  background: rgba(200, 155, 99, 0.3);
+  border-radius: 10px;
 }
 
 .menu a {
@@ -284,7 +320,8 @@ h1, h2, h3 {
 
 /* ================= LOGOUT BUTTON ================= */
 .admin-logout-btn {
-  margin-top: auto;
+  margin-top: 10px;
+  flex-shrink: 0;
   padding: 14px;
   border-radius: 14px;
   border: 1px solid rgba(200, 155, 99, 0.3);
@@ -327,6 +364,8 @@ h1, h2, h3 {
   padding: 35px;
   contain: layout style;
   min-width: 0;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 /* ================= TOPBAR ================= */
@@ -483,6 +522,39 @@ h1, h2, h3 {
   color: #999;
 }
 
+/* ================= LAPTOP / ALACSONYABB MAGASSÁGÚ KIJELZŐK ================= */
+@media (max-height: 850px) {
+  .sidebar {
+    padding: 18px 22px;
+  }
+
+  .sidebar-top h2 {
+    font-size: 1.5rem;
+    margin-bottom: 2px;
+  }
+
+  .sidebar-top p {
+    margin-bottom: 18px;
+    font-size: 12px;
+  }
+
+  .menu {
+    gap: 4px;
+  }
+
+  .menu a {
+    padding: 10px 18px;
+  }
+
+  .menu-group-label {
+    padding: 14px 18px 4px;
+  }
+
+  .admin-logout-btn {
+    padding: 10px;
+  }
+}
+
 /* ================= STATUS ================= */
 .status-select, .booking-status-select {
   width: 100%;
@@ -557,6 +629,187 @@ h1, h2, h3 {
 }
 
 .modal-hidden { display: none !important; }
+
+/* ================= LOGOUT MODAL (login modal stílusa) ================= */
+.modal {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.modal.open {
+  opacity: 1;
+}
+
+.login-box {
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px 36px 32px;
+  width: 100%;
+  max-width: 380px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--gold-soft);
+  transform: scale(0.96);
+  opacity: 0;
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), opacity 150ms ease-out;
+}
+
+.modal.open .login-box {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-logo {
+  height: 54px;
+  width: auto;
+  margin-bottom: 14px;
+}
+
+.login-header h2 {
+  font-family: var(--font-main, "Playfair Display", serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+}
+
+.close-modal {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  border-radius: 50%;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-light);
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.close-modal:hover {
+  color: var(--gold);
+  background: var(--gold-soft);
+}
+
+.logout-text {
+  text-align: center;
+  color: var(--text-dark);
+  margin-bottom: 24px;
+}
+
+.logout-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.logout-actions .cancel-btn,
+.logout-actions .btn-gold {
+  flex: 1;
+}
+
+.btn-gold {
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+  font-family: var(--font-main, "Playfair Display", serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--gold);
+  border: none;
+  border-radius: 8px;
+  padding: 14px 20px;
+  cursor: pointer;
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease-out;
+}
+
+.btn-gold:hover {
+  background: var(--gold-dark);
+  box-shadow: var(--shadow-hover, 0 10px 25px rgba(197, 160, 89, 0.35));
+}
+
+.btn-gold:active {
+  transform: scale(0.97);
+}
+
+/* "Mégse" legyen halványabb a logout dialógusban - kevésbé versenyezzen a fő akcióval */
+#logoutModal .cancel-btn {
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: var(--text-light);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease-out;
+}
+
+#logoutModal .cancel-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.2);
+  color: var(--text-dark);
+}
+
+#logoutModal .cancel-btn:active {
+  transform: scale(0.97);
+}
+
+/* "Kijelentkezés" CTA itt kevésbé legyen hívogató, mint a login modal-é */
+#logoutModal .btn-gold {
+  background: var(--bg-dark);
+}
+
+#logoutModal .btn-gold:hover {
+  background: #1a130d;
+  box-shadow: none;
+}
+
+/* Tartalom-stagger nyitáskor */
+#logoutModal .login-logo,
+#logoutModal .login-header h2,
+#logoutModal .divider,
+#logoutModal .logout-text,
+#logoutModal .logout-actions {
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
+}
+
+#logoutModal.open .login-logo       { transition-delay: 0ms; }
+#logoutModal.open .login-header h2  { transition-delay: 30ms; }
+#logoutModal.open .divider           { transition-delay: 50ms; }
+#logoutModal.open .logout-text      { transition-delay: 60ms; }
+#logoutModal.open .logout-actions   { transition-delay: 90ms; }
+
+#logoutModal.open .login-logo,
+#logoutModal.open .login-header h2,
+#logoutModal.open .divider,
+#logoutModal.open .logout-text,
+#logoutModal.open .logout-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-box,
+  #logoutModal .login-logo,
+  #logoutModal .login-header h2,
+  #logoutModal .divider,
+  #logoutModal .logout-text,
+  #logoutModal .logout-actions {
+    transform: none;
+  }
+}
 
 #modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;

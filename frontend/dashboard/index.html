@@ -55,7 +55,7 @@
         <a href="#" data-target="messages-section" title="Üzenetek"><i class="fa-solid fa-comments"></i> <span class="link-text">Üzenetek</span></a>
 
         <span class="menu-group-label">Tartalom és beállítások</span>
-        <a href="#" data-target="menu-section" title="Menü kezelés"><i class="fa-solid fa-utensils"></i> <span class="link-text">Menü kezelés</span></a>
+        <a href="#" data-target="menu-section" title="Menük kezelése"><i class="fa-solid fa-utensils"></i> <span class="link-text">Menük kezelése</span></a>
         <a href="#" data-target="settings-section" title="Beállítások"><i class="fa-solid fa-gear"></i> <span class="link-text">Beállítások</span></a>
     </nav>
 
@@ -68,6 +68,23 @@
       <span class="link-text">Kijelentkezés</span>
     </button>
   </aside>
+
+  <!-- ================= KIJELENTKEZÉS MEGERŐSÍTÉS ================= -->
+  <div class="modal modal-hidden" id="logoutModal">
+    <div class="login-box">
+      <button class="close-modal" id="logoutCancel">✕</button>
+      <div class="login-header">
+        <img src="../images/logo2.png" alt="Arany Fakanál" class="login-logo">
+        <h2>Kijelentkezés</h2>
+        <div class="divider"></div>
+      </div>
+      <p class="logout-text">Biztosan ki szeretnél jelentkezni?</p>
+      <div class="logout-actions">
+        <button class="cancel-btn" id="logoutCancelBtn">Mégse</button>
+        <button class="btn-gold" id="logoutConfirmBtn">Kijelentkezés</button>
+      </div>
+    </div>
+  </div>
 
   <!-- MAIN -->
   <main class="main">
@@ -100,110 +117,132 @@
   <!-- ================= DASHBOARD ================= -->
 <section id="dashboard-section" class="section active">
 
-  <div class="dashboard-grid">
+  <div class="dash-grid">
 
     <!-- ===================================================== -->
-    <!-- 🛒 RENDELÉSEK PANEL -->
+    <!-- KPI SÁV -->
     <!-- ===================================================== -->
 
-    <div class="dashboard-card orders-card">
+    <div class="kpi-card">
+      <i class="fa-solid fa-cart-shopping"></i>
+      <span class="kpi-label">Mai rendelések</span>
+      <span class="kpi-value" id="stat-total-orders">0</span>
+    </div>
 
-      <div class="card-header">
-        <h2>🛒 Rendelések</h2>
-      </div>
+    <div class="kpi-card">
+      <i class="fa-solid fa-fire"></i>
+      <span class="kpi-label">Aktív rendelések</span>
+      <span class="kpi-value" id="stat-active-orders">0</span>
+    </div>
 
-      <section class="stats-grid">
+    <div class="kpi-card">
+      <i class="fa-solid fa-motorcycle"></i>
+      <span class="kpi-label">Kiszállítás alatt</span>
+      <span class="kpi-value" id="stat-delivery-orders">0</span>
+    </div>
 
-        <div class="stat-card">
-          <i class="fa-solid fa-cart-shopping"></i>
-          <h3>Mai rendelések</h3>
-          <p id="stat-total-orders">0</p>
-        </div>
+    <div class="kpi-card">
+      <i class="fa-solid fa-calendar-day"></i>
+      <span class="kpi-label">Mai foglalások</span>
+      <span class="kpi-value" id="stat-total-bookings">0</span>
+    </div>
 
-        <div class="stat-card">
-          <i class="fa-solid fa-fire"></i>
-          <h3>Aktív rendelések</h3>
-          <p id="stat-active-orders">0</p>
-        </div>
+    <div class="kpi-card">
+      <i class="fa-solid fa-comments"></i>
+      <span class="kpi-label">Üzenetek</span>
+      <span class="kpi-value" id="stat-messages">0</span>
+    </div>
 
-        <div class="stat-card">
-          <i class="fa-solid fa-motorcycle"></i>
-          <h3>Kiszállítás alatt</h3>
-          <p id="stat-delivery-orders">0</p>
-        </div>
-
-        <div class="stat-card warning">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-          <h3>Problémás rendelések</h3>
-          <p id="stat-problem-orders">0</p>
-        </div>
-
-      </section>
-
-      <div class="problem-section">
-
-        <h3>⚠️ Problémás rendelések</h3>
-
-        <div id="problem-orders-list">
-
-          <!-- JS tölti -->
-
-        </div>
-
-      </div>
-
+    <div class="kpi-card" id="kpi-todos">
+      <i class="fa-solid fa-list-check"></i>
+      <span class="kpi-label">Teendők</span>
+      <span class="kpi-value" id="stat-todos">0</span>
     </div>
 
     <!-- ===================================================== -->
-    <!-- 🍽️ FOGLALÁSOK PANEL -->
+    <!-- TEENDŐK + MAI FOGLALÁSOK -->
     <!-- ===================================================== -->
 
-    <div class="dashboard-card bookings-card">
-
-      <div class="card-header">
-        <h2>🍽️ Foglalások</h2>
+    <div class="dash-card dash-todos">
+      <div class="dash-card-header">
+        <h3><i class="fa-solid fa-cart-shopping"></i> Kezeletlen rendelések</h3>
       </div>
-
-      <section class="stats-grid">
-
-        <div class="stat-card">
-          <i class="fa-solid fa-calendar-day"></i>
-          <h3>Mai foglalások</h3>
-          <p id="stat-total-bookings">0</p>
-        </div>
-
-        <div class="stat-card">
-          <i class="fa-solid fa-circle-check"></i>
-          <h3>Visszaigazolt</h3>
-          <p id="stat-confirmed-bookings">0</p>
-        </div>
-
-        <div class="stat-card">
-          <i class="fa-solid fa-users"></i>
-          <h3>Várható vendégszám</h3>
-          <p id="stat-expected-guests">0</p>
-        </div>
-
-        <div class="stat-card warning">
-          <i class="fa-solid fa-triangle-exclamation"></i>
-          <h3>Problémás foglalások</h3>
-          <p id="stat-problem-bookings">0</p>
-        </div>
-
-      </section>
-
-      <div class="problem-section">
-
-        <h3>⚠️ Problémás foglalások</h3>
-
-        <div id="problem-bookings-list">
-
-          <!-- JS tölti -->
-
-        </div>
-
+      <div class="dash-card-body scroll-zone" id="todo-orders-list">
+        <!-- JS tölti -->
       </div>
+    </div>
 
+    <div class="dash-card dash-todos">
+      <div class="dash-card-header">
+        <h3><i class="fa-solid fa-calendar-check"></i> Kezeletlen foglalások</h3>
+      </div>
+      <div class="dash-card-body scroll-zone" id="todo-bookings-list">
+        <!-- JS tölti -->
+      </div>
+    </div>
+
+    <div class="dash-card dash-agenda">
+      <div class="dash-card-header">
+        <h3><i class="fa-solid fa-calendar-day"></i> Mai foglalások</h3>
+      </div>
+      <div class="dash-card-body scroll-zone" id="agenda-list">
+        <!-- JS tölti -->
+      </div>
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- HETI TREND + LEGNÉPSZERŰBB TÉTELEK -->
+    <!-- ===================================================== -->
+
+    <div class="dash-card dash-trend">
+      <div class="dash-card-header">
+        <h3><i class="fa-solid fa-chart-column"></i> Heti rendelés-trend</h3>
+      </div>
+      <div class="dash-card-body" id="trend-chart">
+        <!-- JS tölti -->
+      </div>
+    </div>
+
+    <div class="dash-card dash-top-items">
+      <div class="dash-card-header">
+        <h3><i class="fa-solid fa-ranking-star"></i> Legnépszerűbb menük</h3>
+      </div>
+      <div class="dash-card-body" id="top-items-list">
+        <!-- JS tölti -->
+      </div>
+    </div>
+
+    <!-- ===================================================== -->
+    <!-- ÜZENETEK + GYORSMŰVELETEK -->
+    <!-- ===================================================== -->
+
+    <div class="dash-card dash-messages">
+      <div class="dash-card-header">
+        <h3><i class="fa-solid fa-comments"></i> Legutóbbi üzenetek</h3>
+      </div>
+      <div class="dash-card-body" id="messages-preview-list">
+        <!-- JS tölti -->
+      </div>
+    </div>
+
+    <div class="dash-card dash-quick-actions">
+      <div class="dash-card-header">
+        <h3><i class="fa-solid fa-bolt"></i> Gyorsműveletek</h3>
+      </div>
+      <div class="dash-card-body dash-quick-actions-body">
+        <button class="quick-action-btn" data-target="bookings-section">
+          <i class="fa-solid fa-calendar-check"></i> Foglalások kezelése
+        </button>
+        <button class="quick-action-btn" data-target="orders-section">
+          <i class="fa-solid fa-cart-shopping"></i> Rendelések kezelése
+        </button>
+        <button class="quick-action-btn" data-target="menu-section">
+          <i class="fa-solid fa-utensils"></i> Menük kezelése
+        </button>
+        <button class="quick-action-btn" data-target="messages-section">
+          <i class="fa-solid fa-comments"></i> Üzenetek megnyitása
+        </button>
+      </div>
     </div>
 
   </div>

@@ -80,14 +80,28 @@ function setActiveSidebar() {
  **********************/
 const Auth = (() => {
   function logout() {
-    if (!confirm("Biztosan kijelentkezel?")) return;
+    const modal = document.getElementById("logoutModal");
+    if (!modal) return;
 
+    modal.classList.remove("modal-hidden");
+    requestAnimationFrame(() => modal.classList.add("open"));
+  }
+
+  function closeLogoutModal() {
+    const modal = document.getElementById("logoutModal");
+    if (!modal) return;
+
+    modal.classList.remove("open");
+    setTimeout(() => modal.classList.add("modal-hidden"), 200);
+  }
+
+  function confirmLogout() {
     localStorage.removeItem("isAdmin");
     localStorage.removeItem("userName");
     window.location.href = "../html/homepage.html";
   }
 
-  return { logout };
+  return { logout, closeLogoutModal, confirmLogout };
 })();
 
 
@@ -132,7 +146,7 @@ let appData = Store.load();
 const SECTION_TITLES = {
   "dashboard-section": "Dashboard",
   "orders-section": "Rendelések",
-  "menu-section": "Menü kezelés",
+  "menu-section": "Menük kezelése",
   "bookings-section": "Foglalások",
   "messages-section": "Üzenetek",
   "settings-section": "Beállítások",
@@ -326,6 +340,17 @@ const App = (() => {
     document.querySelector(".admin-logout-btn")
       ?.addEventListener("click", Auth.logout);
 
+    const logoutModal = document.getElementById("logoutModal");
+    document.getElementById("logoutCancel")
+      ?.addEventListener("click", Auth.closeLogoutModal);
+    document.getElementById("logoutCancelBtn")
+      ?.addEventListener("click", Auth.closeLogoutModal);
+    document.getElementById("logoutConfirmBtn")
+      ?.addEventListener("click", Auth.confirmLogout);
+    logoutModal?.addEventListener("click", (e) => {
+      if (e.target === logoutModal) Auth.closeLogoutModal();
+    });
+
     // Profil-chip kitöltése
     const userName = localStorage.getItem("userName");
     if (userName) {
@@ -366,6 +391,39 @@ const App = (() => {
       refreshDashboard({ times: true });
       refreshRotation += 360;
       refreshBtn.querySelector("i").style.transform = `rotate(${refreshRotation}deg)`;
+    });
+
+    // Teendők KPI -> ugrás a releváns kezeletlen listára (rendelés, ha van, különben foglalás)
+    document.getElementById("kpi-todos")?.addEventListener("click", () => {
+      const kpiCard = document.getElementById("kpi-todos");
+      if (!kpiCard?.classList.contains("has-todos")) return;
+
+      const ordersList = document.getElementById("todo-orders-list");
+      const bookingsList = document.getElementById("todo-bookings-list");
+
+      const hasOrderTodos = ordersList?.querySelector(".todo-item");
+      const target = hasOrderTodos
+        ? ordersList.closest(".dash-todos")
+        : bookingsList?.closest(".dash-todos");
+
+      if (!target) return;
+
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      target.classList.remove("highlight");
+      requestAnimationFrame(() => target.classList.add("highlight"));
+      target.addEventListener("animationend", () => target.classList.remove("highlight"), { once: true });
+    });
+
+    // Dashboard gyorsműveletek -> sidebar szekcióváltás
+    document.querySelectorAll(".quick-action-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.target;
+        UI.switchSection(target);
+
+        document.querySelectorAll(".menu a").forEach(a => {
+          a.classList.toggle("active", a.dataset.target === target);
+        });
+      });
     });
 
     // Topbar "Új étel hozzáadása" gomb -> meglévő .add-btn flow indítása

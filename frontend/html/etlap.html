@@ -418,6 +418,8 @@
         </section>
       </main>
 
+      <div id="allergen-section"></div>
+
       <!-- LÁBLÉC -->
       <footer class="menu-footer">
         <div class="gold-divider"></div>
@@ -521,7 +523,7 @@
           }); 
           
           //másodszor beolvassuk az ételeket a foods_with_category.json-ből
-          const foodsUrl = "../teszthez/foods_with_category.json";
+          const foodsUrl = "../teszthez/foods_with_category_and_allergens.json";
 
           fetch(foodsUrl)
             .then(res => {
@@ -531,6 +533,7 @@
             .then(foods => {
               // 1. csoportosítás kategória szerint
               const grouped = {};
+              const allergenMap = new Map(); //csak a megjelenített allergens-re ad tájékoztatót
 
               foods.forEach(food => {
                 const categoryId = food.category.id;
@@ -543,6 +546,16 @@
                 }
 
                 grouped[categoryId].items.push(food);
+
+                //  allergének gyűjtése
+                if (food.allergens && food.allergens.length > 0) {
+                  food.allergens.forEach(a => {
+                    if (!allergenMap.has(a.name)) {
+                      allergenMap.set(a.name, a);
+                    }
+                  });
+                }
+
               });
 
               // 2. DOM feltöltés
@@ -556,7 +569,11 @@
                 }
 
                 data.items.forEach(food => {
-                  // row
+                  // 1. wrapper (ez fog mindent összefogni)
+                  const itemWrapper = document.createElement("div");
+                  itemWrapper.className = "menu-item";
+
+                  // 2.row
                   const row = document.createElement("div");
                   row.className = "menu-row";
 
@@ -575,17 +592,84 @@
                   row.appendChild(dots);
                   row.appendChild(price);
 
-                  section.appendChild(row);
+                  itemWrapper.appendChild(row);
 
-                  // description (ha van)
+                  // 3.description (ha van)
                   if (food.description && food.description.trim() !== "") {
                     const desc = document.createElement("p");
                     desc.className = "dish-desc";
                     desc.textContent = food.description;
-                    section.appendChild(desc);
+                    itemWrapper.appendChild(desc)
                   }
+
+                  // 4. ALLERGÉNEK
+                  if (food.allergens && food.allergens.length > 0) {
+                    const allergensDiv = document.createElement("div");
+                    allergensDiv.className = "allergens";
+
+                    food.allergens.forEach(a => {
+                      const img = document.createElement("img");
+                      img.src = a.icon;
+                      img.alt = a.name;
+                      img.title = a.name;
+                      allergensDiv.appendChild(img);
+                    });
+
+                    itemWrapper.appendChild(allergensDiv);
+                  }
+
+                  // 5. hozzáadás a section-höz
+                  section.appendChild(itemWrapper);
                 });
               });
+
+              // ================== ALLERGÉN TÁJÉKOZTATÓ GENERÁLÁS
+              if (allergenMap.size > 0) {
+                  const section = document.createElement("section");
+                  section.className = "allergen-info";
+                  section.id = "allergen-tajekoztato";
+
+                  const title = document.createElement("h3");
+                  title.className = "section-title";
+                  title.textContent = "ALLERGÉN TÁJÉKOZTATÓ";
+
+                  const note = document.createElement("p");
+                  note.className = "allergen-note";
+                  note.innerHTML = "<strong>Az ételek mellett szereplő szimbólumok az allergéneket jelölik.</strong><br>Kérdés esetén kérjük, fordulj a munkatársainkhoz.";
+
+                  const rule = document.createElement("div");
+                  rule.className = "section-rule";
+
+                  const grid = document.createElement("div");
+                  grid.className = "allergen-grid";
+
+                  allergenMap.forEach(allergen => {
+                    const item = document.createElement("div");
+                    item.className = "allergen-item";
+
+                    const img = document.createElement("img");
+                    img.src = allergen.icon;
+                    img.alt = allergen.name;
+
+                    const text = document.createElement("span");
+                    text.textContent = allergen.label;
+
+                    item.appendChild(img);
+                    item.appendChild(text);
+                    grid.appendChild(item);
+                  });
+
+                  section.appendChild(title);
+                  section.appendChild(rule);
+                  section.appendChild(note);
+                  section.appendChild(grid);
+
+                  
+
+                  const footer = document.querySelector(".menu-footer");
+                  footer.parentNode.insertBefore(section, footer);
+                }
+
             })
             .catch(err => {
               console.error("Hiba az ételek betöltésekor:", err);

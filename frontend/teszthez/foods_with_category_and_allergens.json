@@ -6,9 +6,9 @@
     "description": "Mangalica tepertőkrém, fűszeres körözött és padlizsánkrém házi kovászos kenyérrel és friss kerti zöldségekkel.",
     "category": { "id": 1, "name": "Előételek" },
     "allergens": [
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 31, "key": "wheat", "name": "Búza", "icon": "/icons/Wheat.svg" },
-      { "id": 16, "key": "milk", "name": "Tej", "icon": "/icons/Milk.svg" }
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 31, "key": "wheat", "name": "Búza", "icon": "../public/icons/Wheat.svg", "label": "Búza és a belőle készült termékek." },
+      { "id": 16, "key": "milk", "name": "Tej", "icon": "../public/icons/Milk.svg", "label": "Tej és a belőle készült termékek." }
     ]
   },
   {
@@ -18,10 +18,10 @@
     "description": "Hagyományos recept alapján fűszerezett, selymes textúrájú marhabélszín, friss idényzöldségekkel, vajjal/kacsazsírral és ropogós házi kovászos kenyérrel.",
     "category": { "id": 1, "name": "Előételek" },
     "allergens": [
-      { "id": 4, "key": "beef", "name": "Marhahús", "icon": "/icons/Beef.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 31, "key": "wheat", "name": "Búza", "icon": "/icons/Wheat.svg" },
-      { "id": 16, "key": "milk", "name": "Tej", "icon": "/icons/Milk.svg" }
+      { "id": 4, "key": "beef", "name": "Marhahús", "icon": "../public/icons/Beef.svg", "label": "Marhahús és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 31, "key": "wheat", "name": "Búza", "icon": "../public/icons/Wheat.svg", "label": "Búza és a belőle készült termékek." },
+      { "id": 16, "key": "milk", "name": "Tej", "icon": "../public/icons/Milk.svg", "label": "Tej és a belőle készült termékek." }
     ]
   },
   {
@@ -31,8 +31,8 @@
     "description": "Fűszeres velős csont, házi lilahagyma-lekvárral és kovászos kenyérrel.",
     "category": { "id": 1, "name": "Előételek" },
     "allergens": [
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 31, "key": "wheat", "name": "Búza", "icon": "/icons/Wheat.svg" }
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 31, "key": "wheat", "name": "Búza", "icon": "../public/icons/Wheat.svg", "label": "Búza és a belőle készült termékek." }
     ]
   },
   {
@@ -42,10 +42,10 @@
     "description": "Füstölt kolbász, pikáns paprikás szalámi, omlós sonka, érlelt és füstölt sajtok, savanyúság és kovászos kenyér.",
     "category": { "id": 1, "name": "Előételek" },
     "allergens": [
-      { "id": 21, "key": "pork", "name": "Sertés", "icon": "/icons/Pork.svg" },
-      { "id": 16, "key": "milk", "name": "Tej", "icon": "/icons/Milk.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 31, "key": "wheat", "name": "Búza", "icon": "/icons/Wheat.svg" }
+      { "id": 21, "key": "pork", "name": "Sertés", "icon": "../public/icons/Pork.svg", "label": "Sertés és a belőle készült termékek." },
+      { "id": 16, "key": "milk", "name": "Tej", "icon": "../public/icons/Milk.svg", "label": "Tej és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 31, "key": "wheat", "name": "Búza", "icon": "../public/icons/Wheat.svg", "label": "Búza és a belőle készült termékek." }
     ]
   },
   {
@@ -55,9 +55,9 @@
     "description": "Omlós marhahúsból, lassú tűzön főzött gazdag gulyásleves csipetkével.",
     "category": { "id": 2, "name": "Levesek" },
     "allergens": [
-      { "id": 4, "key": "beef", "name": "Marhahús", "icon": "/icons/Beef.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "/icons/Eggs.svg" }
+      { "id": 4, "key": "beef", "name": "Marhahús", "icon": "../public/icons/Beef.svg", "label": "Marhahús és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "../public/icons/Eggs.svg", "label": "Tojás és a belőle készült termékek." }
     ]
   },
   {
@@ -67,8 +67,8 @@
     "description": "Tartalmas bableves füstölt csülökkel és kolbásszal, tejföllel.",
     "category": { "id": 2, "name": "Levesek" },
     "allergens": [
-      { "id": 21, "key": "pork", "name": "Sertés", "icon": "/icons/Pork.svg" },
-      { "id": 16, "key": "milk", "name": "Tej", "icon": "/icons/Milk.svg" }
+      { "id": 21, "key": "pork", "name": "Sertés", "icon": "../public/icons/Pork.svg", "label": "Sertés és a belőle készült termékek." },
+      { "id": 16, "key": "milk", "name": "Tej", "icon": "../public/icons/Milk.svg", "label": "Tej és a belőle készült termékek." }
     ]
   },
   {
@@ -78,9 +78,9 @@
     "description": "Hosszú főzésű húsleves marhafartővel és házi tésztával.",
     "category": { "id": 2, "name": "Levesek" },
     "allergens": [
-      { "id": 4, "key": "beef", "name": "Marhahús", "icon": "/icons/Beef.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 31, "key": "wheat", "name": "Búza", "icon": "/icons/Wheat.svg" }
+      { "id": 4, "key": "beef", "name": "Marhahús", "icon": "../public/icons/Beef.svg", "label": "Marhahús és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 31, "key": "wheat", "name": "Búza", "icon": "../public/icons/Wheat.svg", "label": "Búza és a belőle készült termékek." }
     ]
   },
   {
@@ -90,9 +90,9 @@
     "description": "Könnyed zöldborsóleves vajas galuskával.",
     "category": { "id": 2, "name": "Levesek" },
     "allergens": [
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "/icons/Eggs.svg" },
-      { "id": 16, "key": "milk", "name": "Tej", "icon": "/icons/Milk.svg" }
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "../public/icons/Eggs.svg", "label": "Tojás és a belőle készült termékek." },
+      { "id": 16, "key": "milk", "name": "Tej", "icon": "../public/icons/Milk.svg", "label": "Tej és a belőle készült termékek." }
     ]
   },
   {
@@ -102,9 +102,9 @@
     "description": "Intenzív halászlé pontyfilével és friss kenyérrel.",
     "category": { "id": 2, "name": "Levesek" },
     "allergens": [
-      { "id": 10, "key": "fish", "name": "Hal", "icon": "/icons/Fish.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 31, "key": "wheat", "name": "Búza", "icon": "/icons/Wheat.svg" }
+      { "id": 10, "key": "fish", "name": "Hal", "icon": "../public/icons/Fish.svg", "label": "Hal és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 31, "key": "wheat", "name": "Búza", "icon": "../public/icons/Wheat.svg", "label": "Búza és a belőle készült termékek." }
     ]
   },
   {
@@ -114,13 +114,13 @@
     "description": "Ropogós mandulás bundában sült fogasfilé majonézes burgonyasalátával.",
     "category": { "id": 3, "name": "Halételek és szárnyasok" },
     "allergens": [
-      { "id": 10, "key": "fish", "name": "Hal", "icon": "/icons/Fish.svg" },
-      { "id": 18, "key": "nuts", "name": "Diófélék", "icon": "/icons/Nuts.svg" },
-      { "id": 16, "key": "milk", "name": "Tej", "icon": "/icons/Milk.svg" },
-      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "/icons/Eggs.svg" },
-      { "id": 22, "key": "potato", "name": "Burgonya", "icon": "/icons/Potato.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 31, "key": "wheat", "name": "Búza", "icon": "/icons/Wheat.svg" }
+      { "id": 10, "key": "fish", "name": "Hal", "icon": "../public/icons/Fish.svg", "label": "Hal és a belőle készült termékek." },
+      { "id": 18, "key": "nuts", "name": "Diófélék", "icon": "../public/icons/Nuts.svg", "label": "Diófélék, azaz mandula, mogyoró, kesudió, pekándió, brazil dió, pisztácia, makadámia és queenslandi dió és a belőlük készült termékek." },
+      { "id": 16, "key": "milk", "name": "Tej", "icon": "../public/icons/Milk.svg", "label": "Tej és a belőle készült termékek." },
+      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "../public/icons/Eggs.svg", "label": "Tojás és a belőle készült termékek." },
+      { "id": 22, "key": "potato", "name": "Burgonya", "icon": "../public/icons/Potato.svg", "label": "Burgonya és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 31, "key": "wheat", "name": "Búza", "icon": "../public/icons/Wheat.svg", "label": "Búza és a belőle készült termékek." }
     ]
   },
   {
@@ -130,10 +130,10 @@
     "description": "Szaftos harcsapaprikás túrós csuszával.",
     "category": { "id": 3, "name": "Halételek és szárnyasok" },
     "allergens": [
-      { "id": 10, "key": "fish", "name": "Hal", "icon": "/icons/Fish.svg" },
-      { "id": 16, "key": "milk", "name": "Tej", "icon": "/icons/Milk.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 31, "key": "wheat", "name": "Búza", "icon": "/icons/Wheat.svg" }
+      { "id": 10, "key": "fish", "name": "Hal", "icon": "../public/icons/Fish.svg", "label": "Hal és a belőle készült termékek." },
+      { "id": 16, "key": "milk", "name": "Tej", "icon": "../public/icons/Milk.svg", "label": "Tej és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 31, "key": "wheat", "name": "Búza", "icon": "../public/icons/Wheat.svg", "label": "Búza és a belőle készült termékek." }
     ]
   },
   {
@@ -143,10 +143,10 @@
     "description": "Tejfölös paprikás csirke vajas galuskával.",
     "category": { "id": 3, "name": "Halételek és szárnyasok" },
     "allergens": [
-      { "id": 7, "key": "chicken", "name": "Csirke", "icon": "/icons/Chicken.svg" },
-      { "id": 16, "key": "milk", "name": "Tej", "icon": "/icons/Milk.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "/icons/Eggs.svg" }
+      { "id": 7, "key": "chicken", "name": "Csirke", "icon": "../public/icons/Chicken.svg", "label": "Csirke és a belőle készült termékek." },
+      { "id": 16, "key": "milk", "name": "Tej", "icon": "../public/icons/Milk.svg", "label": "Tej és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "../public/icons/Eggs.svg", "label": "Tojás és a belőle készült termékek." }
     ]
   },
   {
@@ -156,12 +156,12 @@
     "description": "Ropogós csirkemell fokhagymás bundában, füstölt sajttal.",
     "category": { "id": 3, "name": "Halételek és szárnyasok" },
     "allergens": [
-      { "id": 7, "key": "chicken", "name": "Csirke", "icon": "/icons/Chicken.svg" },
-      { "id": 16, "key": "milk", "name": "Tej", "icon": "/icons/Milk.svg" },
-      { "id": 22, "key": "potato", "name": "Burgonya", "icon": "/icons/Potato.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 31, "key": "wheat", "name": "Búza", "icon": "/icons/Wheat.svg" },
-      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "/icons/Eggs.svg" }
+      { "id": 7, "key": "chicken", "name": "Csirke", "icon": "../public/icons/Chicken.svg", "label": "Csirke és a belőle készült termékek." },
+      { "id": 16, "key": "milk", "name": "Tej", "icon": "../public/icons/Milk.svg", "label": "Tej és a belőle készült termékek." },
+      { "id": 22, "key": "potato", "name": "Burgonya", "icon": "../public/icons/Potato.svg", "label": "Burgonya és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 31, "key": "wheat", "name": "Búza", "icon": "../public/icons/Wheat.svg", "label": "Búza és a belőle készült termékek." },
+      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "../public/icons/Eggs.svg", "label": "Tojás és a belőle készült termékek." }
     ]
   },
   {
@@ -169,14 +169,14 @@
     "name": "Klasszikus rántott szelet",
     "price": 5690,
     "description": "Aranybarna rántott szelet vajas burgonyával.",
-    "category": { "id": 4, "name": "Rántott és töltött húsok" },
+    "category": { "id": 4, "name": "Hagyományos rántott és töltött húsok" },
     "allergens": [
-      { "id": 21, "key": "pork", "name": "Sertés", "icon": "/icons/Pork.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 31, "key": "wheat", "name": "Búza", "icon": "/icons/Wheat.svg" },
-      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "/icons/Eggs.svg" },
-      { "id": 16, "key": "milk", "name": "Tej", "icon": "/icons/Milk.svg" },
-      { "id": 22, "key": "potato", "name": "Burgonya", "icon": "/icons/Potato.svg" }
+      { "id": 21, "key": "pork", "name": "Sertés", "icon": "../public/icons/Pork.svg", "label": "Sertés és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 31, "key": "wheat", "name": "Búza", "icon": "../public/icons/Wheat.svg", "label": "Búza és a belőle készült termékek." },
+      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "../public/icons/Eggs.svg", "label": "Tojás és a belőle készült termékek." },
+      { "id": 16, "key": "milk", "name": "Tej", "icon": "../public/icons/Milk.svg", "label": "Tej és a belőle készült termékek." },
+      { "id": 22, "key": "potato", "name": "Burgonya", "icon": "../public/icons/Potato.svg", "label": "Burgonya és a belőle készült termékek." }
     ]
   },
   {
@@ -184,14 +184,14 @@
     "name": "Pásztorok kedvence karaj rántva",
     "price": 5890,
     "description": "Töltött karaj kolbásszal és juhtúróval, burgonyapürével.",
-    "category": { "id": 4, "name": "Rántott és töltött húsok" },
+    "category": { "id": 4, "name": "Hagyományos rántott és töltött húsok" },
     "allergens": [
-      { "id": 21, "key": "pork", "name": "Sertés", "icon": "/icons/Pork.svg" },
-      { "id": 16, "key": "milk", "name": "Tej", "icon": "/icons/Milk.svg" },
-      { "id": 22, "key": "potato", "name": "Burgonya", "icon": "/icons/Potato.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 31, "key": "wheat", "name": "Búza", "icon": "/icons/Wheat.svg" },
-      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "/icons/Eggs.svg" }
+      { "id": 21, "key": "pork", "name": "Sertés", "icon": "../public/icons/Pork.svg", "label": "Sertés és a belőle készült termékek." },
+      { "id": 16, "key": "milk", "name": "Tej", "icon": "../public/icons/Milk.svg", "label": "Tej és a belőle készült termékek." },
+      { "id": 22, "key": "potato", "name": "Burgonya", "icon": "../public/icons/Potato.svg", "label": "Burgonya és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 31, "key": "wheat", "name": "Búza", "icon": "../public/icons/Wheat.svg", "label": "Búza és a belőle készült termékek." },
+      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "../public/icons/Eggs.svg", "label": "Tojás és a belőle készült termékek." }
     ]
   },
   {
@@ -199,11 +199,11 @@
     "name": "Marhapörkölt galuskával",
     "price": 5890,
     "description": "Omlós marhapörkölt tojásos galuskával.",
-    "category": { "id": 5, "name": "Sültek" },
+    "category": { "id": 5, "name": "Szaftos és kemencés sültek" },
     "allergens": [
-      { "id": 4, "key": "beef", "name": "Marhahús", "icon": "/icons/Beef.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "/icons/Eggs.svg" }
+      { "id": 4, "key": "beef", "name": "Marhahús", "icon": "../public/icons/Beef.svg", "label": "Marhahús és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "../public/icons/Eggs.svg", "label": "Tojás és a belőle készült termékek." }
     ]
   },
   {
@@ -211,10 +211,10 @@
     "name": "Cigánypecsenye kakastaréjjal",
     "price": 5890,
     "description": "Fokhagymás sertéstarja szalonnával és rósejbnivel.",
-    "category": { "id": 5, "name": "Sültek" },
+    "category": { "id": 5, "name": "Szaftos és kemencés sültek" },
     "allergens": [
-      { "id": 21, "key": "pork", "name": "Sertés", "icon": "/icons/Pork.svg" },
-      { "id": 22, "key": "potato", "name": "Burgonya", "icon": "/icons/Potato.svg" }
+      { "id": 21, "key": "pork", "name": "Sertés", "icon": "../public/icons/Pork.svg", "label": "Sertés és a belőle készült termékek." },
+      { "id": 22, "key": "potato", "name": "Burgonya", "icon": "../public/icons/Potato.svg", "label": "Burgonya és a belőle készült termékek." }
     ]
   },
   {
@@ -222,10 +222,10 @@
     "name": "Kemencés csülök Pékné módra",
     "price": 6590,
     "description": "Omlós csülök kemencés burgonyával.",
-    "category": { "id": 5, "name": "Sültek" },
+    "category": { "id": 5, "name": "Szaftos és kemencés sültek" },
     "allergens": [
-      { "id": 21, "key": "pork", "name": "Sertés", "icon": "/icons/Pork.svg" },
-      { "id": 22, "key": "potato", "name": "Burgonya", "icon": "/icons/Potato.svg" }
+      { "id": 21, "key": "pork", "name": "Sertés", "icon": "../public/icons/Pork.svg", "label": "Sertés és a belőle készült termékek." },
+      { "id": 22, "key": "potato", "name": "Burgonya", "icon": "../public/icons/Potato.svg", "label": "Burgonya és a belőle készült termékek." }
     ]
   },
   {
@@ -235,7 +235,7 @@
     "description": "Savanyú káposztás, füstölt húsos töltött káposzta.",
     "category": { "id": 6, "name": "Egytálételek" },
     "allergens": [
-      { "id": 21, "key": "pork", "name": "Sertés", "icon": "/icons/Pork.svg" }
+      { "id": 21, "key": "pork", "name": "Sertés", "icon": "../public/icons/Pork.svg", "label": "Sertés és a belőle készült termékek." }
     ]
   },
   {
@@ -245,8 +245,8 @@
     "description": "Töltött paprika és húsgombóc paradicsommártásban.",
     "category": { "id": 6, "name": "Egytálételek" },
     "allergens": [
-      { "id": 4, "key": "beef", "name": "Marhahús", "icon": "/icons/Beef.svg" },
-      { "id": 21, "key": "pork", "name": "Sertés", "icon": "/icons/Pork.svg" }
+      { "id": 4, "key": "beef", "name": "Marhahús", "icon": "../public/icons/Beef.svg", "label": "Marhahús és a belőle készült termékek." },
+      { "id": 21, "key": "pork", "name": "Sertés", "icon": "../public/icons/Pork.svg", "label": "Sertés és a belőle készült termékek." }
     ]
   },
   {
@@ -256,12 +256,12 @@
     "description": "Diós, vaníliás és kakaós piskóta csokoládéöntettel.",
     "category": { "id": 7, "name": "Desszertek" },
     "allergens": [
-      { "id": 30, "key": "walnut", "name": "Dió", "icon": "/icons/Walnut.svg" },
-      { "id": 18, "key": "nuts", "name": "Diófélék", "icon": "/icons/Nuts.svg" },
-      { "id": 16, "key": "milk", "name": "Tej", "icon": "/icons/Milk.svg" },
-      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "/icons/Eggs.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 31, "key": "wheat", "name": "Búza", "icon": "/icons/Wheat.svg" }
+      { "id": 30, "key": "walnut", "name": "Dió", "icon": "../public/icons/Walnut.svg", "label": "Dió és a belőle készült termékek." },
+      { "id": 18, "key": "nuts", "name": "Diófélék", "icon": "../public/icons/Nuts.svg", "label": "Diófélék, azaz mandula, mogyoró, kesudió, pekándió, brazil dió, pisztácia, makadámia és queenslandi dió és a belőlük készült termékek." },
+      { "id": 16, "key": "milk", "name": "Tej", "icon": "../public/icons/Milk.svg", "label": "Tej és a belőle készült termékek." },
+      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "../public/icons/Eggs.svg", "label": "Tojás és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 31, "key": "wheat", "name": "Búza", "icon": "../public/icons/Wheat.svg", "label": "Búza és a belőle készült termékek." }
     ]
   },
   {
@@ -271,10 +271,10 @@
     "description": "Túrógombóc vaníliás tejföllel.",
     "category": { "id": 7, "name": "Desszertek" },
     "allergens": [
-      { "id": 16, "key": "milk", "name": "Tej", "icon": "/icons/Milk.svg" },
-      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "/icons/Eggs.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 31, "key": "wheat", "name": "Búza", "icon": "/icons/Wheat.svg" }
+      { "id": 16, "key": "milk", "name": "Tej", "icon": "../public/icons/Milk.svg", "label": "Tej és a belőle készült termékek." },
+      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "../public/icons/Eggs.svg", "label": "Tojás és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 31, "key": "wheat", "name": "Búza", "icon": "../public/icons/Wheat.svg", "label": "Búza és a belőle készült termékek." }
     ]
   },
   {
@@ -284,10 +284,10 @@
     "description": "Omlós tészta citromos túrókrémmel.",
     "category": { "id": 7, "name": "Desszertek" },
     "allergens": [
-      { "id": 16, "key": "milk", "name": "Tej", "icon": "/icons/Milk.svg" },
-      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "/icons/Eggs.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 31, "key": "wheat", "name": "Búza", "icon": "/icons/Wheat.svg" }
+      { "id": 16, "key": "milk", "name": "Tej", "icon": "../public/icons/Milk.svg", "label": "Tej és a belőle készült termékek." },
+      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "../public/icons/Eggs.svg", "label": "Tojás és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 31, "key": "wheat", "name": "Búza", "icon": "../public/icons/Wheat.svg", "label": "Búza és a belőle készült termékek." }
     ]
   },
   {
@@ -297,12 +297,12 @@
     "description": "Diós kelt tészta vaníliasodóval.",
     "category": { "id": 7, "name": "Desszertek" },
     "allergens": [
-      { "id": 30, "key": "walnut", "name": "Dió", "icon": "/icons/Walnut.svg" },
-      { "id": 18, "key": "nuts", "name": "Diófélék", "icon": "/icons/Nuts.svg" },
-      { "id": 16, "key": "milk", "name": "Tej", "icon": "/icons/Milk.svg" },
-      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "/icons/Eggs.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 31, "key": "wheat", "name": "Búza", "icon": "/icons/Wheat.svg" }
+      { "id": 30, "key": "walnut", "name": "Dió", "icon": "../public/icons/Walnut.svg", "label": "Dió és a belőle készült termékek." },
+      { "id": 18, "key": "nuts", "name": "Diófélék", "icon": "../public/icons/Nuts.svg", "label": "Diófélék, azaz mandula, mogyoró, kesudió, pekándió, brazil dió, pisztácia, makadámia és queenslandi dió és a belőlük készült termékek." },
+      { "id": 16, "key": "milk", "name": "Tej", "icon": "../public/icons/Milk.svg", "label": "Tej és a belőle készült termékek." },
+      { "id": 9, "key": "eggs", "name": "Tojás", "icon": "../public/icons/Eggs.svg", "label": "Tojás és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 31, "key": "wheat", "name": "Búza", "icon": "../public/icons/Wheat.svg", "label": "Búza és a belőle készült termékek." }
     ]
   },
   {
@@ -312,9 +312,9 @@
     "description": "Kifli, mák, vaníliás öntet.",
     "category": { "id": 7, "name": "Desszertek" },
     "allergens": [
-      { "id": 16, "key": "milk", "name": "Tej", "icon": "/icons/Milk.svg" },
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" },
-      { "id": 31, "key": "wheat", "name": "Búza", "icon": "/icons/Wheat.svg" }
+      { "id": 16, "key": "milk", "name": "Tej", "icon": "../public/icons/Milk.svg", "label": "Tej és a belőle készült termékek." },
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." },
+      { "id": 31, "key": "wheat", "name": "Búza", "icon": "../public/icons/Wheat.svg", "label": "Búza és a belőle készült termékek." }
     ]
   },
   {
@@ -340,7 +340,7 @@
     "description": "",
     "category": { "id": 8, "name": "Italok" },
     "allergens": [
-      { "id": 20, "key": "peach", "name": "Őszibarack", "icon": "/icons/Peach.svg" }
+      { "id": 20, "key": "peach", "name": "Őszibarack", "icon": "../public/icons/Peach.svg", "label": "Őszibarack és a belőle készült termékek." }
     ]
   },
   {
@@ -350,7 +350,7 @@
     "description": "",
     "category": { "id": 8, "name": "Italok" },
     "allergens": [
-      { "id": 29, "key": "sulfites", "name": "Szulfitok", "icon": "/icons/Sulfites.svg" }
+      { "id": 29, "key": "sulfites", "name": "Szulfitok", "icon": "../public/icons/Sulfites.svg", "label": "Szulfitok és a belőlük készült termékek." }
     ]
   },
   {
@@ -360,7 +360,7 @@
     "description": "",
     "category": { "id": 8, "name": "Italok" },
     "allergens": [
-      { "id": 29, "key": "sulfites", "name": "Szulfitok", "icon": "/icons/Sulfites.svg" }
+      { "id": 29, "key": "sulfites", "name": "Szulfitok", "icon": "../public/icons/Sulfites.svg", "label": "Szulfitok és a belőlük készült termékek." }
     ]
   },
   {
@@ -370,7 +370,7 @@
     "description": "",
     "category": { "id": 8, "name": "Italok" },
     "allergens": [
-      { "id": 29, "key": "sulfites", "name": "Szulfitok", "icon": "/icons/Sulfites.svg" }
+      { "id": 29, "key": "sulfites", "name": "Szulfitok", "icon": "../public/icons/Sulfites.svg", "label": "Szulfitok és a belőlük készült termékek." }
     ]
   },
   {
@@ -380,7 +380,7 @@
     "description": "",
     "category": { "id": 8, "name": "Italok" },
     "allergens": [
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" }
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." }
     ]
   },
   {
@@ -390,7 +390,7 @@
     "description": "",
     "category": { "id": 8, "name": "Italok" },
     "allergens": [
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" }
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." }
     ]
   },
   {
@@ -400,7 +400,7 @@
     "description": "",
     "category": { "id": 8, "name": "Italok" },
     "allergens": [
-      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "/icons/Gluten.svg" }
+      { "id": 12, "key": "gluten", "name": "Glutén", "icon": "../public/icons/Gluten.svg", "label": "Glutént tartalmazó gabonafélék." }
     ]
   },
   {

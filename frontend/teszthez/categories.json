@@ -2,8 +2,8 @@
   { "id": 1, "name": "Előételek" },
   { "id": 2, "name": "Levesek" },
   { "id": 3, "name": "Halételek és szárnyasok" },
-  { "id": 4, "name": "Rántott és töltött húsok" },
-  { "id": 5, "name": "Sültek" },
+  { "id": 4, "name": "Hagyományos rántott és töltött húsok" },
+  { "id": 5, "name": "Szaftos és kemencés sültek" },
   { "id": 6, "name": "Egytálételek" },
   { "id": 7, "name": "Desszertek" },
   { "id": 8, "name": "Italok" }

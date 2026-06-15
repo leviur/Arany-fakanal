@@ -185,6 +185,12 @@ function updateBookingDashboardStats() {
 function fadeRender(container, draw) {
   if (!container) return;
 
+  // első renderkor (üres konténer) nincs mit elhalványítani - ne legyen "üres pillanat"
+  if (!container.firstElementChild) {
+    draw();
+    return;
+  }
+
   container.classList.add("is-refreshing");
   setTimeout(() => {
     draw();
@@ -310,7 +316,8 @@ function renderAgenda() {
       const div = document.createElement("div");
       div.className = "agenda-item";
       div.innerHTML = `
-        <span class="agenda-time">${b.time}</span>
+        <span class="agenda-time-chip">${b.time}</span>
+        <span class="agenda-divider"></span>
         <span class="agenda-name">${b.name} – ${b.occasion || ""}</span>
         <span class="agenda-guests">${b.guests || 0} fő</span>
       `;
@@ -335,19 +342,34 @@ function renderTrendChart() {
     dayCounts[datePart] = (dayCounts[datePart] || 0) + 1;
   });
 
-  const days = Object.keys(dayCounts).sort().slice(-7);
-  const max = Math.max(...days.map(d => dayCounts[d]), 1);
+  // a jelenlegi hét (hétfőtől vasárnapig), beleértve a jövőbeli napokat is
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const mondayOffset = (today.getDay() + 6) % 7; // hétfő = 0
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - mondayOffset);
+
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const key = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+    days.push({ key, date: d });
+  }
+
+  const max = Math.max(...days.map(d => dayCounts[d.key] || 0), 1);
 
   const dayNames = ["V", "H", "K", "Sze", "Cs", "P", "Szo"];
 
-  container.innerHTML = `<div class="trend-chart">${days.map(d => {
-    const [y, m, day] = d.split(".").map(Number);
-    const weekday = dayNames[new Date(y, m - 1, day).getDay()];
-    const count = dayCounts[d];
-    const heightPct = Math.round((count / max) * 100);
+  container.innerHTML = `<div class="trend-chart">${days.map(({ key, date }) => {
+    const weekday = dayNames[date.getDay()];
+    const count = dayCounts[key] || 0;
+    const heightPct = count === 0 ? 0 : Math.round((count / max) * 100);
+    const isToday = date.getTime() === today.getTime();
+    const classes = [count === 0 && "empty", isToday && "today"].filter(Boolean).join(" ");
 
     return `
-      <div class="trend-bar-wrap">
+      <div class="trend-bar-wrap${classes ? " " + classes : ""}">
         <span class="trend-bar-value">${count}</span>
         <div class="trend-bar" style="height: ${heightPct}%"></div>
         <span class="trend-bar-label">${weekday}</span>

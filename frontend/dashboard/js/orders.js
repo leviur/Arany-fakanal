@@ -39,11 +39,54 @@ const STATUS_OPTIONS = [
   "Sikertelen kézbesítés"
 ];
 
+let activeOrdersKpiFilter = null;
+
+function updateOrdersKpis() {
+  const orders = window.appData?.orders || [];
+
+  let problem = 0, fresh = 0, preparing = 0, delivery = 0;
+
+  orders.forEach(o => {
+    const status = (o.status || "").trim();
+
+    if (isProblemOrder(o)) problem++;
+    if (status === "Új") fresh++;
+    if (status === "Készül") preparing++;
+    if (status === "Kiszállítás alatt") delivery++;
+  });
+
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+
+  setVal("kpi-orders-problem", problem);
+  setVal("kpi-orders-new", fresh);
+  setVal("kpi-orders-preparing", preparing);
+  setVal("kpi-orders-delivery", delivery);
+}
+
+function matchesOrdersKpiFilter(order) {
+  if (!activeOrdersKpiFilter) return true;
+
+  const status = (order.status || "").trim();
+
+  switch (activeOrdersKpiFilter) {
+    case "problem": return isProblemOrder(order);
+    case "new": return status === "Új";
+    case "preparing": return status === "Készül";
+    case "delivery": return status === "Kiszállítás alatt";
+    default: return true;
+  }
+}
+
 function renderOrders() {
   const tbody = document.getElementById("ordersTableBody");
   if (!tbody) return;
 
   const orders = window.appData.orders;
+
+  updateOrdersKpis();
 
   tbody.innerHTML = orders.map(o => `
     <tr data-id="${o.id}">
@@ -196,39 +239,46 @@ document.addEventListener("input", (e) => {
   }
 });
 
-document.addEventListener("change", (e) => {
-  if (e.target.id === "statusFilter") {
-    renderOrders();
+document.addEventListener("click", (e) => {
+  const kpiBtn = e.target.closest("#orders-section .orders-kpi");
+  if (!kpiBtn) return;
+
+  const filter = kpiBtn.dataset.filter;
+
+  if (activeOrdersKpiFilter === filter) {
+    activeOrdersKpiFilter = null;
+  } else {
+    activeOrdersKpiFilter = filter;
   }
+
+  document.querySelectorAll("#orders-section .orders-kpi").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.filter === activeOrdersKpiFilter);
+  });
+
+  filterOrders();
 });
 
 window.filterOrders = function () {
-  console.log("filterOrders fut");
-
   const searchEl = document.getElementById("searchInput");
-  const statusEl = document.getElementById("statusFilter");
-
   const search = (searchEl?.value || "").toLowerCase().trim();
-  const status = statusEl?.value || "all";
 
   const rows = document.querySelectorAll("#orders-section tbody tr");
 
   rows.forEach(row => {
+    const id = row.dataset.id;
+    const order = window.appData.orders.find(o => o.id === id);
+
     const name = (row.children[1]?.textContent || "").toLowerCase();
     const phone = (row.children[2]?.textContent || "").toLowerCase();
     const address = (row.children[3]?.textContent || "").toLowerCase();
     const menu = (row.children[4]?.textContent || "").toLowerCase();
 
-    const rowStatus =
-      row.querySelector(".status-select")?.value || "";
-
     const matchesSearch =
       search === "" || `${name} ${phone} ${address} ${menu}`.includes(search);
 
-    const matchesStatus =
-      status === "all" || rowStatus === status;
+    const matchesKpi = order ? matchesOrdersKpiFilter(order) : true;
 
-    row.style.display = (matchesSearch && matchesStatus) ? "" : "none";
+    row.style.display = (matchesSearch && matchesKpi) ? "" : "none";
   });
 };
 

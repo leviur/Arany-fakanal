@@ -153,7 +153,7 @@
       <span class="kpi-value" id="stat-messages">0</span>
     </div>
 
-    <div class="kpi-card" id="kpi-todos">
+    <div class="kpi-card" id="kpi-todos" role="button" tabindex="0" aria-label="Ugrás a kezeletlen teendőkhöz">
       <i class="fa-solid fa-list-check"></i>
       <span class="kpi-label">Teendők</span>
       <span class="kpi-value" id="stat-todos">0</span>
@@ -255,18 +255,39 @@
   <section class="table-card">
 
     <div class="table-header">
+      <div class="orders-kpi-row">
+        <button type="button" class="orders-kpi level-problem" data-filter="problem">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span class="orders-kpi-text">
+            <span class="orders-kpi-value" id="kpi-orders-problem">0</span>
+            <span class="orders-kpi-label">Lekésett</span>
+          </span>
+        </button>
+        <button type="button" class="orders-kpi" data-filter="new">
+          <i class="fa-solid fa-fire"></i>
+          <span class="orders-kpi-text">
+            <span class="orders-kpi-value" id="kpi-orders-new">0</span>
+            <span class="orders-kpi-label">Friss rendelések</span>
+          </span>
+        </button>
+        <button type="button" class="orders-kpi" data-filter="preparing">
+          <i class="fa-solid fa-fire-burner"></i>
+          <span class="orders-kpi-text">
+            <span class="orders-kpi-value" id="kpi-orders-preparing">0</span>
+            <span class="orders-kpi-label">Készül</span>
+          </span>
+        </button>
+        <button type="button" class="orders-kpi" data-filter="delivery">
+          <i class="fa-solid fa-motorcycle"></i>
+          <span class="orders-kpi-text">
+            <span class="orders-kpi-value" id="kpi-orders-delivery">0</span>
+            <span class="orders-kpi-label">Kiszállítás alatt</span>
+          </span>
+        </button>
+      </div>
+
       <div class="table-actions">
         <input type="text" id="searchInput" placeholder="Keresés..."/>
-
-        <select id="statusFilter">
-          <option value="all">Összes státusz</option>
-          <option value="Új">Új</option>
-          <option value="Elfogadva">Elfogadva</option>
-          <option value="Készül">Készül</option>
-          <option value="Kiszállítás alatt">Kiszállítás alatt</option>
-          <option value="Kézbesítve">Kézbesítve</option>
-          <option value="Sikertelen kézbesítés">Sikertelen kézbesítés</option>
-        </select>
       </div>
     </div>
 

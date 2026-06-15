@@ -12,21 +12,19 @@
 #orders-section .table-card {
   background: #fff;
   border-radius: 24px;
-  padding: 24px;
+  padding: 14px 24px 24px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.06);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 12px;
 }
 
 /* ================= HEADER ================= */
 
 #orders-section .table-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
+  flex-direction: column;
+  gap: 10px;
 }
 
 #orders-section .table-header h2 {
@@ -35,17 +33,94 @@
   color: #2d221b;
 }
 
+/* ================= KPI FILTER CHIPS ================= */
+
+#orders-section .orders-kpi-row {
+  display: flex;
+  gap: 14px;
+  width: 100%;
+}
+
+#orders-section .orders-kpi {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border: 2px solid transparent;
+  background: #f3f0ea;
+  border-radius: 14px;
+  padding: 14px 20px;
+  cursor: pointer;
+  transition: transform 160ms ease-out, background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  font-family: var(--font-ui);
+  text-align: left;
+}
+
+#orders-section .orders-kpi i {
+  font-size: 20px;
+  color: var(--gold-dark);
+  flex-shrink: 0;
+}
+
+#orders-section .orders-kpi.level-problem i {
+  color: #c0392b;
+}
+
+#orders-section .orders-kpi:hover {
+  background: var(--gold-light);
+}
+
+#orders-section .orders-kpi:active {
+  transform: scale(0.97);
+}
+
+#orders-section .orders-kpi-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+#orders-section .orders-kpi-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: #2d221b;
+  line-height: 1.1;
+}
+
+#orders-section .orders-kpi-label {
+  font-size: 12px;
+  color: var(--text-light);
+}
+
+#orders-section .orders-kpi.level-problem .orders-kpi-value {
+  color: #c0392b;
+}
+
+#orders-section .orders-kpi.active {
+  background: var(--gold-light);
+  border-color: var(--gold);
+  box-shadow: 0 4px 12px rgba(200, 155, 99, 0.25);
+}
+
+#orders-section .orders-kpi.level-problem.active {
+  background: var(--row-problem);
+  border-color: #c0392b;
+  box-shadow: 0 4px 12px rgba(192, 57, 43, 0.2);
+}
+
 /* ================= FILTERS ================= */
 
 #orders-section .table-actions {
   display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+  justify-content: flex-start;
+  width: 100%;
 }
 
 #orders-section .table-actions input,
 #orders-section .table-actions select {
-  padding: 8px 10px;
+  width: 100%;
+  max-width: 320px;
+  padding: 10px 14px;
   border: none;
   background: #f3f0ea;
   border-radius: 10px;

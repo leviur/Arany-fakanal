@@ -317,22 +317,8 @@ const Food = (() => {
 const App = (() => {
   function bindEvents() {
 
-    const searchInput = document.getElementById("searchInput");
-    const statusFilter = document.getElementById("statusFilter");
-
-    // searchInput?.addEventListener("input", filterOrders);
-    // statusFilter?.addEventListener("change", filterOrders);
-
     document.addEventListener("input", (e) => {
       if (e.target.id === "searchInput") {
-        console.log("search change");
-        filterOrders();
-      }
-    });
-
-    document.addEventListener("change", (e) => {
-      if (e.target.id === "statusFilter") {
-        console.log("status change");
         filterOrders();
       }
     });
@@ -394,9 +380,10 @@ const App = (() => {
     });
 
     // Teendők KPI -> ugrás a releváns kezeletlen listára (rendelés, ha van, különben foglalás)
-    document.getElementById("kpi-todos")?.addEventListener("click", () => {
-      const kpiCard = document.getElementById("kpi-todos");
-      if (!kpiCard?.classList.contains("has-todos")) return;
+    const kpiTodosCard = document.getElementById("kpi-todos");
+
+    function activateTodosKpi() {
+      if (!kpiTodosCard?.classList.contains("has-todos")) return;
 
       const ordersList = document.getElementById("todo-orders-list");
       const bookingsList = document.getElementById("todo-bookings-list");
@@ -412,6 +399,14 @@ const App = (() => {
       target.classList.remove("highlight");
       requestAnimationFrame(() => target.classList.add("highlight"));
       target.addEventListener("animationend", () => target.classList.remove("highlight"), { once: true });
+    }
+
+    kpiTodosCard?.addEventListener("click", activateTodosKpi);
+    kpiTodosCard?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        activateTodosKpi();
+      }
     });
 
     // Dashboard gyorsműveletek -> sidebar szekcióváltás

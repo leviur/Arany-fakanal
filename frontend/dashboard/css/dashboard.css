@@ -79,11 +79,6 @@
   transform: scale(0.98);
 }
 
-/* --- Lista crossfade frissítéskor --- */
-.dash-card-body {
-  transition: opacity 150ms ease;
-}
-
 .dash-card-body.is-refreshing {
   opacity: 0;
 }
@@ -136,6 +131,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  transition: opacity 150ms ease;
 }
 
 .scroll-zone {
@@ -171,7 +167,6 @@
 .todo-item,
 .agenda-item {
   background: #fff;
-  border-left: 4px solid var(--gold);
   border-radius: 12px;
   padding: 10px 12px;
   font-size: 13px;
@@ -182,33 +177,66 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
 }
 
-.todo-item.level-problem {
-  border-left-color: #e74c3c;
-  background: var(--row-problem);
+.todo-item .todo-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.todo-item.level-warning {
-  border-left-color: #f0ad4e;
-  background: var(--row-warning-background);
+.todo-item .todo-name::before {
+  content: "";
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--gold);
+}
+
+.todo-item.level-problem .todo-name::before {
+  background: #e74c3c;
+}
+
+.todo-item.level-warning .todo-name::before {
+  background: #f0ad4e;
 }
 
 .todo-item .todo-reason {
   font-weight: 600;
+  font-size: 12px;
   white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 50px;
 }
 
 .todo-item.level-problem .todo-reason {
-  color: #e74c3c;
+  color: #c0392b;
+  background: var(--row-problem);
 }
 
 .todo-item.level-warning .todo-reason {
-  color: #b8843a;
+  color: #8a5a17;
+  background: var(--row-warning-background);
 }
 
-.agenda-item .agenda-time {
+.agenda-item .agenda-time-chip {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  padding: 5px 10px;
+  border-radius: 8px;
   font-weight: 700;
-  color: var(--gold-dark);
-  min-width: 48px;
+  font-size: 12px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--gold), #8b5e3c);
+}
+
+.agenda-item .agenda-divider {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(200, 155, 99, 0.2);
 }
 
 .agenda-item .agenda-name {
@@ -279,6 +307,7 @@
 .trend-bar {
   width: 100%;
   max-width: 32px;
+  min-height: 4px;
   border-radius: 6px 6px 2px 2px;
   background: linear-gradient(180deg, var(--gold-light), var(--gold));
   transition: height 300ms ease-out;
@@ -293,6 +322,21 @@
 .trend-bar-label {
   font-size: 11px;
   color: var(--text-light);
+}
+
+.trend-bar-wrap.empty .trend-bar {
+  background: rgba(200, 155, 99, 0.15);
+}
+
+.trend-bar-wrap.empty .trend-bar-value,
+.trend-bar-wrap.empty .trend-bar-label {
+  color: var(--text-light);
+  opacity: 0.6;
+}
+
+.trend-bar-wrap.today .trend-bar-label {
+  color: var(--gold-dark);
+  font-weight: 700;
 }
 
 .top-items-rows {

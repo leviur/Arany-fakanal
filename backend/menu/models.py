@@ -1,0 +1,96 @@
+from django.db import models
+
+# Create your models here.
+class Category(models.Model):
+    name = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name_plural="Categories"
+
+    def __str__(self):
+        return self.name
+    
+class Allergen(models.Model):
+    code = models.CharField(max_length=10)
+    name = models.CharField(max_length=100)
+    icon = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.name
+
+class MenuItem(models.Model):
+
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        related_name='items'
+        )
+    
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+
+    price = models.DecimalField(
+        max_digits=8,
+        decimal_places=2
+    )
+
+    allergens = models.ManyToManyField(
+        Allergen,
+        through='MenuAllergen',
+        blank=True
+    )
+
+    is_available = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+    
+class MenuAllergen(models.Model):
+
+    menu_item = models.ForeignKey(
+        MenuItem,
+        on_delete=models.CASCADE
+    )
+
+    allergen = models.ForeignKey(
+        Allergen,
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        unique_together = ('menu_item', 'allergen')
+
+class WeeklyMenu(models.Model):
+
+    MENU_TYPE = [
+        ('A', 'A menu'),
+        ('B', 'B menu'),
+    ]
+
+    day = models.DateField()
+    menu_type = models.CharField(max_length=1, choices=MENU_TYPE)
+
+    soup = models.ForeignKey(
+        MenuItem,
+        on_delete=models.PROTECT,
+        related_name='soup_in_menus'
+    )
+
+    main_course = models.ForeignKey(
+        MenuItem,
+        on_delete=models.PROTECT,
+        related_name='main_in_menus'
+    )
+
+    dessert = models.ForeignKey(
+        MenuItem,
+        on_delete=models.PROTECT,
+        related_name='dessert_in_menus'
+    )
+
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+
+    is_available = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"{self.day} - {self.menu_type}"

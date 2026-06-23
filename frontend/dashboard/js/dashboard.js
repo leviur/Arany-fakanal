@@ -367,15 +367,23 @@ function renderTrendChart() {
     const heightPct = count === 0 ? 0 : Math.round((count / max) * 100);
     const isToday = date.getTime() === today.getTime();
     const classes = [count === 0 && "empty", isToday && "today"].filter(Boolean).join(" ");
+    const dateLabel = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,"0")}.${String(date.getDate()).padStart(2,"0")}`;
+    const tooltipText = `${dateLabel}: ${count} rendelés`;
 
     return `
-      <div class="trend-bar-wrap${classes ? " " + classes : ""}">
-        <span class="trend-bar-value">${count}</span>
+      <div class="trend-bar-wrap${classes ? " " + classes : ""}" title="${tooltipText}" aria-label="${tooltipText}" role="img">
+        <span class="trend-bar-value" aria-hidden="true">${count}</span>
         <div class="trend-bar" style="height: ${heightPct}%"></div>
-        <span class="trend-bar-label">${weekday}</span>
+        <span class="trend-bar-label" aria-hidden="true">${weekday}</span>
       </div>
     `;
-  }).join("")}</div>`;
+  }).join("")}</div>
+  <p class="visually-hidden" aria-label="Heti rendelés trend összefoglaló">
+    ${days.map(({key, date}) => {
+      const count = dayCounts[key] || 0;
+      return `${date.toLocaleDateString("hu-HU", {weekday:"long"})}: ${count} rendelés`;
+    }).join(", ")}
+  </p>`;
 }
 
 // ======================================================
@@ -435,6 +443,16 @@ function renderMessagesPreview() {
 
   const kpiEl = document.getElementById("stat-messages");
   if (kpiEl) kpiEl.textContent = all.length;
+
+  const badge = document.getElementById("sidebar-msg-badge");
+  if (badge) {
+    if (all.length > 0) {
+      badge.textContent = all.length > 99 ? "99+" : all.length;
+      badge.classList.remove("hidden");
+    } else {
+      badge.classList.add("hidden");
+    }
+  }
 
   if (!container) return;
 

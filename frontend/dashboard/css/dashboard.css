@@ -43,13 +43,22 @@
 }
 
 .kpi-card i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(197, 160, 89, 0.1);
   color: var(--gold);
-  font-size: 18px;
+  font-size: 15px;
+  flex-shrink: 0;
+  margin-bottom: 2px;
 }
 
 .kpi-label {
   font-size: 12px;
-  color: var(--text-light);
+  color: #666;
   font-weight: 500;
 }
 
@@ -96,6 +105,11 @@
 @media (prefers-reduced-motion: reduce) {
   .dash-todos.highlight {
     animation: none;
+  }
+  .trend-bar,
+  .top-item-bar-fill,
+  .dash-card-body {
+    transition: none;
   }
 }
 
@@ -175,6 +189,15 @@
   align-items: center;
   gap: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: transform 140ms ease-out, box-shadow 140ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .todo-item:hover,
+  .agenda-item:hover {
+    transform: translateX(3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+  }
 }
 
 .todo-item .todo-name {
@@ -266,9 +289,16 @@
 }
 
 .empty-state i {
-  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(197, 160, 89, 0.08);
+  font-size: 18px;
   color: var(--gold);
-  opacity: 0.6;
+  opacity: 0.7;
 }
 
 .empty-state p {
@@ -337,6 +367,11 @@
 .trend-bar-wrap.today .trend-bar-label {
   color: var(--gold-dark);
   font-weight: 700;
+}
+
+.trend-bar-wrap.today .trend-bar {
+  background: linear-gradient(180deg, var(--gold-light), var(--gold));
+  box-shadow: 0 4px 12px rgba(197, 160, 89, 0.35);
 }
 
 .top-items-rows {
@@ -427,6 +462,17 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  border-left: 3px solid rgba(197, 160, 89, 0.25);
+  cursor: pointer;
+  transition: transform 140ms ease-out, box-shadow 140ms ease, border-color 140ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .message-preview-row:hover {
+    transform: translateX(3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+    border-left-color: var(--gold);
+  }
 }
 
 .message-preview-row .msg-sender {
@@ -470,8 +516,21 @@
 }
 
 .quick-action-btn i {
-  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(197, 160, 89, 0.1);
+  font-size: 17px;
   color: var(--gold);
+  flex-shrink: 0;
+  transition: background-color 160ms ease;
+}
+
+.quick-action-btn:hover i {
+  background: rgba(197, 160, 89, 0.18);
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -545,11 +604,14 @@
   }
 
   .kpi-card i {
-    font-size: 14px;
+    font-size: 13px;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
   }
 
   .kpi-label {
-    font-size: 10px;
+    font-size: 12px;
   }
 
   .kpi-value {
@@ -647,7 +709,10 @@
   }
 
   .quick-action-btn i {
-    font-size: 14px;
+    font-size: 13px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
   }
 
   .empty-state i {
@@ -888,12 +953,10 @@ html {
   max-width: 100%;
 }
 
-#orders-section,
 #bookings-dashboard {
   contain: layout paint;
 }
 
-#orders-section table,
 #bookings-dashboard table {
   width: 100%;
   table-layout: fixed;
@@ -907,9 +970,10 @@ html {
   transition: background-color 0.12s ease;
 }
 
-#orders-section tr,
+/* MEGJEGYZÉS: a korábbi `transform: translateZ(0)` minden sorból külön
+   stacking contextet csinált, ami a sticky táblázat-fejléc fölé festette
+   a sorokat. Eltávolítva, hogy a sticky thead helyesen takarjon. */
 #bookings-dashboard tr {
-  transform: translateZ(0);
   will-change: background-color;
 }
 

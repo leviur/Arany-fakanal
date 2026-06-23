@@ -31,7 +31,7 @@ function saveBookingsRules() {
   // UI / dashboard frissítés
   applySettingsUpdate();
 
-  alert("Foglalási beállítások mentve!");
+  window.showToast?.("Foglalási szabályok mentve!", "success");
 }
 
 function loadSettings() {

@@ -1,9 +1,20 @@
 /* ================= SETTINGS LAYOUT ================= */
 
 #settings-section .table-card {
+  background: linear-gradient(180deg, #ffffff 0%, #fbf7f2 100%);
+  border: 1px solid rgba(200, 155, 99, 0.15);
+  border-radius: 20px;
+  box-shadow: 0 12px 30px rgba(45, 34, 27, 0.08), 0 2px 8px rgba(200, 155, 99, 0.08);
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+#settings-section .table-card > p {
+  font-size: 13px;
+  color: #888;
+  font-style: italic;
 }
 
 .settings-wrapper {

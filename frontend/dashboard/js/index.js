@@ -173,11 +173,15 @@ const UI = (() => {
     document.querySelectorAll(".menu a").forEach(a => {
       a.classList.toggle("active", a.dataset.target === targetId);
     });
-    
+
+    // fixed-scroll elrendezés a rendelések és foglalások oldalon
+    document.querySelector(".main")?.classList.toggle("orders-layout",   targetId === "orders-section");
+    document.querySelector(".main")?.classList.toggle("bookings-layout", targetId === "bookings-section");
+
     // generál egy véletlenszerű időt
-     if (targetId === "orders-section") {
-        refreshDashboard({ times: true }); //belépéskor is legyen random idő
-      }
+    if (targetId === "orders-section") {
+      refreshDashboard({ times: true });
+    }
 
     updateTopbarAction();
   }
@@ -375,6 +379,12 @@ const App = (() => {
     let refreshRotation = 0;
     refreshBtn?.addEventListener("click", () => {
       refreshDashboard({ times: true });
+      if (document.getElementById("orders-section")?.classList.contains("active")) {
+        if (typeof renderOrders === "function") renderOrders(true);
+      }
+      if (document.getElementById("bookings-section")?.classList.contains("active")) {
+        if (typeof Bookings !== "undefined") Bookings.renderBookings(true);
+      }
       refreshRotation += 360;
       refreshBtn.querySelector("i").style.transform = `rotate(${refreshRotation}deg)`;
     });
@@ -439,12 +449,6 @@ const App = (() => {
       });
     });
 
-    document.addEventListener("click", (e) => {
-      const btn = e.target.closest(".edit-btn");
-      if (!btn) return;
-
-      openEditModal({ currentTarget: btn });
-    });
   }
 
   function bindSidebar() {
@@ -485,6 +489,34 @@ const App = (() => {
 
   return { init };
 })();
+
+
+/**********************
+ * 🔔 TOAST MODUL
+ **********************/
+window.showToast = function(message, type = "info") {
+  let container = document.querySelector(".toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.className = "toast-container";
+    document.body.appendChild(container);
+  }
+
+  const icons = { success: "fa-circle-check", error: "fa-circle-xmark", info: "fa-circle-info", deleted: "fa-trash" };
+
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.setAttribute("role", "status");
+  toast.setAttribute("aria-live", "polite");
+  toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i><span>${message}</span>`;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add("toast-out");
+    toast.addEventListener("animationend", () => toast.remove(), { once: true });
+  }, 3500);
+};
 
 
 

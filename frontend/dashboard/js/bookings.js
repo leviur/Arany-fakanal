@@ -133,32 +133,32 @@ const Bookings = (() => {
 
     return `
       <tr data-id="${b.id}" class="${rowClass}">
-        <td><span class="booking-cell-primary">${b.name}</span></td>
-        <td>
+        <td data-label="Vendég"><span class="booking-cell-primary">${b.name}</span></td>
+        <td data-label="Kapcsolat">
           <div class="booking-cell-contact">
             <span class="booking-contact-email">${b.email}</span>
             <span class="booking-contact-phone">${b.phone}</span>
           </div>
         </td>
-        <td>
+        <td data-label="Részletek">
           <div class="booking-cell-detail">
             <span class="booking-detail-occasion">${b.occasion}</span>
             <span class="booking-detail-guests"><span class="booking-guests-chip">× ${b.guests}</span> fő</span>
           </div>
         </td>
-        <td>
+        <td data-label="Időpont">
           <div class="booking-cell-time">
             <span class="booking-time-event">${b.date} ${b.time}</span>
             <span class="booking-time-created">Leadva: ${b.createdAt}</span>
           </div>
         </td>
-        <td><span class="booking-note-cell${noteExpandClass}" data-id="${b.id}" ${noteTitle}>${noteTruncated}</span></td>
-        <td>
+        <td data-label="Megjegyzés"><span class="booking-note-cell${noteExpandClass}" data-id="${b.id}" ${noteTitle}>${noteTruncated}</span></td>
+        <td data-label="Státusz">
           <button type="button" class="booking-status-badge status-${statusKey}" data-id="${b.id}" aria-label="Státusz módosítása">
             ${b.status}
           </button>
         </td>
-        <td style="text-align:right;">
+        <td data-label="Műveletek" style="text-align:right;">
           <button type="button" class="action-btn bookings-edit-btn" data-id="${b.id}" aria-label="Szerkesztés"><i class="fa-solid fa-pen"></i></button>
           <button type="button" class="action-btn bookings-delete-btn" data-id="${b.id}" aria-label="Törlés"><i class="fa-solid fa-trash"></i></button>
         </td>
@@ -299,7 +299,7 @@ const Bookings = (() => {
     document.getElementById("m-date").value    = booking.date.replace(/\./g, "-");
     document.getElementById("m-guests").value  = booking.guests;
     document.getElementById("m-note").value    = booking.note || "";
-    initTimeStepper(booking.time);
+    initTimeStepper(booking.time, document.getElementById("m-date").value);
 
     const modal = document.getElementById("bookingModal");
     modal.classList.remove("hidden");
@@ -317,6 +317,11 @@ const Bookings = (() => {
     if (!editingBookingId) return;
     const booking = demoBookings.find(b => b.id === editingBookingId);
     if (!booking) return;
+
+    if (!document.getElementById("m-time").value) {
+      window.showToast?.("Ezen a napon zárva vagyunk, válassz másik dátumot!", "error");
+      return;
+    }
 
     booking.name     = document.getElementById("m-name").value;
     booking.email    = document.getElementById("m-email").value;
@@ -452,6 +457,10 @@ const Bookings = (() => {
     document.getElementById("bookingModal")
       ?.addEventListener("click", e => { if (e.target.id === "bookingModal") closeBookingModal(); });
 
+    // dátum váltásakor az aznapi nyitvatartás szerint újragenerált időpontok
+    document.getElementById("m-date")
+      ?.addEventListener("change", e => initTimeStepper(null, e.target.value));
+
     document.getElementById("bookingDeleteConfirmOk")
       ?.addEventListener("click", confirmBookingDelete);
     document.getElementById("bookingDeleteConfirmCancel")
@@ -484,29 +493,68 @@ const Bookings = (() => {
 })();
 
 
-/* ================= IDŐ STEPPER ================= */
-const TIME_SLOTS = (() => {
-  const arr = [];
-  for (let t = 11 * 60; t <= 20 * 60 + 30; t += 30) {
+/* ================= IDŐ STEPPER (a Nyitvatartás beállításai alapján) ================= */
+const DAY_KEY_BY_INDEX = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+
+function getDayKeyFromDateStr(dateStr) {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  return DAY_KEY_BY_INDEX[date.getDay()];
+}
+
+// a kiválasztott naphoz tartozó nyitvatartást adja vissza: előbb az eseti
+// kivételek között keres (pl. ünnepnap), csak ha ott nincs találat, esik
+// vissza a heti rendre (Beállítások lap, Nyitvatartás blokk)
+function getDayHoursInfo(dateStr) {
+  const exceptions = window.APP_STATE?.openingHoursExceptions || [];
+  const exception = exceptions.find(ex => ex.date === dateStr);
+  if (exception) return exception;
+
+  const dayKey = getDayKeyFromDateStr(dateStr);
+  return window.APP_STATE?.openingHours?.[dayKey];
+}
+
+function getTimeSlotsForDate(dateStr) {
+  if (!dateStr) return [];
+
+  const dayInfo = getDayHoursInfo(dateStr);
+  if (!dayInfo || dayInfo.closed || !dayInfo.open || !dayInfo.close) return [];
+
+  const [openH, openM] = dayInfo.open.split(":").map(Number);
+  const [closeH, closeM] = dayInfo.close.split(":").map(Number);
+  const startMin = openH * 60 + openM;
+  const endMin = closeH * 60 + closeM;
+
+  const slots = [];
+  for (let t = startMin; t <= endMin; t += 30) {
     const h = Math.floor(t / 60);
     const m = t % 60;
-    arr.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+    slots.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
   }
-  return arr;
-})();
+  return slots;
+}
 
+let currentTimeSlots = [];
 let timeIndex = 0;
 
 function updateTimeUI() {
-  const time = TIME_SLOTS[timeIndex];
   const disp = document.getElementById("time-display");
   const inp  = document.getElementById("m-time");
+
+  if (!currentTimeSlots.length) {
+    if (disp) disp.textContent = "Zárva";
+    if (inp)  inp.value = "";
+    return;
+  }
+
+  const time = currentTimeSlots[timeIndex];
   if (disp) disp.textContent = time;
   if (inp)  inp.value = time;
 }
 
-function initTimeStepper(selectedTime = "11:00") {
-  const idx = TIME_SLOTS.indexOf(selectedTime);
+function initTimeStepper(selectedTime, dateStr) {
+  currentTimeSlots = getTimeSlotsForDate(dateStr);
+  const idx = currentTimeSlots.indexOf(selectedTime);
   timeIndex = idx >= 0 ? idx : 0;
   updateTimeUI();
 
@@ -514,6 +562,6 @@ function initTimeStepper(selectedTime = "11:00") {
     if (timeIndex > 0) { timeIndex--; updateTimeUI(); }
   };
   document.getElementById("time-next").onclick = () => {
-    if (timeIndex < TIME_SLOTS.length - 1) { timeIndex++; updateTimeUI(); }
+    if (timeIndex < currentTimeSlots.length - 1) { timeIndex++; updateTimeUI(); }
   };
 }

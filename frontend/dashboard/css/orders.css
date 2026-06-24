@@ -33,19 +33,19 @@
   color: #2d221b;
 }
 
-/* KPI + Search külön sorokban */
-#orders-section .orders-header-row {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* ================= KPI FILTER CHIPS ================= */
+/* ================= KPI FILTER CHIPS =================
+   Önálló, a .table-card-tól független elem — ugyanaz a minta, mint a
+   Dashboard/Üzenetek lapon, hogy a görgethető chip-csík ne ágyazódjon be
+   több flex-oszlop szintbe a táblázat-kártyán belül. */
 
 #orders-section .orders-kpi-row {
   display: flex;
   gap: 10px;
-  flex: 1;
+  /* flex-grow:0 (alapérték) — a .table-card mellett a függőleges
+     hely 100%-át a táblázat kapja, a KPI-sor csak a saját, természetes
+     magasságát foglalja, mint az Üzeneteken/Dashboardon */
+  flex-shrink: 0;
+  margin-bottom: 16px;
 }
 
 #orders-section .orders-kpi {
@@ -124,11 +124,13 @@
 /* ================= KERESÉS ================= */
 
 #orders-section .table-actions {
+  /* a margin-top a KPI-sor és a kereső közötti térköznek készült, amikor
+     még egy kártyán belül voltak — most a KPI-sor önálló elem, a kereső
+     itt az első, ezért ez csak felesleges üres helyet hagyott felül */
   flex-shrink: 0;
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-top: 16px;
   padding-bottom: 10px;
   border-bottom: 1px solid rgba(45, 34, 27, 0.08);
 }
@@ -435,13 +437,20 @@
 #orders-section tr.row-warning { background: #fff3f3 !important; }
 #orders-section tr.row-problem { background: #ffe5e5 !important; }
 
-/* ================= RESZPONZÍV KÁRTYA NÉZET (< 768px) ================= */
+/* ================= RESZPONZÍV KÁRTYA NÉZET (< 1200px) =================
+   1200px-nél indul, nem a szokásos 768px-nél: a táblázat oszlopai összetett,
+   több-soros tartalmat hordoznak (telefon+cím, menü+darabszám, dátum+leadás
+   ideje), ezért egy laptop-szélességű ablaknál (~900-1300px) a sima asztali
+   táblázat már szűk és töredezett — itt a kártya-nézet jobban néz ki. */
 
-@media (max-width: 768px) {
-  #orders-section .orders-header-row {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
+@media (max-width: 1200px) {
+  /* Védőháló a táblázat-kártyának, hogy a kártya-nézet sorai ne tágítsák
+     ki a szülőjét tartalom-alapon (klasszikus flexbox hiba). */
+  #orders-section .table-card,
+  #orders-section .table-header {
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
   }
 
   .search-wrap {
@@ -510,6 +519,16 @@
     gap: 8px;
   }
 
+  /* a táblázat-oszlopok öröklött %-os szélessége/min-width-je (lásd fent,
+     "OSZLOPSZÉLESSÉGEK") :nth-child-dal van megadva, ezért specifikusabb,
+     mint egy sima "td" szelektor — itt ugyanazzal a specificitással kell
+     felülírni, különben a kártya-sor megtartja az eredeti, szűk %-ot, és a
+     szöveg betűnként törik a túl szűk helyen. */
+  #orders-section td:nth-child(n) {
+    width: 100%;
+    min-width: 0;
+  }
+
   #orders-section td:last-child {
     border-bottom: none;
     padding-top: 10px;
@@ -532,13 +551,59 @@
     display: none;
   }
 
+  /* 1 soros, horizontálisan görgethető chip-csík — az Üzenetek KPI-sorának
+     mintája (messages.css), mert az 5 (páratlan) szűrő 50%-os törésnél
+     mindig árva elemmel végződött. */
   #orders-section .orders-kpi-row {
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
     gap: 8px;
+    /* flex-elemként alapból min-width:auto (= tartalom-alapú) lenne, ami
+       kitágítaná az egész sort/oldalt a sok chip miatt, helyben görgetés
+       helyett — ez korlátozza a sort a rendelkezésre álló helyre */
+    min-width: 0;
+  }
+
+  #orders-section .orders-kpi-row::-webkit-scrollbar {
+    display: none;
   }
 
   #orders-section .orders-kpi {
-    min-width: calc(50% - 4px);
-    flex: unset;
+    flex: 0 0 auto;
+    gap: 8px;
+    padding: 8px 14px;
+    scroll-snap-align: start;
+    white-space: nowrap;
+  }
+
+  #orders-section .orders-kpi-icon-wrap {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+  }
+
+  #orders-section .orders-kpi-text {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 5px;
+  }
+
+  #orders-section .orders-kpi-value {
+    font-size: 14px;
+  }
+
+  #orders-section .orders-kpi-label {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  /* Kártya-nézetben a kemény pixel-korlátok feloldása — a cella a kártya
+     tényleges szélességéhez igazodjon, ne egy fix számhoz. */
+  #orders-section .contact-phone {
+    white-space: normal;
+    word-break: break-word;
   }
 }

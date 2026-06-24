@@ -27,11 +27,19 @@
   gap: 10px;
 }
 
-/* ================= KPI FILTER CHIPS ================= */
+/* ================= KPI FILTER CHIPS =================
+   Önálló, a .table-card-tól független elem — ugyanaz a minta, mint a
+   Dashboard/Üzenetek lapon, hogy a görgethető chip-csík ne ágyazódjon be
+   több flex-oszlop szintbe a táblázat-kártyán belül. */
 
 #bookings-section .bookings-kpi-row {
   display: flex;
   gap: 10px;
+  /* flex-grow:0 (alapérték) — a .table-card mellett a függőleges
+     hely 100%-át a táblázat kapja, a KPI-sor csak a saját, természetes
+     magasságát foglalja, mint az Üzeneteken/Dashboardon */
+  flex-shrink: 0;
+  margin-bottom: 16px;
 }
 
 #bookings-section .bookings-kpi {
@@ -122,11 +130,13 @@
 /* ================= KERESÉS ================= */
 
 #bookings-section .table-actions {
+  /* a margin-top a KPI-sor és a kereső közötti térköznek készült, amikor
+     még egy kártyán belül voltak — most a KPI-sor önálló elem, a kereső
+     itt az első, ezért ez csak felesleges üres helyet hagyott felül */
   flex-shrink: 0;
   width: 100%;
   display: flex;
   justify-content: center;
-  margin-top: 16px;
   padding-bottom: 10px;
   border-bottom: 1px solid rgba(45, 34, 27, 0.08);
 }
@@ -558,17 +568,178 @@
   margin-top: 20px;
 }
 
-/* ================= RESZPONZÍV KÁRTYA NÉZET (< 768px) ================= */
+/* ================= RESZPONZÍV KÁRTYA NÉZET (< 1200px) =================
+   Az orders.css mintáját követi, ugyanazon az okból és ugyanazon a
+   töréspontnál (1200px): a táblázat oszlopai itt is összetett, több-soros
+   tartalmat hordoznak (e-mail+telefon, alkalom+létszám, dátum+leadás ideje),
+   ezért egy laptop-szélességű ablaknál a sima táblázat már szűk lenne. */
 
-@media (max-width: 768px) {
-  #bookings-section .bookings-kpi-row {
-    flex-wrap: wrap;
+@media (max-width: 1200px) {
+  /* Védőháló: ha a táblázat/kártya-tartalom bármelyik beágyazott szinten
+     megpróbálná tartalom-alapon kitágítani a szülőjét (klasszikus flexbox
+     "automatic minimum size" hiba), itt mindenhol explicit width:100%-ra
+     és overflow-x:hidden-re kényszerítjük — így a KPI-sor saját belső
+     görgetése (overflow-x:auto) tud csak érvényesülni, semmi más nem
+     terjedhet tovább felfelé. */
+  #bookings-section .table-card,
+  #bookings-section .table-header {
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  .search-wrap {
+    width: 100%;
+  }
+
+  #bookings-section .table-actions input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  #bookings-section .scroll-table {
+    max-height: none;
+    overflow: unset;
+  }
+
+  #bookings-section table,
+  #bookings-section thead,
+  #bookings-section tbody,
+  #bookings-section th,
+  #bookings-section td,
+  #bookings-section tr {
+    display: block;
+  }
+
+  #bookings-section thead {
+    display: none;
+  }
+
+  /* Zebra visszaállítása mobilon (kártya nézetben nem kell) */
+  #bookings-section tbody tr:nth-child(even) {
+    background: #fff;
+  }
+
+  #bookings-section tbody tr {
+    background: #fff;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    border: 1px solid rgba(200, 155, 99, 0.12);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #bookings-section tbody tr::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: linear-gradient(180deg, var(--gold), var(--gold-light));
+    border-radius: 16px 0 0 16px;
+  }
+
+  #bookings-section tbody tr.row-warning::before { background: #f0ad4e; }
+  #bookings-section tbody tr.row-problem::before { background: #e74c3c; }
+
+  #bookings-section td {
+    padding: 7px 0;
+    border: none;
+    border-bottom: 1px solid rgba(200, 155, 99, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    font-size: 13px;
     gap: 8px;
   }
 
+  /* a táblázat-oszlopok öröklött %-os szélessége (lásd fent,
+     "OSZLOPSZÉLESSÉGEK") :nth-child-dal van megadva, ezért specifikusabb,
+     mint egy sima "td" szelektor — itt ugyanazzal a specificitással kell
+     felülírni, különben a kártya-sor megtartja az eredeti, szűk %-ot. */
+  #bookings-section td:nth-child(n) {
+    width: 100%;
+    min-width: 0;
+  }
+
+  #bookings-section td:last-child {
+    border-bottom: none;
+    padding-top: 10px;
+    justify-content: flex-end;
+  }
+
+  #bookings-section td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #8b5e3c;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    flex-shrink: 0;
+    min-width: 80px;
+    padding-top: 2px;
+  }
+
+  #bookings-section td:last-child::before {
+    display: none;
+  }
+
+  /* a Megjegyzés-cella fix 140px-es korlátja kártya-nézetben feloldva —
+     a kártya tényleges szélességéhez igazodjon, ne egy fix számhoz */
+  .booking-note-cell {
+    max-width: none;
+    white-space: normal;
+  }
+
+  /* 1 soros, horizontálisan görgethető chip-csík — ugyanaz a minta, mint
+     a Rendeléseken/Üzeneteken, mert a "Visszaigazolt" (13 karakter) a
+     "Új" (2 karakter) mellett 50%-os törésnél mindig egyedül sorba lökte
+     a testvér-chipet. */
+  #bookings-section .bookings-kpi-row {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    gap: 8px;
+    /* flex-elemként alapból min-width:auto (= tartalom-alapú) lenne, ami
+       kitágítaná az egész sort/oldalt a sok chip miatt, helyben görgetés
+       helyett — ez korlátozza a sort a rendelkezésre álló helyre */
+    min-width: 0;
+  }
+
+  #bookings-section .bookings-kpi-row::-webkit-scrollbar {
+    display: none;
+  }
+
   #bookings-section .bookings-kpi {
-    min-width: calc(50% - 4px);
-    flex: unset;
+    flex: 0 0 auto;
+    gap: 8px;
+    padding: 8px 14px;
+    scroll-snap-align: start;
+    white-space: nowrap;
+  }
+
+  #bookings-section .bookings-kpi-icon-wrap {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+  }
+
+  #bookings-section .bookings-kpi-text {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 5px;
+  }
+
+  #bookings-section .bookings-kpi-value {
+    font-size: 14px;
+  }
+
+  #bookings-section .bookings-kpi-label {
+    font-size: 11px;
+    white-space: nowrap;
   }
 
   .modal-grid {

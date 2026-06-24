@@ -34,7 +34,9 @@ window.APP_STATE = {
     warnNew: 60,
     problemNew: 180,
     warnConfirmed: 24
-  }
+  },
+
+  openingHours: {}
 };
 
 let foodModalState = {
@@ -154,6 +156,19 @@ const SECTION_TITLES = {
 
 const UI = (() => {
   function switchSection(targetId) {
+    const leavingSettingsWithUnsaved =
+      window.settingsDirty &&
+      targetId !== "settings-section" &&
+      document.getElementById("settings-section")?.classList.contains("active");
+
+    if (leavingSettingsWithUnsaved) {
+      const confirmed = window.confirm(
+        "El nem mentett módosításaid vannak a Beállításokon. Biztosan elnavigálsz mentés nélkül?"
+      );
+      if (!confirmed) return;
+      window.settingsDirty = false;
+    }
+
     document.querySelectorAll(".section").forEach(s => {
       s.classList.remove("active");
     });
@@ -174,27 +189,15 @@ const UI = (() => {
       a.classList.toggle("active", a.dataset.target === targetId);
     });
 
-    // fixed-scroll elrendezés a rendelések és foglalások oldalon
+    // fixed-scroll elrendezés a rendelések, foglalások és üzenetek oldalon
     document.querySelector(".main")?.classList.toggle("orders-layout",   targetId === "orders-section");
     document.querySelector(".main")?.classList.toggle("bookings-layout", targetId === "bookings-section");
+    document.querySelector(".main")?.classList.toggle("messages-layout", targetId === "messages-section");
 
     // generál egy véletlenszerű időt
     if (targetId === "orders-section") {
       refreshDashboard({ times: true });
     }
-
-    updateTopbarAction();
-  }
-
-  // topbar akció-gomb láthatósága a jelenlegi szekció/tab alapján
-  function updateTopbarAction() {
-    const addFoodBtn = document.getElementById("topbarAddFood");
-    if (!addFoodBtn) return;
-
-    const inMenuSection = document.getElementById("menu-section")?.classList.contains("active");
-    const etelekTabActive = document.querySelector('.tab-btn[data-target="etelek"]')?.classList.contains("active");
-
-    addFoodBtn.classList.toggle("hidden", !(inMenuSection && etelekTabActive));
   }
 
   function switchTab(tabId, btn) {
@@ -218,8 +221,7 @@ const UI = (() => {
 
   return {
     switchSection,
-    switchTab,
-    updateTopbarAction
+    switchTab
   };
 })();
 
@@ -319,6 +321,8 @@ const Food = (() => {
  * 🚀 APP
  **********************/
 const App = (() => {
+  let closeMobileSidebar = () => {};
+
   function bindEvents() {
 
     document.addEventListener("input", (e) => {
@@ -357,7 +361,7 @@ const App = (() => {
       if (profileName) profileName.textContent = userName;
     }
 
-    // Sidebar összecsukás
+    // Sidebar összecsukás (asztali ikon-csík nézet)
     const sidebar = document.querySelector(".sidebar");
     const sidebarToggle = document.getElementById("sidebarToggle");
 
@@ -374,6 +378,32 @@ const App = (() => {
       });
     }
 
+    // Mobil sidebar-drawer (off-canvas, < 768px)
+    const mobileSidebarToggle = document.getElementById("mobileSidebarToggle");
+    const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+
+    if (sidebar && mobileSidebarToggle && sidebarBackdrop) {
+      let wasCollapsedBeforeOpen = false;
+
+      const openMobileSidebar = () => {
+        wasCollapsedBeforeOpen = sidebar.classList.contains("collapsed");
+        sidebar.classList.remove("collapsed");
+        sidebar.classList.add("mobile-open");
+        sidebarBackdrop.classList.add("active");
+        mobileSidebarToggle.setAttribute("aria-expanded", "true");
+      };
+
+      closeMobileSidebar = () => {
+        sidebar.classList.remove("mobile-open");
+        sidebarBackdrop.classList.remove("active");
+        mobileSidebarToggle.setAttribute("aria-expanded", "false");
+        if (wasCollapsedBeforeOpen) sidebar.classList.add("collapsed");
+      };
+
+      mobileSidebarToggle.addEventListener("click", openMobileSidebar);
+      sidebarBackdrop.addEventListener("click", closeMobileSidebar);
+    }
+
     // Topbar manuális frissítés gomb
     const refreshBtn = document.getElementById("refreshBtn");
     let refreshRotation = 0;
@@ -384,6 +414,12 @@ const App = (() => {
       }
       if (document.getElementById("bookings-section")?.classList.contains("active")) {
         if (typeof Bookings !== "undefined") Bookings.renderBookings(true);
+      }
+      if (document.getElementById("messages-section")?.classList.contains("active")) {
+        if (typeof Messages !== "undefined") Messages.render(true);
+      }
+      if (document.getElementById("menu-section")?.classList.contains("active")) {
+        if (typeof MenuManager !== "undefined") MenuManager.refresh();
       }
       refreshRotation += 360;
       refreshBtn.querySelector("i").style.transform = `rotate(${refreshRotation}deg)`;
@@ -431,18 +467,6 @@ const App = (() => {
       });
     });
 
-    // Topbar "Új étel hozzáadása" gomb -> meglévő .add-btn flow indítása
-    document.getElementById("topbarAddFood")?.addEventListener("click", () => {
-      document.querySelector(".add-btn")?.click();
-    });
-
-    // Menü kezelés tabváltáskor frissítsük a topbar akció-gomb láthatóságát
-    document.querySelectorAll(".tab-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        setTimeout(() => UI.updateTopbarAction(), 0);
-      });
-    });
-
     document.querySelectorAll(".tab").forEach(btn => {
       btn.addEventListener("click", () => {
         UI.switchTab(btn.dataset.tab, btn);
@@ -459,6 +483,7 @@ const App = (() => {
         const target = link.dataset.target;
 
         UI.switchSection(target);
+        closeMobileSidebar();
 
         document.querySelectorAll(".menu a")
           .forEach(a => a.classList.remove("active"));
@@ -473,12 +498,15 @@ const App = (() => {
     //  KÖZÖS ORDERS STATE
     window.appData = window.appData || {};
     window.appData.orders = demoOrders;
+    window.appData.messages = Messages.getMessages();
 
     bindEvents();
     bindSidebar();
     Food.render();
-    
+
+    MenuManager.render();
     Bookings.render();
+    Messages.render();
 
     updateDashboardStats();
 
@@ -494,7 +522,7 @@ const App = (() => {
 /**********************
  * 🔔 TOAST MODUL
  **********************/
-window.showToast = function(message, type = "info") {
+window.showToast = function(message, type = "info", options = {}) {
   let container = document.querySelector(".toast-container");
   if (!container) {
     container = document.createElement("div");
@@ -510,12 +538,28 @@ window.showToast = function(message, type = "info") {
   toast.setAttribute("aria-live", "polite");
   toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i><span>${message}</span>`;
 
+  if (options.actionLabel && options.onAction) {
+    const actionBtn = document.createElement("button");
+    actionBtn.type = "button";
+    actionBtn.className = "toast-action";
+    actionBtn.textContent = options.actionLabel;
+    toast.appendChild(actionBtn);
+  }
+
   container.appendChild(toast);
 
-  setTimeout(() => {
+  let dismissTimer = setTimeout(dismiss, 3500);
+
+  function dismiss() {
+    clearTimeout(dismissTimer);
     toast.classList.add("toast-out");
     toast.addEventListener("animationend", () => toast.remove(), { once: true });
-  }, 3500);
+  }
+
+  toast.querySelector(".toast-action")?.addEventListener("click", () => {
+    options.onAction();
+    dismiss();
+  });
 };
 
 

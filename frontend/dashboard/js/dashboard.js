@@ -439,15 +439,16 @@ function renderTopItems() {
 function renderMessagesPreview() {
   const container = document.getElementById("messages-preview-list");
 
-  const all = typeof messages !== "undefined" ? messages : [];
+  const all = window.appData?.messages || [];
+  const unreadCount = all.filter(m => !m.read && !m.archived).length;
 
   const kpiEl = document.getElementById("stat-messages");
-  if (kpiEl) kpiEl.textContent = all.length;
+  if (kpiEl) kpiEl.textContent = unreadCount;
 
   const badge = document.getElementById("sidebar-msg-badge");
   if (badge) {
-    if (all.length > 0) {
-      badge.textContent = all.length > 99 ? "99+" : all.length;
+    if (unreadCount > 0) {
+      badge.textContent = unreadCount > 99 ? "99+" : unreadCount;
       badge.classList.remove("hidden");
     } else {
       badge.classList.add("hidden");
@@ -468,10 +469,16 @@ function renderMessagesPreview() {
 
   container.innerHTML = data.map(m => `
     <div class="message-preview-row">
-      <span class="msg-sender">${m.name}</span>
-      <span class="msg-subject">${m.subject}</span>
+      <span class="msg-sender">${escapeHtml(m.name)}</span>
+      <span class="msg-subject">${escapeHtml(m.subject)}</span>
     </div>
   `).join("");
+}
+
+function escapeHtml(str) {
+  return String(str ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[c]));
 }
 
 // ======================================================

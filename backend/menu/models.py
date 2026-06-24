@@ -2,7 +2,8 @@ from django.db import models
 
 # Create your models here.
 class Category(models.Model):
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100,
+    unique=True)
 
     class Meta:
         verbose_name_plural="Categories"
@@ -11,9 +12,12 @@ class Category(models.Model):
         return self.name
     
 class Allergen(models.Model):
-    code = models.CharField(max_length=10)
+    key = models.CharField(max_length=50,
+    unique=True)
     name = models.CharField(max_length=100)
-    icon = models.CharField(max_length=50)
+    icon = models.CharField(max_length=250)
+    label = models.TextField()
+
 
     def __str__(self):
         return self.name
@@ -91,6 +95,9 @@ class WeeklyMenu(models.Model):
     price = models.DecimalField(max_digits=8, decimal_places=2)
 
     is_available = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('day', 'menu_type')
 
     def __str__(self):
         return f"{self.day} - {self.menu_type}"

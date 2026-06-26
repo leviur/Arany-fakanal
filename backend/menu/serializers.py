@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import MenuItem, WeeklyMenu
+from .models import MenuItem, WeeklyMenu, WeeklyMenuItem
 
 
 class MenuItemSerializer(serializers.ModelSerializer):
@@ -27,11 +27,17 @@ class SimpleMenuItemSerializer(serializers.ModelSerializer):
             'price'
         ]
 
+class WeeklyMenuItemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        models = WeeklyMenuItem
+        fields = '__all__'
+
 class WeeklyMenuSerializer(serializers.ModelSerializer):
 
-    soup = SimpleMenuItemSerializer()
-    main_course = SimpleMenuItemSerializer()
-    dessert = SimpleMenuItemSerializer()
+    soup = WeeklyMenuItemSerializer()
+    main_course = WeeklyMenuItemSerializer()
+    dessert = WeeklyMenuItemSerializer()
 
     class Meta:
         model = WeeklyMenu

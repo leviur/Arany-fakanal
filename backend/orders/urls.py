@@ -1,11 +1,11 @@
 from django.urls import path
 
 from .views import (
-    OrderListView,
-    OrderCreateView
+    OrderListAPIView,
+    OrderCreateAPIView
 )
 
 urlpatterns = [
-    path('', OrderListView.as_view(), name='order-list'),
-    path('create/', OrderCreateView.as_view(), name='order-create')
+    path('', OrderListAPIView.as_view(), name='order-list'),
+    path('create/', OrderCreateAPIView.as_view(), name='order-create')
 ]

@@ -4,7 +4,8 @@ from .models import (
     Allergen,
     MenuItem,
     MenuAllergen,
-    WeeklyMenu
+    WeeklyMenu,
+    WeeklyMenuItem
 )
 
 # Register your models here.
@@ -13,3 +14,4 @@ admin.site.register(Allergen)
 admin.site.register(MenuItem)
 admin.site.register(MenuAllergen)
 admin.site.register(WeeklyMenu)
+admin.site.register(WeeklyMenuItem)

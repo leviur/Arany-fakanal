@@ -5,12 +5,12 @@ from .models import Order
 from .serializers import OrderSerializer, OrderCreateSerializer
 
 # Create your views here.
-class OrderListView(generics.ListAPIView):
+class OrderListAPIView(generics.ListAPIView):
 
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
 
-class OrderCreateView(generics.CreateAPIView):
+class OrderCreateAPIView(generics.CreateAPIView):
 
     serializer_class = OrderCreateSerializer
 

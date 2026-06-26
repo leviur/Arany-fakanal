@@ -7,11 +7,12 @@ from .serializers import (
 )
 
 # Create your views here.
-class ReservationListView(generics.ListAPIView):
+class ReservationListAPIView(generics.ListAPIView):
 
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
 
-class ReservationCreateView(generics.CreateAPIView):
+class ReservationCreateAPIView(generics.CreateAPIView):
 
+    queryset = Reservation.objects.all()
     serializer_class = ReservationCreateSerializer

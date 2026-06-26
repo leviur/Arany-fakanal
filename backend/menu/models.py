@@ -64,6 +64,28 @@ class MenuAllergen(models.Model):
     class Meta:
         unique_together = ('menu_item', 'allergen')
 
+class WeeklyMenuItem(models.Model):
+
+    CATEGORY_CHOICES = [
+        ('soup', 'Soup'),
+        ('main', 'Main Course'),
+        ('dessert', 'Dessert'),
+    ]
+
+    name = models.CharField(max_length=100)
+
+    category = models.CharField(
+        max_length=20,
+        choices=CATEGORY_CHOICES
+    )
+
+    is_available = models.BooleanField(
+        default=True
+    )
+
+    def __str__(self):
+        return self.name
+
 class WeeklyMenu(models.Model):
 
     MENU_TYPE = [
@@ -75,21 +97,21 @@ class WeeklyMenu(models.Model):
     menu_type = models.CharField(max_length=1, choices=MENU_TYPE)
 
     soup = models.ForeignKey(
-        MenuItem,
+        WeeklyMenuItem,
         on_delete=models.PROTECT,
-        related_name='soup_in_menus'
+        related_name='weekly_soups'
     )
 
     main_course = models.ForeignKey(
-        MenuItem,
+        WeeklyMenuItem,
         on_delete=models.PROTECT,
-        related_name='main_in_menus'
+        related_name='weekly_mains'
     )
 
     dessert = models.ForeignKey(
-        MenuItem,
+        WeeklyMenuItem,
         on_delete=models.PROTECT,
-        related_name='dessert_in_menus'
+        related_name='weekly_desserts'
     )
 
     price = models.DecimalField(max_digits=8, decimal_places=2)
@@ -101,3 +123,4 @@ class WeeklyMenu(models.Model):
 
     def __str__(self):
         return f"{self.day} - {self.menu_type}"
+    

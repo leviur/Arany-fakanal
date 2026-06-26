@@ -10,3 +10,10 @@ Terv/
 # Windows
 Thumbs.db
 Desktop.ini
+
+# Python
+__pycache__/
+*.pyc
+
+# Django
+db.sqlite3

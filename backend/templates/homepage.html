@@ -1,26 +1,28 @@
-<!doctype html>
-<html lang="hu">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="../css/components.css" />
-    <link rel="stylesheet" href="../css/homepage.css" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:wght@700&family=Charm:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
-    />
-    <link rel="icon" href="../images/favicon.ico" />
-    <title>Arany Fakanál Étterem - Szilváskút</title>
-  </head>
-  <body>
-    <!-- Külső komponensek (fetch-elt fájlok) -->
-    <div id="navbar"></div>
-    <div id="login"></div>
-    <div id="cart"></div>
+{% extends "base.html" %}
+{% load static %}
+
+
+
+{% block title %}Arany Fakanál Étterem - Szilváskút{% endblock %}
+
+
+
+
+
+{% block css %}
+
+    
+
+    <link rel="stylesheet" href="{% static 'css/homepage.css' %}" />
+
+{% endblock %}
+
+
+
+
+
+
+{% block content %}
 
     <!-- ===================== HERO ===================== -->
     <header class="hero">
@@ -41,7 +43,7 @@
         <div class="hero-actions">
           <button
             class="btn-gold"
-            onclick="location.href = '../html/asztalfoglalas.html'"
+            onclick="location.href = '/asztalfoglalas'"
           >
             ASZTALFOGLALÁS
           </button>
@@ -83,7 +85,7 @@
       <section class="story-section" id="rolunk">
         <div class="story-container">
           <div class="story-image">
-            <img src="../images/hatter1.JPG" alt="Étterem belső tér" />
+            <img src="{% static 'images/hatter1.JPG' %}" alt="Étterem belső tér" />
           </div>
 
           <div class="story-text">
@@ -115,28 +117,28 @@
 
         <div class="team-container">
           <div class="team-card">
-            <img src="../images/Kovács András.PNG" alt="Kovács András" />
+            <img src="{% static 'images/Kovács András.PNG' %}" alt="Kovács András" />
             <h3>Kovács András</h3>
             <span class="team-role">Séf</span>
             <p>Több mint 15 éve a gasztronómia szerelmese és mestere.</p>
           </div>
 
           <div class="team-card">
-            <img src="../images/Nemes Veronika.PNG" alt="Nemes Veronika" />
+            <img src="{% static 'images/Nemes Veronika.PNG' %}" alt="Nemes Veronika" />
             <h3>Nemes Veronika</h3>
             <span class="team-role">Sous-chef</span>
             <p>Kreativitás és precizitás minden fogásban.</p>
           </div>
 
           <div class="team-card">
-            <img src="../images/Tóth Balázs.PNG" alt="Tóth Balázs" />
+            <img src="{% static 'images/Tóth Balázs.PNG' %}" alt="Tóth Balázs" />
             <h3>Tóth Balázs</h3>
             <span class="team-role">Étteremvezető</span>
             <p>Gondoskodik róla, hogy minden vendég otthon érezze magát.</p>
           </div>
 
           <div class="team-card">
-            <img src="../images/Szabó Réka.PNG" alt="Szabó Réka" />
+            <img src="/static/images/Szabó Réka.PNG" alt="Szabó Réka" />
             <h3>Szabó Réka</h3>
             <span class="team-role">Cukrász</span>
             <p>
@@ -153,7 +155,7 @@
         <div class="card">
           <div class="card-img">
             <img
-              src="../images/menu_3.jpg"
+              src="{% static 'images/menu_3.jpg' %}"
               alt="Étlap illusztráció"
               class="card-pic card-pic--menu"
             />
@@ -166,14 +168,14 @@
               Fedezze fel szezonális fogásainkat, friss alapanyagokból készített
               hagyományos és modern ételeinket.
             </p>
-            <a href="etlap.html" class="card-btn">Étlap megtekintése</a>
+            <a href="/etlap" class="card-btn">Étlap megtekintése</a>
           </div>
         </div>
         <!-- 2. Kártya: Menü rendelés -->
         <div class="card">
           <div class="card-img">
             <img
-              src="../images/menu_4.jpg"
+              src="{% static 'images/menu_4.jpg' %}"
               alt="Étel illusztrációként"
               class="card-pic"
             />
@@ -270,7 +272,7 @@
         <div class="card">
           <div class="card-img">
             <img
-              src="../images/asztal_2.jpg"
+              src="{% static 'images/asztal_2.jpg' %}"
               alt="Asztal illusztráció"
               class="card-pic card-pic--booking"
             />
@@ -284,7 +286,7 @@
               vendégszeretetet. Foglaljon asztalt néhány kattintással családi
               vagy üzleti eseményekre is.
             </p>
-            <a href="../html/asztalfoglalas.html" class="card-btn"
+            <a href="/asztalfoglalas" class="card-btn"
               >Asztal lefoglalása</a
             >
           </div>
@@ -304,9 +306,9 @@
           </div>
 
           <div class="atmosphere-images">
-            <img src="../images/etterem_belso2.PNG" alt="Étterem hangulat" />
-            <img src="../images/asztal.PNG" alt="Étterem asztal" />
-            <img src="../images/borospince.png" alt="Étterem asztal" />
+            <img src="{% static 'images/etterem_belso2.PNG' %}" alt="Étterem hangulat" />
+            <img src="{% static 'images/asztal.PNG' %}" alt="Étterem asztal" />
+            <img src="{% static 'images/borospince.png' %}" alt="Étterem asztal" />
           </div>
         </div>
       </section>
@@ -316,7 +318,7 @@
         <div class="booking-cta__inner">
           <figure class="booking-cta__figure">
             <img
-              src="../images/talalas.png"
+              src="/static/images/talalas.png"
               alt="Gondosan tálalt étel az Arany Fakanál étteremben"
             />
           </figure>
@@ -337,7 +339,7 @@
             </p>
 
             <a
-              href="../html/asztalfoglalas.html"
+              href="/asztalfoglalas"
               class="btn-gold booking-cta__btn"
               >Asztalt foglalok</a
             >
@@ -435,7 +437,7 @@
               <div class="map-card glass-card">
                 <h3>Hol talál meg minket?</h3>
                 <div class="map-image-wrapper">
-                  <img src="../images/terkep.png" alt="Térkép – Szilváskút" />
+                  <img src="{% static 'images/terkep.png' %}" alt="Térkép – Szilváskút" />
                 </div>
               </div>
 
@@ -459,7 +461,7 @@
       <div class="footer-column">
         <div class="footer-logo">
           <img
-            src="../images/logo2.png"
+            src="{% static 'images/logo2.png' %}"
             alt="Arany Fakanál Étterem"
             class="logo"
           />
@@ -499,11 +501,11 @@
 
       <div class="footer-column">
         <h3>Gyors linkek</h3>
-        <a href="homepage.html">Főoldal</a>
-        <a href="etlap.html">Étlap</a>
+        <a href="/">Főoldal</a>
+        <a href="/etlap">Étlap</a>
         <a href="#rolunk">Rólunk</a>
         <a href="	#kapcsolat">Kapcsolat</a>
-        <a href="asztalfoglalas.html">Asztalfoglalás</a>
+        <a href="/asztalfoglalas">Asztalfoglalás</a>
       </div>
     </footer>
 
@@ -511,21 +513,22 @@
       © 2020 Arany Fakanál Étterem – Minden jog fenntartva.
     </div>
 
-    <!-- Külső komponensek (fetch-elt fájlok) -->
-    <script src="../js/navbar.js"></script>
-    <script src="../js/cart.js"></script>
-    <script src="../js/login.js"></script>
-    <script src="../js/contact-form.js"></script>
+{% endblock content%}
+
+{% block scripts %}
+  
+    
+    <script src="{% static 'js/contact-form.js' %}"></script>
 
     <!-- ===================== Hero Háttérkép váltakozása ===================== -->
     <script>
       document.addEventListener("DOMContentLoaded", () => {
         const images = [
-          "../images/hatter1.JPG",
-          "../images/hatter2.JPG",
-          "../images/hatter3.JPG",
-          "../images/hatter4.JPG",
-          "../images/hatter5.png",
+          "{% static 'images/hatter1.JPG' %}",
+          "{% static 'images/hatter2.JPG' %}",
+          "{% static 'images/hatter3.JPG' %}",
+          "{% static 'images/hatter4.JPG' %}",
+          "{% static 'images/hatter5.png' %}",
         ];
 
         const layerA = document.querySelector(".hero-bg--a");
@@ -614,6 +617,6 @@
         el.textContent = val;
       }
     </script>
+
+{% endblock %}
     
-  </body>
-</html>

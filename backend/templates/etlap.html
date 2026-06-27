@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Étlap – Arany Fakanál{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" href="{% static 'css/etlap.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+    <div class="page">
+      <!-- KERET SARKOK -->
+      <div class="corner corner-tl">❧</div>
+      <div class="corner corner-tr">❧</div>
+      <div class="corner corner-bl">❧</div>
+      <div class="corner corner-br">❧</div>
+
+      <!-- VÍZSZINTES DÍSZÍTŐ VONALAK -->
+      <div class="border-line top"></div>
+      <div class="border-line bottom"></div>
+
+      <!-- FEJLÉC -->
+      <header class="menu-header">
+        <h1 class="restaurant-name">Arany Fakanál Étterem</h1>
+        <p class="slogan">Ízek, amelyek hazahoznak</p>
+        <div class="gold-divider"></div>
+        <h2 class="menu-year">Étlapunk - 2026</h2>
+
+        <!-- KATEGÓRIA NAVIGÁCIÓ -->
+        <nav class="cat-nav">
+         
+        </nav>
+        <div class="cat-underline"></div>
+      </header>
+
+      <!-- ÉTLAP TARTALOM -->
+      <main class="menu-content">
+        <!-- ELŐÉTELEK -->
+        <section class="menu-section" id="eloetelek">
+          <h3 class="section-title">ELŐÉTELEK</h3>
+          <div class="section-rule"></div>
+
+          
+        </section>
+
+        <!-- LEVESEK -->
+        <section class="menu-section" id="levesek">
+          <h3 class="section-title">LEVESEK</h3>
+          <div class="section-rule"></div>
+
+          
+        </section>
+
+        <!-- FŐÉTELEK -->
+        <section class="menu-section" id="haletelek-szarnyasok">
+          <h3 class="section-title">Halételek & Szárnyasok</h3>
+          <div class="section-rule"></div>
+
+          
+        </section>
+
+        <!-- Hagyományos Rántott & Töltött Húsok -->
+        <section class="menu-section" id="hagyomanyos-rantott-toltott-husok">
+          <h3 class="section-title">Hagyományos Rántott & Töltött Húsok</h3>
+          <div class="section-rule"></div>
+
+        </section>
+
+        <!-- Szaftos & Kemencés Sültek -->
+        <section class="menu-section" id="szaftos-kemences-sultek">
+          <h3 class="section-title">Szaftos & Kemencés Sültek</h3>
+          <div class="section-rule"></div>
+
+        </section>
+
+        <!-- Egytálételek -->
+        <section class="menu-section" id="egytaletelek">
+          <h3 class="section-title">Egytálételek</h3>
+          <div class="section-rule"></div>
+
+        </section>
+
+        <!-- DESSZERTEK -->
+        <section class="menu-section" id="desszertek">
+          <h3 class="section-title">DESSZERTEK</h3>
+          <div class="section-rule"></div>
+
+          
+        </section>
+
+        <!-- ITALOK -->
+        <section class="menu-section" id="italok">
+          <h3 class="section-title">ITALOK</h3>
+          <div class="section-rule"></div>
+
+          
+        </section>
+      </main>
+
+      <div id="allergen-section"></div>
+
+      <!-- LÁBLÉC -->
+      <footer class="menu-footer">
+        <div class="gold-divider"></div>
+
+        <p class="footer-thanks">Köszönjük, hogy minket választott!</p>
+        <p class="footer-info">
+          Az árak forintban értendők és az ÁFA-t tartalmazzák.
+          <br />
+          Árainkra 12% felszolgálási díjat számítunk fel.
+          <br />
+          Allergiás kérések esetén kérjük, értesítse felszolgálóinkat.
+        </p>
+        <p class="footer-copy">&copy; 2020 Arany Fakanál Étterem</p>
+      </footer>
+    </div>
+    <footer class="page-footer">
+      <a href="../html/homepage.html" class="back-link">← Vissza a főoldalra</a>
+      <p>&copy; 2020 Arany Fakanál Étterem – Minden jog fenntartva.</p>
+    </footer>
+
+{% endblock %}
+
+{% block scripts %}
+
+    <!-- ========================Étlap beolvasása JSON-ból ============================-->
+    <script>
+      // először beolvassuk a kategóriákat
+        console.log("ETLAP BETÖLTVE");
+        const nav = document.querySelector(".cat-nav");
+        
+        const categoriesUrl = "{% static 'data/categories.json' %}";
+        console.log("URL:", categoriesUrl);
+
+        const UPPERCASE_CATEGORIES = [
+          "Előételek",
+          "Levesek",
+          "Desszertek",
+          "Italok"
+        ];
+
+        function slugify(text) {
+          return text
+            .toLowerCase()
+            .replace(/ & /g, "-")
+            .replace(/ és /g, "-")
+            .replace(/\s+/g, "-")
+            .replace(/[áéíóöőúüű]/g, m =>
+              ({
+                á: "a",
+                é: "e",
+                í: "i",
+                ó: "o",
+                ö: "o",
+                ő: "o",
+                ú: "u",
+                ü: "u",
+                ű: "u"
+              }[m])
+            );
+        }
+
+        function formatCategoryName(name) {
+          let formatted = name.replace(/ és /g, " & ");
+
+          if (UPPERCASE_CATEGORIES.includes(name)) {
+            return formatted.toUpperCase();
+          }
+
+          return formatted.replace(
+            /(^|[\s&-])([a-záéíóöőúüű])/gi,
+            (match, sep, char) => {
+              return sep + char.toUpperCase();
+            }
+          );
+        }
+       
+        fetch(categoriesUrl)
+          .then(res => {
+            console.log("STATUS:", res.status, res.url);
+
+            if (!res.ok) {
+              throw new Error("Nem sikerült betölteni a kategóriákat");
+            }
+
+            return res.json();
+          })
+          .then(categories => {
+            console.log("Kategóriák:", categories);
+            nav.innerHTML = categories
+              .map((cat, i) => {
+                const id = slugify(cat.name);
+                const label = formatCategoryName(cat.name);
+
+                return `
+                  <a href="#${id}">${label}</a>
+                  ${i !== categories.length - 1 ? '<span class="sep">|</span>' : ""}
+                `;
+              })
+              .join("");
+          })
+          .catch(err => {
+            console.error("Hiba a kategóriák betöltésekor:", err);
+          }); 
+          
+          //másodszor beolvassuk az ételeket a foods_with_category.json-ből
+          const foodsUrl = "{% static 'data/foods_with_category_and_allergens.json' %}";
+
+          fetch(foodsUrl)
+            .then(res => {
+              if (!res.ok) throw new Error("Nem sikerült betölteni az ételeket");
+              return res.json();
+            })
+            .then(foods => {
+              // 1. csoportosítás kategória szerint
+              const grouped = {};
+              const allergenMap = new Map(); //csak a megjelenített allergens-re ad tájékoztatót
+
+              foods.forEach(food => {
+                const categoryId = food.category.id;
+
+                if (!grouped[categoryId]) {
+                  grouped[categoryId] = {
+                    name: food.category.name,
+                    items: []
+                  };
+                }
+
+                grouped[categoryId].items.push(food);
+
+                //  allergének gyűjtése
+                if (food.allergens && food.allergens.length > 0) {
+                  food.allergens.forEach(a => {
+                    if (!allergenMap.has(a.name)) {
+                      allergenMap.set(a.name, a);
+                    }
+                  });
+                }
+
+              });
+
+              // 2. DOM feltöltés
+              Object.entries(grouped).forEach(([categoryId, data]) => {
+                const sectionId = slugify(data.name);
+                const section = document.getElementById(sectionId);
+
+                if (!section) {
+                  console.warn("Nincs ilyen section:", sectionId);
+                  return;
+                }
+
+                data.items.forEach(food => {
+                  // 1. wrapper (ez fog mindent összefogni)
+                  const itemWrapper = document.createElement("div");
+                  itemWrapper.className = "menu-item";
+
+                  // 2.row
+                  const row = document.createElement("div");
+                  row.className = "menu-row";
+
+                  const name = document.createElement("span");
+                  name.className = "dish-left";
+                  name.textContent = food.name;
+
+                  const dots = document.createElement("span");
+                  dots.className = "dots";
+
+                  const price = document.createElement("span");
+                  price.className = "dish-price";
+                  price.textContent = `${food.price} Ft`;
+
+                  row.appendChild(name);
+                  row.appendChild(dots);
+                  row.appendChild(price);
+
+                  itemWrapper.appendChild(row);
+
+                  // 3.description (ha van)
+                  if (food.description && food.description.trim() !== "") {
+                    const desc = document.createElement("p");
+                    desc.className = "dish-desc";
+                    desc.textContent = food.description;
+                    itemWrapper.appendChild(desc)
+                  }
+
+                  // 4. ALLERGÉNEK
+                  if (food.allergens && food.allergens.length > 0) {
+                    const allergensDiv = document.createElement("div");
+                    allergensDiv.className = "allergens";
+
+                    food.allergens.forEach(a => {
+                      const img = document.createElement("img");
+                      img.src = a.icon;
+                      img.alt = a.name;
+                      img.title = a.name;
+                      allergensDiv.appendChild(img);
+                    });
+
+                    itemWrapper.appendChild(allergensDiv);
+                  }
+
+                  // 5. hozzáadás a section-höz
+                  section.appendChild(itemWrapper);
+                });
+              });
+
+              // ================== ALLERGÉN TÁJÉKOZTATÓ GENERÁLÁS
+              if (allergenMap.size > 0) {
+                  const section = document.createElement("section");
+                  section.className = "allergen-info";
+                  section.id = "allergen-tajekoztato";
+
+                  const title = document.createElement("h3");
+                  title.className = "section-title";
+                  title.textContent = "ALLERGÉN TÁJÉKOZTATÓ";
+
+                  const note = document.createElement("p");
+                  note.className = "allergen-note";
+                  note.innerHTML = "<strong>Az ételek mellett szereplő szimbólumok az allergéneket jelölik.</strong><br>Kérdés esetén kérjük, fordulj a munkatársainkhoz.";
+
+                  const rule = document.createElement("div");
+                  rule.className = "section-rule";
+
+                  const grid = document.createElement("div");
+                  grid.className = "allergen-grid";
+
+                  allergenMap.forEach(allergen => {
+                    const item = document.createElement("div");
+                    item.className = "allergen-item";
+
+                    const img = document.createElement("img");
+                    img.src = allergen.icon;
+                    img.alt = allergen.name;
+
+                    const text = document.createElement("span");
+                    text.textContent = allergen.label;
+
+                    item.appendChild(img);
+                    item.appendChild(text);
+                    grid.appendChild(item);
+                  });
+
+                  section.appendChild(title);
+                  section.appendChild(rule);
+                  section.appendChild(note);
+                  section.appendChild(grid);
+
+                  
+
+                  const footer = document.querySelector(".menu-footer");
+                  footer.parentNode.insertBefore(section, footer);
+                }
+
+            })
+            .catch(err => {
+              console.error("Hiba az ételek betöltésekor:", err);
+            });
+    </script>
+
+{% endblock %}
+

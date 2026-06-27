@@ -1,14 +1,7 @@
-fetch("../components/navbar.html")
-  .then((response) => response.text())
-  .then((html) => {
-    document.getElementById("navbar").innerHTML = html;
-
+document.addEventListener("DOMContentLoaded", () => {
     setupNavbar();
     setActiveNav();
-  })
-  .catch((error) => {
-    console.error("Error loading navbar:", error);
-  });
+});
 
 const SCROLL_THRESHOLD = 50;
 

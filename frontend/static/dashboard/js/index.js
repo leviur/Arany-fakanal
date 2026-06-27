@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     alert("Ehhez az oldalhoz nincs jogosultsága!");
 
-    window.location.replace("../html/homepage.html");
+    window.location.replace("/");
     return;
   }
 
@@ -100,7 +100,7 @@ const Auth = (() => {
   function confirmLogout() {
     localStorage.removeItem("isAdmin");
     localStorage.removeItem("userName");
-    window.location.href = "../html/homepage.html";
+    window.location.href = "/";
   }
 
   return { logout, closeLogoutModal, confirmLogout };

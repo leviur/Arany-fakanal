@@ -1,9 +1,6 @@
-fetch("../components/login.html")
-  .then(res => res.text())
-  .then(html => {
-    document.getElementById("login").innerHTML = html;
+document.addEventListener("DOMContentLoaded", () => {
     initLogin();
-  });
+});
 
 function formatName(name) {
   return name
@@ -109,7 +106,7 @@ function initLogin() {
 
       localStorage.setItem("isAdmin", "true");
 
-      window.location.href = "../dashboard/index.html";
+      window.location.href = "/dashboard";
 
       return;
     }

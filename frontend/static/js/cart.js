@@ -1,11 +1,6 @@
-fetch("../components/cart.html")
-  .then(res => res.text())
-  .then(data => {
-    document.getElementById("cart").innerHTML = data;
-
-    // előbb töltse be a html, utána az inicialást
+document.addEventListener("DOMContentLoaded", () => {
     initCart();
-  });
+});
 
 function initCart() {
   const cartDrawer = document.getElementById("cartDrawer");

@@ -1,4 +1,5 @@
 <!doctype html>
+{% load static %}
 <html lang="hu">
   <head>
     <meta charset="UTF-8" />
@@ -17,21 +18,22 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     />
-    <link rel="stylesheet" href="./css/index.css?v=39" />
-    <link rel="stylesheet" href="./css/dashboard.css?v=39" />
-    <link rel="stylesheet" href="./css/orders.css?v=39" />
-    <link rel="stylesheet" href="./css/menu-manager.css?v=39" />
-    <link rel="stylesheet" href="./css/bookings.css?v=39" />
-    <link rel="stylesheet" href="./css/settings.css?v=39" />
-    <link rel="stylesheet" href="./css/messages.css?v=39" />
+    
+    <link rel="stylesheet" href="{% static 'dashboard/css/index.css' %}?v=39">
+    <link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}?v=39">
+    <link rel="stylesheet" href="{% static 'dashboard/css/orders.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/css/menu-manager.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/css/bookings.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/css/settings.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/css/messages.css' %}">
 
-    <script src="./js/index.js?v=39" defer></script>
-    <script src="./js/dashboard.js?v=39" defer></script>
-    <script src="./js/orders.js?v=39" defer></script>
-    <script src="./js/menu-manager.js?v=39" defer></script>
-    <script src="./js/bookings.js?v=39" defer></script>
-    <script src="./js/settings.js?v=39" defer></script>
-    <script src="./js/messages.js?v=39" defer></script>
+    <script src="{% static 'dashboard/js/index.js' %}" defer></script>
+    <script src="{% static 'dashboard/js/dashboard.js' %}" defer></script>
+    <script src="{% static 'dashboard/js/orders.js' %}" defer></script>
+    <script src="{% static 'dashboard/js/menu-manager.js' %}?v=39" defer></script>
+    <script src="{% static 'dashboard/js/bookings.js' %}?v=39" defer></script>
+    <script src="{% static 'dashboard/js/settings.js' %}?v=39" defer></script>
+    <script src="{% static 'dashboard/js/messages.js' %}?v=39" defer></script>
   </head>
 
   <body>
@@ -52,11 +54,7 @@
             <span></span>
           </button>
 
-          <img
-            src="../images/logo2.png"
-            alt="Arany Fakanál Étterem"
-            class="logo"
-          />
+          <img src="{% static 'images/logo2.png' %}" alt="Arany Fakanál Étterem" class="logo">
 
           <nav class="menu">
             <span class="menu-group-label">Napi működés</span>
@@ -139,11 +137,7 @@
         <div class="login-box">
           <button class="close-modal" id="logoutCancel">✕</button>
           <div class="login-header">
-            <img
-              src="../images/logo2.png"
-              alt="Arany Fakanál"
-              class="login-logo"
-            />
+            <img src="{% static 'images/logo2.png' %}" alt="Arany Fakanál" class="login-logo">
             <h2 id="logoutTitle">Kijelentkezés</h2>
             <div class="divider"></div>
           </div>

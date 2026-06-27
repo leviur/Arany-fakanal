@@ -735,6 +735,7 @@ body {
 }
 
 .contact-form input,
+.contact-form select,
 .contact-form textarea {
     width: 100%;
     margin: 0;
@@ -754,6 +755,7 @@ body {
 }
 
 .contact-form input:focus,
+.contact-form select:focus,
 .contact-form textarea:focus {
     outline: none;
     border-color: var(--gold);
@@ -763,6 +765,48 @@ body {
 .contact-form textarea {
     min-height: 140px;
     resize: vertical;
+}
+
+.contact-form select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23C5A059' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+.contact-success {
+    background: var(--surface);
+    backdrop-filter: blur(16px);
+    border-radius: 24px;
+    padding: 48px 40px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 14px;
+}
+
+.contact-success i {
+    font-size: 40px;
+    color: var(--gold);
+}
+
+.contact-success h3 {
+    font-family: var(--font-main);
+    font-size: 1.5rem;
+    color: var(--text-dark);
+    margin: 0;
+}
+
+.contact-success p {
+    color: var(--text-light);
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0;
 }
 
 .contact-form-fields > .btn-gold {

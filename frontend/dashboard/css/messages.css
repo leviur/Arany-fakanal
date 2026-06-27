@@ -1,203 +1,621 @@
-/* ================= MESSAGES  ================= */
+/* =========================================================
+   MESSAGES SECTION - EMAIL-KLIENS STÍLUSÚ SPLIT-VIEW
+========================================================= */
 
-.msg-wrapper {
+#messages-section {
+  width: 100%;
+  overflow-x: clip;
+}
+
+#messages-section .msg-wrapper {
   display: flex;
   flex-direction: column;
-  height: 95vh;
 }
 
-.msg-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding-right: 6px;
-}
+/* ================= TOOLBAR ================= */
 
-/* GRID - mobil first */
-.msg-grid {
-  display: grid;
-  align-items: stretch;
-  grid-template-columns: 1fr;
+#messages-section .msg-toolbar {
+  display: flex;
+  align-items: center;
   gap: 14px;
+  flex-wrap: wrap;
+  padding-bottom: 14px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid rgba(45, 34, 27, 0.08);
 }
 
-/* tablet */
-@media (min-width: 768px) {
-  .msg-grid {
-    grid-template-columns: 1fr 1fr;
+/* Szegmentált Aktív/Archivált vezérlő - vizuálisan elkülönül a KPI chipektől */
+#messages-section .msg-archive-tabs {
+  display: inline-flex;
+  background: #f8f5f0;
+  border: 1px solid rgba(200, 155, 99, 0.2);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+#messages-section .msg-archive-tab {
+  border: none;
+  background: transparent;
+  padding: 8px 16px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #8b7a6a;
+  cursor: pointer;
+  transition: background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  font-family: var(--font-ui, sans-serif);
+}
+
+#messages-section .msg-archive-tab:hover {
+  color: #5a4a42;
+}
+
+#messages-section .msg-archive-tab.active {
+  background: #fff;
+  color: #2d221b;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+#messages-section .msg-toolbar .search-wrap {
+  flex: 1;
+  max-width: 360px;
+}
+
+#messages-section .msg-toolbar .search-wrap input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 9px 14px 9px 32px;
+  border: 1.5px solid rgba(200, 155, 99, 0.3);
+  background: #f8f5f0;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+#messages-section .msg-toolbar .search-wrap input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(200, 155, 99, 0.15);
+  background: #fff;
+}
+
+#messages-section .msg-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1.5px solid rgba(200, 155, 99, 0.3);
+  background: #fff;
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5a4a42;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color 160ms ease, background 160ms ease;
+  font-family: var(--font-ui, sans-serif);
+}
+
+#messages-section .msg-sort-btn:hover {
+  border-color: var(--gold);
+  background: #fbf7f2;
+}
+
+/* ================= KPI FILTER CHIPS ================= */
+
+#messages-section .msg-kpi-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+#messages-section .msg-kpi {
+  flex: 1;
+  min-width: 140px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #fbf7f2 100%);
+  border: 1px solid rgba(200, 155, 99, 0.15);
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: transform 160ms ease-out, box-shadow 160ms ease, border-color 160ms ease;
+  font-family: var(--font-ui, sans-serif);
+  text-align: left;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #messages-section .msg-kpi:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(200, 155, 99, 0.15);
   }
 }
 
-/* desktop */
-@media (min-width: 1200px) {
-  .msg-grid {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
+#messages-section .msg-kpi:active {
+  transform: scale(0.97);
 }
 
-/* ================= CARD ================= */
+#messages-section .msg-kpi-icon-wrap {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 14px;
+}
 
-.msg-card {
-  background: #ffffff;
-  border: 1px solid #e7dccb;
-  border-radius: 14px;
-  padding: 14px;
+#messages-section .msg-kpi[data-filter="unread"] .msg-kpi-icon-wrap          { background: rgba(200, 155, 99, 0.15); color: #8b5e3c; }
+#messages-section .msg-kpi[data-filter="Foglalás"] .msg-kpi-icon-wrap         { background: #e0eaf8; color: #2d5fa6; }
+#messages-section .msg-kpi[data-filter="Visszajelzés"] .msg-kpi-icon-wrap     { background: #d6ead6; color: #1e6b35; }
+#messages-section .msg-kpi[data-filter="Általános kérdés"] .msg-kpi-icon-wrap { background: #e8daf5; color: #6b4a9a; }
+#messages-section .msg-kpi[data-filter="Egyéb"] .msg-kpi-icon-wrap            { background: #fde8c8; color: #9a5f1a; }
 
+#messages-section .msg-kpi-text {
   display: flex;
   flex-direction: column;
-  height: 100%;
-
-  /* gap: 10px; */
-  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
-  transition: transform .2s ease, box-shadow .2s ease;
+  gap: 2px;
 }
 
-.msg-card:hover {
+#messages-section .msg-kpi-value {
+  font-size: 19px;
+  font-weight: 600;
+  color: #2d221b;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+#messages-section .msg-kpi-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+}
+
+#messages-section .msg-kpi.active {
+  border-color: var(--gold);
+  box-shadow: 0 10px 25px rgba(200, 155, 99, 0.2);
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px rgba(0,0,0,0.08);
-
-   height: 100%;
 }
 
-.msg-content {
+/* ================= FRISSÍTÉS CROSSFADE (mint a dashboardon/rendeléseken) ================= */
+
+#messages-section #messagesList,
+#messages-section #messagesKpiRow {
+  transition: opacity 150ms ease;
+}
+
+#messages-section #messagesList.is-refreshing,
+#messages-section #messagesKpiRow.is-refreshing {
+  opacity: 0;
+}
+
+/* ================= SPLIT VIEW ================= */
+
+#messages-section .msg-split {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  grid-template-rows: 1fr;
+  gap: 18px;
+}
+
+#messages-section .msg-list,
+#messages-section .msg-detail {
+  background: #fff;
+  border: 1px solid rgba(200, 155, 99, 0.12);
+  border-radius: 16px;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+#messages-section .msg-list {
   display: flex;
   flex-direction: column;
+}
+
+#messages-section .msg-detail {
+  padding: 22px 26px;
+}
+
+/* ================= LIST ROW ================= */
+
+#messages-section .msg-list-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(45, 34, 27, 0.06);
+  border-left: 3px solid transparent;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+#messages-section .msg-list-row:last-child {
+  border-bottom: none;
+}
+
+#messages-section .msg-list-row:hover {
+  background: rgba(200, 155, 99, 0.06);
+}
+
+#messages-section .msg-list-row.selected {
+  background: rgba(200, 155, 99, 0.1);
+  border-left-color: var(--gold);
+}
+
+#messages-section .msg-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
   gap: 8px;
 }
 
-.msg-count {
-  font-size: 14px;
-  color: #8b5e3c;
-  font-weight: 600;
-}
-
-
-/* ================= HEADER ================= */
-
-.msg-head {
+#messages-section .msg-row-name {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
-}
-
-.msg-name {
-  font-weight: 700;
-  font-size: 14px;
-  color: #2c241e;
-}
-
-.msg-date {
-  font-size: 11px;
-  color: #8b7a6a;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #2d221b;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* ================= META ================= */
+#messages-section .msg-row-date {
+  font-size: 11px;
+  color: #aaa;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
 
-.msg-email {
+#messages-section .msg-row-subject {
+  font-size: 12px;
+  color: #666;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#messages-section .msg-list-row.unread .msg-row-name,
+#messages-section .msg-list-row.unread .msg-row-subject {
+  font-weight: 700;
+  color: #2d221b;
+}
+
+#messages-section .msg-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+/* Olvasatlan jelző - szín ÉS forma is jelez (pötty), nem csak a félkövér szöveg */
+#messages-section .msg-row-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  flex-shrink: 0;
+  display: inline-block;
+}
+
+/* ================= TÍPUS CÍMKÉK (chip a listában, badge a részletben) ================= */
+
+.msg-type-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  font-family: var(--font-ui, sans-serif);
+}
+
+.msg-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s, transform 0.1s;
+  font-family: var(--font-ui, sans-serif);
+}
+
+.msg-type-badge:hover {
+  opacity: 0.82;
+  transform: scale(1.04);
+}
+
+.msg-type-foglalas     { background: #e0eaf8; color: #2d5fa6; }
+.msg-type-visszajelzes { background: #d6ead6; color: #1e6b35; }
+.msg-type-altalanos    { background: #e8daf5; color: #6b4a9a; }
+.msg-type-egyeb        { background: #fde8c8; color: #9a5f1a; }
+
+/* ================= TÍPUS POPOVER (a #status-popover klónja) ================= */
+
+#message-type-popover {
+  position: fixed;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 190px;
+  z-index: 1000;
+}
+
+.message-type-popover-option {
+  display: block;
+  width: 100%;
+  padding: 7px 12px;
+  border: none;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: filter 0.1s;
+  font-family: var(--font-ui, sans-serif);
+}
+
+.message-type-popover-option:hover {
+  filter: brightness(0.92);
+}
+
+.message-type-popover-option.current {
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
+
+/* ================= DETAIL PANEL ================= */
+
+#messages-section .msg-detail-back {
+  display: none;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: #8b5e3c;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  margin-bottom: 16px;
+  padding: 0;
+}
+
+#messages-section .msg-detail-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(45, 34, 27, 0.08);
+}
+
+#messages-section .msg-detail-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), #8b5e3c);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+#messages-section .msg-detail-who {
+  flex: 1;
+  min-width: 0;
+}
+
+#messages-section .msg-detail-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: #2d221b;
+}
+
+#messages-section .msg-detail-email {
   font-size: 12px;
   color: #a06f3b;
 }
 
-.msg-subject {
-  font-size: 15px;
+#messages-section .msg-detail-date {
+  font-size: 11px;
+  color: #aaa;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+#messages-section .msg-detail-subject {
+  font-family: "Playfair Display", serif;
+  font-size: 18px;
   font-weight: 600;
   color: #2c241e;
+  margin-bottom: 12px;
 }
 
-/* ================= TEXT ================= */
-
-.msg-text {
-  font-size: 13px;
+#messages-section .msg-detail-text {
+  font-size: 14px;
   color: #4a3f37;
-  line-height: 1.5;
-  position: relative;
-
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  line-height: 1.7;
+  white-space: pre-wrap;
 }
 
-.msg-text::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 40px;
-  background: linear-gradient(
-    to bottom,
-    rgba(255,255,255,0),
-    rgba(255,255,255,0.95)
-  );
+#messages-section .msg-detail-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(45, 34, 27, 0.08);
 }
 
-/* ================= ACTIONS ================= */
-
-.msg-actions {
-    margin-top: auto;
-    display: flex;
-    gap: 10px;
-    margin-top: auto;
-}
-
-.msg-btn {
+#messages-section .msg-btn-reply {
   flex: 1;
-  padding: 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px;
   border-radius: 10px;
   border: none;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
-  transition: .2s ease;
+  text-decoration: none;
+  background: linear-gradient(135deg, var(--gold), #8b5e3c);
+  color: #fff;
+  transition: filter 0.15s;
 }
 
-/* primary */
-.msg-btn-open {
-  background: linear-gradient(135deg, #c89b63, #8b5e3c);
-  color: white;
-  width: 100%;
-  margin-top: 6px;
-}
-
-.msg-btn-open:hover {
+#messages-section .msg-btn-reply:hover {
   filter: brightness(1.05);
 }
 
-/* secondary */
-.msg-btn-delete {
-  flex: 1;
+#messages-section .msg-btn-secondary {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(200, 155, 99, 0.3);
+  background: #fff;
+  color: #5a4a42;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease;
 }
 
+#messages-section .msg-btn-secondary:hover {
+  border-color: var(--gold);
+  background: #fbf7f2;
+}
 
-.msg-empty {
-  padding: 30px;
+#messages-section .msg-btn-secondary.msg-btn-archive:hover {
+  border-color: #9a3028;
+  color: #9a3028;
+  background: rgba(154, 48, 40, 0.05);
+}
+
+/* ================= ÜRES ÁLLAPOT (lista és részlet közös) ================= */
+
+#messages-section .msg-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  height: 100%;
+  min-height: 240px;
+  padding: 40px;
   text-align: center;
   color: #8b7a6a;
+}
+
+#messages-section .msg-empty-state i {
+  font-size: 28px;
+  opacity: 0.4;
+}
+
+#messages-section .msg-empty-state p {
   font-size: 14px;
+  margin: 0;
 }
 
-.msg-card.expanded .msg-text {
-  -webkit-line-clamp: unset;
-  overflow: visible;
+/* ================= RESZPONZÍV TÖRÉS (< 1024px): SLIDE-OVER DETAIL ================= */
+
+@media (max-width: 1024px) {
+  #messages-section .msg-split {
+    grid-template-columns: 1fr;
+  }
+
+  #messages-section .msg-detail {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    border-radius: 0;
+    transform: translateX(100%);
+    transition: transform 220ms ease;
+  }
+
+  #messages-section .msg-detail.is-open {
+    transform: translateX(0);
+  }
+
+  #messages-section .msg-detail-back {
+    display: inline-flex;
+  }
 }
 
-.msg-card.expanded .msg-text::after {
-  display: none;
-}
+@media (max-width: 640px) {
+  #messages-section .msg-toolbar .search-wrap {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+  }
 
-.msg-more {
-  flex: 1;
-  padding: 9px;
-  border-radius: 10px;
-  border: 1px solid #c89b63;
-  background: transparent;
-  color: #8b5e3c;
-  font-weight: 600;
-  cursor: pointer;
-}
+  /* Szűk kijelzőn 1 soros, horizontálisan görgethető chip-csík —
+     a páratlan (5) KPI-szám így sosem törik árva elemmel, és csak ~1 sort
+     foglal, nem 2-3 sornyi kártyarácsot, ami elvenné a helyet a listától. */
+  #messages-section .msg-kpi-row {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    gap: 8px;
+    margin-bottom: 12px;
+    /* flex-elemként alapból min-width:auto (= tartalom-alapú) lenne, ami
+       kitágítaná a sort a chipek miatt, helyben görgetés helyett */
+    min-width: 0;
+  }
 
-.msg-more:hover {
-  background: rgba(200,155,99,0.12);
+  #messages-section .msg-kpi-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  #messages-section .msg-kpi {
+    flex: 0 0 auto;
+    min-width: 0;
+    padding: 8px 14px;
+    gap: 8px;
+    scroll-snap-align: start;
+    white-space: nowrap;
+  }
+
+  #messages-section .msg-kpi-icon-wrap {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+  }
+
+  #messages-section .msg-kpi-text {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 5px;
+  }
+
+  #messages-section .msg-kpi-value {
+    font-size: 14px;
+  }
+
+  #messages-section .msg-kpi-label {
+    font-size: 11px;
+    white-space: nowrap;
+  }
 }

@@ -27,7 +27,7 @@ const demoOrders = [
 ];
 
 /**********************
- * 🚚 ORDER STATUS
+ * STATUS MAPS
  **********************/
 
 const STATUS_OPTIONS = [
@@ -39,218 +39,442 @@ const STATUS_OPTIONS = [
   "Sikertelen kézbesítés"
 ];
 
-function renderOrders() {
+const STATUS_BADGE_CLASS = {
+  "Új":                    "status-new",
+  "Elfogadva":             "status-accepted",
+  "Készül":                "status-preparing",
+  "Kiszállítás alatt":     "status-delivery",
+  "Kézbesítve":            "status-done",
+  "Sikertelen kézbesítés": "status-failed"
+};
+
+/**********************
+ * STATE
+ **********************/
+
+let activeOrdersKpiFilter = null;
+let editingOrderId = null;
+let sortColumn = null;
+let sortDir = 1; // 1 = növekvő, -1 = csökkenő
+let ordersInitialRendered = false; // az első render azonnali, utána animálható
+
+/**********************
+ * HELPERS
+ **********************/
+
+function relativeTime(dateStr) {
+  if (!dateStr) return "";
+  const mins = getMinutesFromOrderTime(dateStr);
+  if (mins < 1)  return "most";
+  if (mins < 60) return `${mins} perce`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24)  return `${hrs} órája`;
+  return `${Math.floor(hrs / 24)} napja`;
+}
+
+/**********************
+ * KPI FRISSÍTÉS
+ **********************/
+
+function updateOrdersKpis() {
+  const orders = window.appData?.orders || [];
+
+  let problem = 0, fresh = 0, preparing = 0, delivery = 0, done = 0;
+
+  orders.forEach(o => {
+    const status = (o.status || "").trim();
+    if (isProblemOrder(o))                                                    problem++;
+    if (status === "Új")                                                      fresh++;
+    if (status === "Készül")                                                 preparing++;
+    if (status === "Kiszállítás alatt")                                      delivery++;
+    if (status === "Kézbesítve" || status === "Sikertelen kézbesítés")       done++;
+  });
+
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+
+  setVal("kpi-orders-problem",   problem);
+  setVal("kpi-orders-new",       fresh);
+  setVal("kpi-orders-preparing", preparing);
+  setVal("kpi-orders-delivery",  delivery);
+  setVal("kpi-orders-done",      done);
+}
+
+function matchesOrdersKpiFilter(order) {
+  if (!activeOrdersKpiFilter) return true;
+  const status = (order.status || "").trim();
+  switch (activeOrdersKpiFilter) {
+    case "problem":  return isProblemOrder(order);
+    case "new":      return status === "Új";
+    case "preparing":return status === "Készül";
+    case "delivery": return status === "Kiszállítás alatt";
+    case "done":     return status === "Kézbesítve" || status === "Sikertelen kézbesítés";
+    default:         return true;
+  }
+}
+
+/**********************
+ * RENDERELÉS
+ **********************/
+
+function renderOrders(animate) {
   const tbody = document.getElementById("ordersTableBody");
   if (!tbody) return;
 
-  const orders = window.appData.orders;
+  closeStatusPopover();
 
-  tbody.innerHTML = orders.map(o => `
+  const kpiRow = document.querySelector("#orders-section .orders-kpi-row");
+
+  const drawTable = () => {
+    let orders = [...(window.appData?.orders || [])];
+
+    // Rendezés
+    if (sortColumn) {
+      orders.sort((a, b) => {
+        let va, vb;
+        switch (sortColumn) {
+          case "name":   va = a.name.toLowerCase(); vb = b.name.toLowerCase(); break;
+          case "menu":   va = a.menu.toLowerCase(); vb = b.menu.toLowerCase(); break;
+          case "time":   va = a.createdAt;       vb = b.createdAt;       break;
+          case "status": va = a.status;          vb = b.status;          break;
+          default: return 0;
+        }
+        return va < vb ? -sortDir : va > vb ? sortDir : 0;
+      });
+    }
+
+    tbody.innerHTML = ordersRowsHtml(orders);
+    filterOrders();
+  };
+
+  // animálás csak kérésre (frissítés gomb) és csak a kezdeti render után
+  if (animate && ordersInitialRendered) {
+    if (kpiRow) fadeRender(kpiRow, updateOrdersKpis);
+    else updateOrdersKpis();
+    fadeRender(tbody, drawTable);
+  } else {
+    updateOrdersKpis();
+    drawTable();
+    ordersInitialRendered = true;
+  }
+}
+
+function ordersRowsHtml(orders) {
+  return orders.map(o => {
+    const relTime    = relativeTime(o.createdAt);
+    const badgeCls   = STATUS_BADGE_CLASS[o.status] || "";
+    const lastChange = o.statusChangedAt ? `Utolsó változás: ${o.statusChangedAt}` : "Státusz még nem változott";
+
+    return `
     <tr data-id="${o.id}">
-      <td>${o.id}</td>
-      <td>${o.name}</td>
-      <td>${o.phone}</td>
-      <td>${o.address}</td>
-      <td>${o.menu}</td>
-      <td>${o.qty}</td>
-      <td class="order-time">${o.createdAt}</td>
-
-      <td>
-        <select class="status-select">
-          ${STATUS_OPTIONS.map(s => `
-            <option ${o.status === s ? "selected" : ""}>${s}</option>
-          `).join("")}
-        </select>
+      <td data-label="Név" class="cell-primary">${o.name}</td>
+      <td data-label="Kapcsolat" class="cell-contact">
+        <span class="contact-phone">${o.phone}</span>
+        <span class="contact-addr">${o.address}</span>
       </td>
-
-      <td class="status-time">${o.statusChangedAt || ""}</td>
-
-      <td>
-        <button class="action-btn edit-btn">✏️</button>
-        <button class="action-btn orders-delete-btn">🗑️</button>
+      <td data-label="Menü">${o.menu}<span class="qty-chip">× ${o.qty}</span></td>
+      <td data-label="Rend. idő" class="order-time">
+        <span class="time-rel" title="${o.createdAt}">${relTime}</span>
+        <span class="time-abs">${o.createdAt}</span>
       </td>
-    </tr>
-  `).join("");
-  
-  document.querySelectorAll(".status-select").forEach(select => {
-    updateStatusColor(select);
+      <td data-label="Státusz">
+        <button class="status-badge ${badgeCls}"
+                data-order-id="${o.id}"
+                aria-label="Státusz módosítása"
+                title="${lastChange}">
+          ${o.status}
+        </button>
+      </td>
+      <td data-label="Műveletek">
+        <button class="action-btn edit-btn" aria-label="Rendelés szerkesztése">
+          <i class="fa-solid fa-pen"></i>
+        </button>
+        <button class="action-btn orders-delete-btn" aria-label="Rendelés törlése">
+          <i class="fa-solid fa-trash"></i>
+        </button>
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+/**********************
+ * STÁTUSZ POPOVER
+ **********************/
+
+function closeStatusPopover() {
+  const el = document.getElementById("status-popover");
+  if (el) el.remove();
+}
+
+function openStatusPopover(badge) {
+  const orderId = badge.dataset.orderId;
+  const order   = window.appData?.orders.find(o => o.id === orderId);
+  if (!order) return;
+
+  // Toggle: ha ugyanaz a rendelés, zárja be
+  const existing = document.getElementById("status-popover");
+  if (existing && existing.dataset.forOrder === orderId) {
+    closeStatusPopover();
+    return;
+  }
+  closeStatusPopover();
+
+  const rect    = badge.getBoundingClientRect();
+  const popover = document.createElement("div");
+  popover.id              = "status-popover";
+  popover.dataset.forOrder = orderId;
+  popover.setAttribute("role",       "listbox");
+  popover.setAttribute("aria-label", "Státusz kiválasztása");
+  popover.style.top  = `${rect.bottom + 4}px`;
+  popover.style.left = `${rect.left}px`;
+
+  popover.innerHTML = STATUS_OPTIONS.map(s => {
+    const cls      = STATUS_BADGE_CLASS[s] || "";
+    const isCurrent = s === order.status;
+    return `<button class="status-popover-option ${cls}${isCurrent ? " current" : ""}"
+                    data-status="${s}"
+                    data-order-id="${orderId}"
+                    role="option"
+                    aria-selected="${isCurrent}">${s}</button>`;
+  }).join("");
+
+  document.body.appendChild(popover);
+
+  requestAnimationFrame(() => {
+    const pr = popover.getBoundingClientRect();
+    if (pr.right > window.innerWidth - 8) {
+      popover.style.left = `${window.innerWidth - pr.width - 8}px`;
+    }
+    if (pr.bottom > window.innerHeight - 8) {
+      popover.style.top  = `${rect.top - pr.height - 4}px`;
+    }
   });
 }
 
-// ===============================
-// STATUS CHANGE HANDLER
-// ===============================
-// A "change" eseménykezelő az orders.js-ben:
-document.addEventListener("change", (e) => {
-  if (!e.target.classList.contains("status-select")) return;
-
-  const row = e.target.closest("tr");
-  const id = row.dataset.id;
-  const newValue = e.target.value;
-
-  // 1. Megtaláljuk a rendelést a globális objektumban
-  const order = window.appData.orders.find(o => o.id === id);
-  
-  if (order) {
-    // 2. Módosítjuk az objektumot
-    order.status = newValue;
-    order.statusChangedAt = new Date().toLocaleTimeString("hu-HU", {hour: '2-digit', minute:'2-digit'});
-
-    // 3. Biztosítjuk, hogy a DOM is tükrözze a változást
-    renderOrders(); 
-
-    // 4. FRISSÍTÉS: A dashboard logikája itt fut le újra
-    if (typeof window.refreshDashboard === 'function') {
-      console.log("Dashboard frissítése elindítva...");
-      window.refreshDashboard();
-    }
-  }
-});
+/**********************
+ * BEÁLLÍTÁSOK
+ **********************/
 
 function loadStatusLimits() {
   const saved = localStorage.getItem("statusLimits");
-
   if (saved) {
     statusLimits = JSON.parse(saved);
   }
-
-  document.getElementById("limit-new").value = statusLimits["Új"];
-  document.getElementById("limit-accepted").value = statusLimits["Elfogadva"];
-  document.getElementById("limit-preparing").value = statusLimits["Készül"];
-  document.getElementById("limit-delivery").value = statusLimits["Kiszállítás alatt"];
+  document.getElementById("limit-new").value         = statusLimits["Új"];
+  document.getElementById("limit-accepted").value    = statusLimits["Elfogadva"];
+  document.getElementById("limit-preparing").value   = statusLimits["Készül"];
+  document.getElementById("limit-delivery").value    = statusLimits["Kiszállítás alatt"];
 }
 
 function saveStatusLimits() {
   statusLimits = {
-    "Új": Number(document.getElementById("limit-new").value),
-    "Elfogadva": Number(document.getElementById("limit-accepted").value),
-    "Készül": Number(document.getElementById("limit-preparing").value),
+    "Új":                 Number(document.getElementById("limit-new").value),
+    "Elfogadva":          Number(document.getElementById("limit-accepted").value),
+    "Készül":            Number(document.getElementById("limit-preparing").value),
     "Kiszállítás alatt": Number(document.getElementById("limit-delivery").value)
   };
-
   localStorage.setItem("statusLimits", JSON.stringify(statusLimits));
-
   refreshDashboard();
-
-  alert("Beállítások mentve!");
+  window.showToast?.("Rendelési beállítások mentve!", "success");
 }
 
-function openEditModal(e) {
-  editingRow = e.currentTarget.closest("tr");
+/**********************
+ * SZERKESZTŐ MODAL
+ **********************/
 
-  document.getElementById("editName").value = editingRow.cells[1].textContent;
-  document.getElementById("editPhone").value = editingRow.cells[2].textContent;
-  document.getElementById("editAddress").value = editingRow.cells[3].textContent;
-  document.getElementById("editMenu").value = editingRow.cells[4].textContent;
-  document.getElementById("editQty").value = editingRow.cells[5].textContent;
+function openEditModal(orderId) {
+  editingOrderId = orderId;
+  const order = window.appData?.orders.find(o => o.id === orderId);
+  if (!order) return;
 
-  document.getElementById("editModal").classList.remove("hidden");
+  document.getElementById("editName").value    = order.name;
+  document.getElementById("editPhone").value   = order.phone;
+  document.getElementById("editAddress").value = order.address;
+  document.getElementById("editMenu").value    = order.menu;
+  document.getElementById("editQty").value     = order.qty;
+
+  const modal = document.getElementById("editModal");
+  modal.classList.remove("hidden");
+  requestAnimationFrame(() => modal.classList.add("open"));
 }
 
 function saveEdit() {
-  if (!editingRow) return;
+  if (!editingOrderId) return;
+  const order = window.appData?.orders.find(o => o.id === editingOrderId);
+  if (!order) return;
 
-  editingRow.cells[1].textContent = document.getElementById("editName").value;
-  editingRow.cells[2].textContent = document.getElementById("editPhone").value;
-  editingRow.cells[3].textContent = document.getElementById("editAddress").value;
-  editingRow.cells[4].textContent = document.getElementById("editMenu").value;
-  editingRow.cells[5].textContent = document.getElementById("editQty").value;
+  order.name    = document.getElementById("editName").value;
+  order.phone   = document.getElementById("editPhone").value;
+  order.address = document.getElementById("editAddress").value;
+  order.menu    = document.getElementById("editMenu").value;
+  order.qty     = Number(document.getElementById("editQty").value);
 
   closeEditModal();
+  renderOrders();
+  filterOrders();
+  window.showToast?.("Rendelés mentve", "success");
 }
 
 function closeEditModal() {
-  document.getElementById("editModal").classList.add("hidden");
-  editingRow = null;
+  const modal = document.getElementById("editModal");
+  modal.classList.remove("open");
+  setTimeout(() => modal.classList.add("hidden"), 150);
+  editingOrderId = null;
 }
 
-function updateStatusColor(select) {
-  select.classList.remove(
-    "status-pending",
-    "status-accepted",
-    "status-preparing",
-    "status-delivery",
-    "status-done",
-    "status-failed"
-  );
+/**********************
+ * TÖRLÉS MEGERŐSÍTŐ MODAL
+ **********************/
 
-  const map = {
-    "Új": "status-pending",
-    "Elfogadva": "status-accepted",
-    "Készül": "status-preparing",
-    "Kiszállítás alatt": "status-delivery",
-    "Kézbesítve": "status-done",
-    "Sikertelen kézbesítés": "status-failed"
-  };
+let pendingDeleteId = null;
 
-  select.classList.add(map[select.value]);
+function openDeleteConfirm(orderId) {
+  pendingDeleteId = orderId;
+  const modal = document.getElementById("deleteConfirmModal");
+  modal.classList.remove("hidden");
+  requestAnimationFrame(() => modal.classList.add("open"));
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+function closeDeleteConfirm() {
+  const modal = document.getElementById("deleteConfirmModal");
+  modal.classList.remove("open");
+  setTimeout(() => modal.classList.add("hidden"), 150);
+  pendingDeleteId = null;
+}
+
+function confirmDelete() {
+  if (!pendingDeleteId) return;
+  const idx = window.appData.orders.findIndex(o => o.id === pendingDeleteId);
+  if (idx !== -1) window.appData.orders.splice(idx, 1);
+  closeDeleteConfirm();
   renderOrders();
+  filterOrders();
+  window.refreshDashboard?.();
+  window.showToast?.("Rendelés törölve", "deleted");
+}
+
+document.getElementById("deleteConfirmOk")?.addEventListener("click", confirmDelete);
+document.getElementById("deleteConfirmCancel")?.addEventListener("click", closeDeleteConfirm);
+document.getElementById("deleteConfirmModal")?.addEventListener("click", (e) => {
+  if (e.target.id === "deleteConfirmModal") closeDeleteConfirm();
 });
 
-document.addEventListener("input", (e) => {
-  if (e.target.id === "searchInput") {
-    renderOrders();
-  }
-});
-
-document.addEventListener("change", (e) => {
-  if (e.target.id === "statusFilter") {
-    renderOrders();
-  }
-});
+/**********************
+ * SZŰRÉS
+ **********************/
 
 window.filterOrders = function () {
-  console.log("filterOrders fut");
+  const search = (document.getElementById("searchInput")?.value || "").toLowerCase().trim();
+  document.querySelectorAll("#orders-section tbody tr").forEach(row => {
+    const id    = row.dataset.id;
+    const order = window.appData?.orders.find(o => o.id === id);
+    if (!order) { row.style.display = "none"; return; }
 
-  const searchEl = document.getElementById("searchInput");
-  const statusEl = document.getElementById("statusFilter");
+    const haystack = `${order.name} ${order.phone} ${order.address} ${order.menu}`.toLowerCase();
+    const matchesSearch = search === "" || haystack.includes(search);
+    const matchesKpi    = matchesOrdersKpiFilter(order);
 
-  const search = (searchEl?.value || "").toLowerCase().trim();
-  const status = statusEl?.value || "all";
-
-  const rows = document.querySelectorAll("#orders-section tbody tr");
-
-  rows.forEach(row => {
-    const name = (row.children[1]?.textContent || "").toLowerCase();
-    const phone = (row.children[2]?.textContent || "").toLowerCase();
-    const address = (row.children[3]?.textContent || "").toLowerCase();
-    const menu = (row.children[4]?.textContent || "").toLowerCase();
-
-    const rowStatus =
-      row.querySelector(".status-select")?.value || "";
-
-    const matchesSearch =
-      search === "" || `${name} ${phone} ${address} ${menu}`.includes(search);
-
-    const matchesStatus =
-      status === "all" || rowStatus === status;
-
-    row.style.display = (matchesSearch && matchesStatus) ? "" : "none";
+    row.style.display = (matchesSearch && matchesKpi) ? "" : "none";
   });
 };
 
+/**********************
+ * ESEMÉNYKEZELŐK
+ **********************/
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderOrders();
+  // Popover zárása görgetéskor
+  window.addEventListener("scroll", closeStatusPopover, { passive: true });
+});
+
+document.addEventListener("input", (e) => {
+  if (e.target.id === "searchInput") filterOrders();
+});
+
 document.addEventListener("click", (e) => {
-  // Ellenőrizzük, hogy a törlés gombra kattintottak-e
-  if (e.target.classList.contains("orders-delete-btn")) {
-    const row = e.target.closest("tr");
-    const id = row.dataset.id;
 
-    // Megerősítés (opcionális)
-    if (!confirm("Biztosan törölni szeretnéd ezt a rendelést?")) return;
-
-    // 1. Törlés az adathalmazból
-    const index = window.appData.orders.findIndex(o => o.id === id);
-    if (index !== -1) {
-      window.appData.orders.splice(index, 1);
+  // 1. Popover opció kattintás
+  if (e.target.closest("#status-popover")) {
+    const option = e.target.closest(".status-popover-option");
+    if (option) {
+      const orderId   = option.dataset.orderId;
+      const newStatus = option.dataset.status;
+      const order     = window.appData?.orders.find(o => o.id === orderId);
+      if (order) {
+        order.status          = newStatus;
+        order.statusChangedAt = new Date().toLocaleTimeString("hu-HU", { hour: "2-digit", minute: "2-digit" });
+        renderOrders();
+        filterOrders();
+        window.refreshDashboard?.();
+      }
+      closeStatusPopover();
     }
+    return;
+  }
 
-    // 2. Újrarenderelés
+  closeStatusPopover();
+
+  // 2. Státusz badge megnyitás
+  const badge = e.target.closest(".status-badge");
+  if (badge) {
+    openStatusPopover(badge);
+    return;
+  }
+
+  // 3. Szerkesztés gomb
+  const editBtn = e.target.closest(".edit-btn");
+  if (editBtn) {
+    const row = editBtn.closest("tr");
+    if (row) openEditModal(row.dataset.id);
+    return;
+  }
+
+  // 4. Törlés gomb
+  const deleteBtn = e.target.closest(".orders-delete-btn");
+  if (deleteBtn) {
+    const row = deleteBtn.closest("tr");
+    const id  = row?.dataset.id;
+    if (!id) return;
+    openDeleteConfirm(id);
+    return;
+  }
+
+  // 5. KPI chip szűrő
+  const kpiBtn = e.target.closest("#orders-section .orders-kpi");
+  if (kpiBtn) {
+    const filter = kpiBtn.dataset.filter;
+    activeOrdersKpiFilter = activeOrdersKpiFilter === filter ? null : filter;
+    document.querySelectorAll("#orders-section .orders-kpi").forEach(btn => {
+      const isActive = btn.dataset.filter === activeOrdersKpiFilter;
+      btn.classList.toggle("active", isActive);
+      btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+    filterOrders();
+    return;
+  }
+
+  // 6. Rendezés (th kattintás)
+  const sortTh = e.target.closest("#orders-section th.sortable");
+  if (sortTh) {
+    const col = sortTh.dataset.sort;
+    if (sortColumn === col) {
+      sortDir = -sortDir;
+    } else {
+      sortColumn = col;
+      sortDir    = 1;
+    }
+    document.querySelectorAll("#orders-section th.sortable").forEach(th => {
+      const icon = th.querySelector(".sort-icon");
+      if (!icon) return;
+      const isActive = th.dataset.sort === sortColumn;
+      th.classList.toggle("sort-active", isActive);
+      icon.textContent = isActive ? (sortDir === 1 ? "↑" : "↓") : "↕";
+    });
     renderOrders();
-
-    // 3. Opcionális: Dashboard frissítése
-    window.refreshDashboard?.();
+    filterOrders();
+    return;
   }
 });

@@ -141,76 +141,12 @@ function updateDashboardStats() {
   document.getElementById("stat-active-orders").textContent = active;
   document.getElementById("stat-delivery-orders").textContent = delivery;
 
-  const issuesEl = document.getElementById("stat-problem-orders");
-  const issuesCard = issuesEl?.closest(".stat-card");
-
-  if (issuesEl && issuesCard) {
-    issuesEl.textContent = issues;
-    issuesCard.classList.toggle("warning", issues > 0);
-  }
-
   console.log("📊 Dashboard frissítve:", {
     total,
     active,
     delivery,
     issues
   });
-}
-
-// ======================================================
-// ORDERS PROBLEM LIST
-// ======================================================
-function renderProblemOrders() {
-  const container = document.getElementById("problem-orders-list");
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  const orders = window.appData?.orders || [];
-  const todayOrders = orders.filter(o => isToday(o.createdAt));
-  let hasProblem = false;
-
-  // Státusz színek (a megadott 4 kategóriára)
-  const statusColors = {
-    "Új": "#d9534f",               // Piros
-    "Elfogadva": "#f0ad4e",        // Narancs
-    "Készül": "#5bc0de",           // Világoskék
-    "Kiszállítás alatt": "#5cb85c" // Zöld
-  };
-
-  todayOrders.forEach(o => {
-    if (!isProblemOrder(o)) return;
-    hasProblem = true;
-
-    const div = document.createElement("div");
-    const status = (o.status || "").trim();
-    const minutesAgo = getMinutesFromOrderTime(o.createdAt);
-    
-    // Lekérjük a limitet a settings-ből (feltételezve a globális változót)
-    const limit = (typeof statusLimits !== 'undefined') ? (statusLimits[status] || 0) : 0;
-    const color = statusColors[status] || "#666";
-
-    div.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; font-size: 0.85em;">
-        
-        <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 45%;">
-            <strong>${o.name}</strong> <span style="color:#777;">(${o.phone || "-"})</span>
-        </div>
-
-        <div style="text-align: right; color: ${color}; font-weight: bold;">
-            ${status}: ${minutesAgo} perc 
-            <span style="font-weight: normal; color: #666; font-size: 0.9em;">(limit: ${limit}p)</span>
-        </div>
-
-      </div>
-    `;
-
-    container.appendChild(div);
-  });
-
-  if (!hasProblem) {
-    container.innerHTML = "<p style='padding:10px; color:green;'>Nincs problémás rendelés 🎉</p>";
-  }
 }
 // ======================================================
 // BOOKINGS DASHBOARD
@@ -239,51 +175,310 @@ function updateBookingDashboardStats() {
   });
 
   document.getElementById("stat-total-bookings").textContent = total;
-  document.getElementById("stat-confirmed-bookings").textContent = confirmed;
-  document.getElementById("stat-expected-guests").textContent = guests;
-  document.getElementById("stat-problem-bookings").textContent = problems;
 
   console.log("📊 Booking dashboard:", { total, confirmed, guests, problems });
 }
 
 // ======================================================
-// BOOKINGS PROBLEM LIST
+// SEGÉDFÜGGVÉNY: lista-tartalom csere finom crossfade-del
 // ======================================================
-function renderProblemBookings() {
-  const container = document.getElementById("problem-bookings-list");
+function fadeRender(container, draw) {
   if (!container) return;
 
-  container.innerHTML = "";
+  // első renderkor (üres konténer) nincs mit elhalványítani - ne legyen "üres pillanat"
+  if (!container.firstElementChild) {
+    draw();
+    return;
+  }
 
+  container.classList.add("is-refreshing");
+  setTimeout(() => {
+    draw();
+    container.classList.remove("is-refreshing");
+  }, 150);
+}
+
+// ======================================================
+// TEENDŐK (kezeletlen rendelések + foglalások)
+// ======================================================
+function renderTodoList(container, items) {
+  if (!container) return;
+
+  fadeRender(container, () => {
+    container.innerHTML = "";
+
+    if (items.length === 0) {
+      container.innerHTML = "<div class='empty-state'><i class='fa-solid fa-circle-check'></i><p>Nincs elintézendő teendő</p></div>";
+      return;
+    }
+
+    // lejárt teendők előre
+    items.sort((a, b) => (a.level === "problem" ? -1 : 1) - (b.level === "problem" ? -1 : 1));
+
+    items.forEach(t => {
+      const div = document.createElement("div");
+      div.className = `todo-item level-${t.level}`;
+      div.innerHTML = `
+        <span class="todo-name">${t.name}</span>
+        <span class="todo-reason">${t.reason}</span>
+      `;
+      container.appendChild(div);
+    });
+  });
+}
+
+function renderOrderTodos() {
+  const container = document.getElementById("todo-orders-list");
+  if (!container) return;
+
+  const todos = [];
+  const orders = window.appData?.orders || [];
+
+  orders.filter(o => isToday(o.createdAt)).forEach(o => {
+    if (!isProblemOrder(o)) return;
+
+    const status = (o.status || "").trim();
+    const minutesAgo = getMinutesFromOrderTime(o.createdAt);
+    const level = status === "Sikertelen kézbesítés" ? "problem" : "warning";
+
+    todos.push({
+      level,
+      name: `#${o.id} – ${o.name}`,
+      reason: status === "Sikertelen kézbesítés"
+        ? "Sikertelen kézbesítés"
+        : `${status}: ${minutesAgo} perce`
+    });
+  });
+
+  renderTodoList(container, todos);
+  return todos.length;
+}
+
+function renderBookingTodos() {
+  const container = document.getElementById("todo-bookings-list");
+  if (!container) return;
+
+  const todos = [];
   const bookings = Bookings.getBookings?.() || [];
 
-  let hasProblem = false;
-
   bookings.forEach(b => {
-
     const sla = getBookingSLA(b);
     if (sla.level === "ok") return;
 
-    hasProblem = true;
-
-    const div = document.createElement("div");
-    div.className = "problem-item";
-
-    div.innerHTML = `
-      <span>
-        <strong>${b.name}</strong> (${b.phone || "-"})
-      </span>
-      <span style="color:#ff4d4d;">
-        ${sla.reason}
-      </span>
-    `;
-
-    container.appendChild(div);
+    todos.push({
+      level: sla.level,
+      name: `${b.name} (${b.guests || 0} fő)`,
+      reason: sla.reason
+    });
   });
 
-  if (!hasProblem) {
-    container.innerHTML = "<p>Nincs problémás foglalás 🎉</p>";
+  renderTodoList(container, todos);
+  return todos.length;
+}
+
+function renderTodos() {
+  const orderCount = renderOrderTodos();
+  const bookingCount = renderBookingTodos();
+
+  const total = orderCount + bookingCount;
+  const kpiEl = document.getElementById("stat-todos");
+  const kpiCard = document.getElementById("kpi-todos");
+
+  if (kpiEl) kpiEl.textContent = total;
+  if (kpiCard) kpiCard.classList.toggle("has-todos", total > 0);
+}
+
+// ======================================================
+// MAI FOGLALÁSOK - AGENDA
+// ======================================================
+function renderAgenda() {
+  const container = document.getElementById("agenda-list");
+  if (!container) return;
+
+  const bookings = Bookings.getBookings?.() || [];
+
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, "0")}.${String(now.getDate()).padStart(2, "0")}`;
+
+  const todayBookings = bookings
+    .filter(b => b.date === todayStr)
+    .sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+
+  fadeRender(container, () => {
+    container.innerHTML = "";
+
+    if (todayBookings.length === 0) {
+      container.innerHTML = "<div class='empty-state'><i class='fa-solid fa-calendar-xmark'></i><p>Nincs mai foglalás</p></div>";
+      return;
+    }
+
+    todayBookings.forEach(b => {
+      const div = document.createElement("div");
+      div.className = "agenda-item";
+      div.innerHTML = `
+        <span class="agenda-time-chip">${b.time}</span>
+        <span class="agenda-divider"></span>
+        <span class="agenda-name">${b.name} – ${b.occasion || ""}</span>
+        <span class="agenda-guests">${b.guests || 0} fő</span>
+      `;
+      container.appendChild(div);
+    });
+  });
+}
+
+// ======================================================
+// HETI RENDELÉS-TREND
+// ======================================================
+function renderTrendChart() {
+  const container = document.getElementById("trend-chart");
+  if (!container) return;
+
+  const orders = window.appData?.orders || [];
+  const dayCounts = {};
+
+  orders.forEach(o => {
+    const [datePart] = (o.createdAt || "").split(" ");
+    if (!datePart) return;
+    dayCounts[datePart] = (dayCounts[datePart] || 0) + 1;
+  });
+
+  // a jelenlegi hét (hétfőtől vasárnapig), beleértve a jövőbeli napokat is
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const mondayOffset = (today.getDay() + 6) % 7; // hétfő = 0
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - mondayOffset);
+
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(monday);
+    d.setDate(monday.getDate() + i);
+    const key = `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+    days.push({ key, date: d });
   }
+
+  const max = Math.max(...days.map(d => dayCounts[d.key] || 0), 1);
+
+  const dayNames = ["V", "H", "K", "Sze", "Cs", "P", "Szo"];
+
+  container.innerHTML = `<div class="trend-chart">${days.map(({ key, date }) => {
+    const weekday = dayNames[date.getDay()];
+    const count = dayCounts[key] || 0;
+    const heightPct = count === 0 ? 0 : Math.round((count / max) * 100);
+    const isToday = date.getTime() === today.getTime();
+    const classes = [count === 0 && "empty", isToday && "today"].filter(Boolean).join(" ");
+    const dateLabel = `${date.getFullYear()}.${String(date.getMonth()+1).padStart(2,"0")}.${String(date.getDate()).padStart(2,"0")}`;
+    const tooltipText = `${dateLabel}: ${count} rendelés`;
+
+    return `
+      <div class="trend-bar-wrap${classes ? " " + classes : ""}" title="${tooltipText}" aria-label="${tooltipText}" role="img">
+        <span class="trend-bar-value" aria-hidden="true">${count}</span>
+        <div class="trend-bar" style="height: ${heightPct}%"></div>
+        <span class="trend-bar-label" aria-hidden="true">${weekday}</span>
+      </div>
+    `;
+  }).join("")}</div>
+  <p class="visually-hidden" aria-label="Heti rendelés trend összefoglaló">
+    ${days.map(({key, date}) => {
+      const count = dayCounts[key] || 0;
+      return `${date.toLocaleDateString("hu-HU", {weekday:"long"})}: ${count} rendelés`;
+    }).join(", ")}
+  </p>`;
+}
+
+// ======================================================
+// LEGNÉPSZERŰBB MENÜK
+// ======================================================
+function renderTopItems() {
+  const container = document.getElementById("top-items-list");
+  if (!container) return;
+
+  const orders = window.appData?.orders || [];
+  const counts = {};
+
+  orders.forEach(o => {
+    const key = o.menu || "Ismeretlen";
+    counts[key] = (counts[key] || 0) + (o.qty || 1);
+  });
+
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+  if (sorted.length === 0) {
+    container.innerHTML = "<div class='empty-state'><i class='fa-solid fa-chart-pie'></i><p>Még nincs adat</p></div>";
+    return;
+  }
+
+  const totalServed = Object.values(counts).reduce((sum, c) => sum + c, 0);
+  const max = sorted[0][1];
+
+  const rows = sorted.map(([name, count]) => {
+    const pct = Math.round((count / max) * 100);
+    return `
+      <div class="top-item-row">
+        <div class="top-item-info">
+          <span class="top-item-name">${name}</span>
+          <span class="top-item-count">${count} db</span>
+        </div>
+        <div class="top-item-bar"><div class="top-item-bar-fill" style="width: ${pct}%"></div></div>
+      </div>
+    `;
+  }).join("");
+
+  container.innerHTML = `
+    <div class="top-items-rows">${rows}</div>
+    <div class="top-items-total">
+      <span>Összes kiszolgált adag</span>
+      <strong>${totalServed} db</strong>
+    </div>
+  `;
+}
+
+// ======================================================
+// LEGUTÓBBI ÜZENETEK
+// ======================================================
+function renderMessagesPreview() {
+  const container = document.getElementById("messages-preview-list");
+
+  const all = window.appData?.messages || [];
+  const unreadCount = all.filter(m => !m.read && !m.archived).length;
+
+  const kpiEl = document.getElementById("stat-messages");
+  if (kpiEl) kpiEl.textContent = unreadCount;
+
+  const badge = document.getElementById("sidebar-msg-badge");
+  if (badge) {
+    if (unreadCount > 0) {
+      badge.textContent = unreadCount > 99 ? "99+" : unreadCount;
+      badge.classList.remove("hidden");
+    } else {
+      badge.classList.add("hidden");
+    }
+  }
+
+  if (!container) return;
+
+  const data = all
+    .slice()
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, 3);
+
+  if (data.length === 0) {
+    container.innerHTML = "<div class='empty-state'><i class='fa-solid fa-inbox'></i><p>Nincs üzenet</p></div>";
+    return;
+  }
+
+  container.innerHTML = data.map(m => `
+    <div class="message-preview-row">
+      <span class="msg-sender">${escapeHtml(m.name)}</span>
+      <span class="msg-subject">${escapeHtml(m.subject)}</span>
+    </div>
+  `).join("");
+}
+
+function escapeHtml(str) {
+  return String(str ?? "").replace(/[&<>"']/g, (c) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
+  }[c]));
 }
 
 // ======================================================
@@ -291,8 +486,23 @@ function renderProblemBookings() {
 // ======================================================
 window.refreshDashboard = function () {
   updateDashboardStats();
-  renderProblemOrders();
-  renderProblemBookings();
   updateBookingDashboardStats();
+  renderTodos();
+  renderAgenda();
+  renderTrendChart();
+  renderTopItems();
+  renderMessagesPreview();
+
+  const topbarUpdated = document.getElementById("topbarUpdated");
+  if (topbarUpdated) {
+    const now = new Date();
+    const time = now.toLocaleTimeString("hu-HU", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+
+    topbarUpdated.classList.add("flash");
+    requestAnimationFrame(() => {
+      topbarUpdated.textContent = `Frissítve: ${time}`;
+      topbarUpdated.classList.remove("flash");
+    });
+  }
 }
 

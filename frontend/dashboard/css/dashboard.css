@@ -11,6 +11,776 @@
 }
 
 /* =========================
+   ÚJ DASHBOARD GRID
+========================= */
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 14px;
+  padding-bottom: 20px;
+}
+
+/* --- KPI sáv ---
+   .kpi-row alapból display:contents, hogy a 6 .kpi-card közvetlen
+   .dash-grid rácselemként viselkedjen (span-alapú asztali elrendezés);
+   szűk kijelzőn ez vált át görgethető chip-csíkra (lásd lejjebb). */
+.kpi-row {
+  display: contents;
+}
+
+.kpi-card {
+  grid-column: span 2;
+  background: linear-gradient(180deg, #ffffff 0%, #fbf7f2 100%);
+  border: 1px solid rgba(200, 155, 99, 0.15);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: transform 160ms ease-out, box-shadow 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(200, 155, 99, 0.15);
+  }
+}
+
+.kpi-card i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(197, 160, 89, 0.1);
+  color: var(--gold);
+  font-size: 15px;
+  flex-shrink: 0;
+  margin-bottom: 2px;
+}
+
+.kpi-label {
+  font-size: 12px;
+  color: #666;
+  font-weight: 500;
+}
+
+.kpi-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d221b;
+}
+
+#kpi-todos.has-todos .kpi-value {
+  color: #e74c3c;
+}
+
+#kpi-todos.has-todos {
+  cursor: pointer;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #kpi-todos.has-todos:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(231, 76, 60, 0.18);
+    border-color: rgba(231, 76, 60, 0.3);
+  }
+}
+
+#kpi-todos.has-todos:active {
+  transform: scale(0.98);
+}
+
+.dash-card-body.is-refreshing {
+  opacity: 0;
+}
+
+/* --- Highlight, ha a KPI-ból ide navigáltunk --- */
+.dash-todos.highlight {
+  animation: todo-highlight 1200ms ease-out;
+}
+
+@keyframes todo-highlight {
+  0% { box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.35), 0 12px 30px rgba(45, 34, 27, 0.08), 0 2px 8px rgba(200, 155, 99, 0.08); }
+  100% { box-shadow: 0 12px 30px rgba(45, 34, 27, 0.08), 0 2px 8px rgba(200, 155, 99, 0.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dash-todos.highlight {
+    animation: none;
+  }
+  .trend-bar,
+  .top-item-bar-fill,
+  .dash-card-body {
+    transition: none;
+  }
+}
+
+/* --- Általános dash-card --- */
+.dash-card {
+  background: linear-gradient(180deg, #ffffff 0%, #fbf7f2 100%);
+  border: 1px solid rgba(200, 155, 99, 0.15);
+  border-radius: 20px;
+  box-shadow: 0 12px 30px rgba(45, 34, 27, 0.08), 0 2px 8px rgba(200, 155, 99, 0.08);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.dash-card-header h3 {
+  font-family: "Playfair Display", serif;
+  font-size: 17px;
+  color: #2d221b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dash-card-header h3 i {
+  color: var(--gold);
+  font-size: 15px;
+}
+
+.dash-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: opacity 150ms ease;
+}
+
+.scroll-zone {
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.scroll-zone::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-zone::-webkit-scrollbar-thumb {
+  background: rgba(200, 155, 99, 0.4);
+  border-radius: 10px;
+}
+
+/* --- Sor 2: Teendők / Agenda --- */
+.dash-todos {
+  grid-column: span 4;
+  min-height: 200px;
+}
+
+.dash-agenda {
+  grid-column: span 4;
+  min-height: 200px;
+}
+
+.dash-todos .dash-card-body,
+.dash-agenda .dash-card-body {
+  max-height: 200px;
+}
+
+.todo-item,
+.agenda-item {
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: transform 140ms ease-out, box-shadow 140ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .todo-item:hover,
+  .agenda-item:hover {
+    transform: translateX(3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+  }
+}
+
+.todo-item .todo-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.todo-item .todo-name::before {
+  content: "";
+  display: block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--gold);
+}
+
+.todo-item.level-problem .todo-name::before {
+  background: #e74c3c;
+}
+
+.todo-item.level-warning .todo-name::before {
+  background: #f0ad4e;
+}
+
+.todo-item .todo-reason {
+  font-weight: 600;
+  font-size: 12px;
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 50px;
+}
+
+.todo-item.level-problem .todo-reason {
+  color: #c0392b;
+  background: var(--row-problem);
+}
+
+.todo-item.level-warning .todo-reason {
+  color: #8a5a17;
+  background: var(--row-warning-background);
+}
+
+.agenda-item .agenda-time-chip {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 12px;
+  color: #fff;
+  background: linear-gradient(135deg, var(--gold), #8b5e3c);
+}
+
+.agenda-item .agenda-divider {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(200, 155, 99, 0.2);
+}
+
+.agenda-item .agenda-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.agenda-item .agenda-guests {
+  color: var(--text-light);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px;
+  text-align: center;
+  color: var(--text-light);
+  font-size: 13px;
+}
+
+.empty-state i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: rgba(197, 160, 89, 0.08);
+  font-size: 18px;
+  color: var(--gold);
+  opacity: 0.7;
+}
+
+.empty-state p {
+  margin: 0;
+}
+
+/* --- Sor 3: Trend / Top items --- */
+.dash-trend {
+  grid-column: span 6;
+  min-height: 170px;
+}
+
+.dash-top-items {
+  grid-column: span 6;
+  min-height: 170px;
+}
+
+.trend-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex: 1;
+  padding-top: 10px;
+}
+
+.trend-bar-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.trend-bar {
+  width: 100%;
+  max-width: 32px;
+  min-height: 4px;
+  border-radius: 6px 6px 2px 2px;
+  background: linear-gradient(180deg, var(--gold-light), var(--gold));
+  transition: height 300ms ease-out;
+}
+
+.trend-bar-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: #2d221b;
+}
+
+.trend-bar-label {
+  font-size: 11px;
+  color: var(--text-light);
+}
+
+.trend-bar-wrap.empty .trend-bar {
+  background: rgba(200, 155, 99, 0.15);
+}
+
+.trend-bar-wrap.empty .trend-bar-value,
+.trend-bar-wrap.empty .trend-bar-label {
+  color: var(--text-light);
+  opacity: 0.6;
+}
+
+.trend-bar-wrap.today .trend-bar-label {
+  color: var(--gold-dark);
+  font-weight: 700;
+}
+
+.trend-bar-wrap.today .trend-bar {
+  background: linear-gradient(180deg, var(--gold-light), var(--gold));
+  box-shadow: 0 4px 12px rgba(197, 160, 89, 0.35);
+}
+
+.top-items-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.top-item-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.top-item-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.top-item-row .top-item-name {
+  font-weight: 600;
+  color: #2d221b;
+}
+
+.top-item-row .top-item-count {
+  color: var(--gold-dark);
+  font-weight: 700;
+}
+
+.top-item-bar {
+  height: 6px;
+  border-radius: 4px;
+  background: rgba(200, 155, 99, 0.12);
+  overflow: hidden;
+}
+
+.top-item-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, var(--gold-light), var(--gold));
+  transition: width 300ms ease-out;
+}
+
+.top-items-total {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(200, 155, 99, 0.08);
+  font-size: 13px;
+  color: var(--text-light);
+}
+
+.top-items-total strong {
+  font-family: "Playfair Display", serif;
+  font-size: 16px;
+  color: #2d221b;
+}
+
+/* --- Sor 4: Üzenetek / Gyorsműveletek --- */
+.dash-messages {
+  grid-column: span 6;
+  min-height: 150px;
+}
+
+.dash-quick-actions {
+  grid-column: span 6;
+  min-height: 150px;
+}
+
+#messages-preview-list {
+  overflow-y: auto;
+}
+
+.message-preview-row {
+  background: #fff;
+  border-radius: 12px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-left: 3px solid rgba(197, 160, 89, 0.25);
+  cursor: pointer;
+  transition: transform 140ms ease-out, box-shadow 140ms ease, border-color 140ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .message-preview-row:hover {
+    transform: translateX(3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.07);
+    border-left-color: var(--gold);
+  }
+}
+
+.message-preview-row .msg-sender {
+  font-weight: 600;
+  font-size: 13px;
+  color: #2d221b;
+}
+
+.message-preview-row .msg-subject {
+  font-size: 12px;
+  color: var(--text-light);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dash-quick-actions-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.quick-action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid rgba(200, 155, 99, 0.15);
+  border-radius: 14px;
+  padding: 14px 8px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2d221b;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  transition: transform 160ms ease-out, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.quick-action-btn i {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(197, 160, 89, 0.1);
+  font-size: 17px;
+  color: var(--gold);
+  flex-shrink: 0;
+  transition: background-color 160ms ease;
+}
+
+.quick-action-btn:hover i {
+  background: rgba(197, 160, 89, 0.18);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .quick-action-btn:hover {
+    box-shadow: 0 10px 25px rgba(200, 155, 99, 0.15);
+    background: #fffaf2;
+  }
+}
+
+.quick-action-btn:active {
+  transform: scale(0.97);
+}
+
+@media (max-width: 900px) {
+  .kpi-card { grid-column: span 4; }
+  .dash-todos, .dash-agenda { grid-column: span 12; }
+  .dash-trend, .dash-top-items, .dash-messages, .dash-quick-actions {
+    grid-column: span 12;
+  }
+}
+
+/* Szűk (telefon) kijelzőn a 6 KPI-kártya 1 soros, horizontálisan görgethető
+   chip-csíkká vált — ugyanaz a minta, mint az Üzenetek KPI-során
+   (messages.css), így a 3-hasábos rács sosem törik árva/aránytalan elemmel. */
+@media (max-width: 640px) {
+  .kpi-row {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    scroll-snap-type: x proximity;
+    gap: 8px;
+    grid-column: span 12;
+    /* grid-elemként is van automatikus, tartalom-alapú minimum-méret,
+       ami kitágítaná a sort a chipek miatt, helyben görgetés helyett */
+    min-width: 0;
+  }
+
+  .kpi-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .kpi-card {
+    flex: 0 0 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    scroll-snap-align: start;
+    white-space: nowrap;
+  }
+
+  .kpi-card i {
+    width: 26px;
+    height: 26px;
+    font-size: 11px;
+    margin-bottom: 0;
+  }
+
+  .kpi-label {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+
+  .kpi-value {
+    font-size: 14px;
+  }
+}
+
+/* =========================
+   LAPTOP / ALACSONYABB MAGASSÁGÚ KIJELZŐK
+   (cél: az egész dashboard görgetés nélkül elférjen)
+========================= */
+@media (max-height: 1000px) {
+  .main {
+    padding: 16px 28px;
+  }
+
+  .topbar {
+    margin-bottom: 14px;
+  }
+
+  .topbar h1 {
+    font-size: 24px;
+  }
+
+  .topbar-updated {
+    font-size: 11px;
+  }
+
+  .profile-chip {
+    padding: 5px 14px 5px 5px;
+    gap: 8px;
+  }
+
+  .profile-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 13px;
+  }
+
+  .profile-name {
+    font-size: 13px;
+  }
+
+  .profile-role {
+    font-size: 11px;
+  }
+
+  .dash-grid {
+    gap: 8px;
+    padding-bottom: 8px;
+    grid-auto-rows: min-content;
+  }
+
+  .kpi-card {
+    padding: 8px 12px;
+    gap: 2px;
+  }
+
+  .kpi-card i {
+    font-size: 13px;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+  }
+
+  .kpi-label {
+    font-size: 12px;
+  }
+
+  .kpi-value {
+    font-size: 16px;
+  }
+
+  .dash-card {
+    padding: 8px 14px;
+    gap: 4px;
+  }
+
+  .dash-card-header h3 {
+    font-size: 14px;
+    gap: 6px;
+  }
+
+  /* Sor 2: kezeletlen rendelések/foglalások + mai foglalások - ez a legfontosabb, ez kapja a legtöbb helyet */
+  .dash-todos,
+  .dash-agenda {
+    min-height: 0;
+  }
+
+  .dash-todos .dash-card-body,
+  .dash-agenda .dash-card-body {
+    max-height: 230px;
+  }
+
+  /* Sor 3 + 4: kisebb súlyú widgetek, kompaktabbra véve */
+  .dash-trend,
+  .dash-top-items,
+  .dash-messages,
+  .dash-quick-actions {
+    min-height: 0;
+  }
+
+  .dash-trend .dash-card-body,
+  .dash-messages .dash-card-body {
+    max-height: 100px;
+    overflow: hidden;
+  }
+
+  .dash-top-items .dash-card-body {
+    max-height: 130px;
+    overflow: hidden;
+  }
+
+  .top-items-rows {
+    gap: 5px;
+  }
+
+  .top-item-row {
+    padding: 6px 10px;
+    gap: 4px;
+  }
+
+  .top-items-total {
+    padding: 6px 10px;
+  }
+
+  .top-items-total strong {
+    font-size: 14px;
+  }
+
+  .trend-chart {
+    padding-top: 4px;
+  }
+
+  .top-item-row,
+  .message-preview-row {
+    padding: 5px 10px;
+  }
+
+  #messages-preview-list {
+    max-height: 100px;
+  }
+
+  .todo-item,
+  .agenda-item,
+  .top-item-row,
+  .message-preview-row {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .dash-quick-actions-body {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+
+  .quick-action-btn {
+    padding: 6px 8px;
+    font-size: 11px;
+    gap: 4px;
+    flex-direction: row;
+  }
+
+  .quick-action-btn i {
+    font-size: 13px;
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+  }
+
+  .empty-state i {
+    font-size: 18px;
+  }
+
+  .empty-state {
+    gap: 4px;
+  }
+}
+
+/* =========================
    MAIN CARDS (Arany Fakanál style)
 ========================= */
 
@@ -41,7 +811,7 @@
   height: 4px;
   width: 100%;
 
-  background: linear-gradient(90deg, #c89b63,#f5d6a3, #c89b63);
+  background: linear-gradient(90deg, var(--gold),var(--gold-light), var(--gold));
 }
 
 /* =========================
@@ -78,7 +848,7 @@
   background:linear-gradient(
     90deg,
     transparent,
-    #c89b63,
+    var(--gold),
     transparent
   );
 }
@@ -115,7 +885,7 @@
 }
 
 .stat-card i {
-  color: #c89b63;
+  color: var(--gold);
   font-size: 24px;
   margin-bottom: 8px;
 }
@@ -143,7 +913,7 @@
 /* item */
 .problem-item {
   background: #fff;
-  border-left: 4px solid #c89b63;
+  border-left: 4px solid var(--gold);
   border-radius: 12px;
 
   padding: 10px 12px;
@@ -239,12 +1009,10 @@ html {
   max-width: 100%;
 }
 
-#orders-section,
 #bookings-dashboard {
   contain: layout paint;
 }
 
-#orders-section table,
 #bookings-dashboard table {
   width: 100%;
   table-layout: fixed;
@@ -258,9 +1026,10 @@ html {
   transition: background-color 0.12s ease;
 }
 
-#orders-section tr,
+/* MEGJEGYZÉS: a korábbi `transform: translateZ(0)` minden sorból külön
+   stacking contextet csinált, ami a sticky táblázat-fejléc fölé festette
+   a sorokat. Eltávolítva, hogy a sticky thead helyesen takarjon. */
 #bookings-dashboard tr {
-  transform: translateZ(0);
   will-change: background-color;
 }
 

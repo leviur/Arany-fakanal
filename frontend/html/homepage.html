@@ -402,6 +402,17 @@
                 </div>
 
                 <div class="form-field">
+                  <label for="contact-type">Üzenet típusa *</label>
+                  <select id="contact-type" name="type" required>
+                    <option value="" disabled selected>Válasszon típust…</option>
+                    <option value="Foglalás">Foglalás</option>
+                    <option value="Visszajelzés">Visszajelzés</option>
+                    <option value="Általános kérdés">Általános kérdés</option>
+                    <option value="Egyéb">Egyéb</option>
+                  </select>
+                </div>
+
+                <div class="form-field">
                   <label for="contact-message">Üzenet *</label>
                   <textarea
                     id="contact-message"
@@ -504,6 +515,7 @@
     <script src="../js/navbar.js"></script>
     <script src="../js/cart.js"></script>
     <script src="../js/login.js"></script>
+    <script src="../js/contact-form.js"></script>
 
     <!-- ===================== Hero Háttérkép váltakozása ===================== -->
     <script>

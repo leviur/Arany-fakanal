@@ -34,7 +34,9 @@ window.APP_STATE = {
     warnNew: 60,
     problemNew: 180,
     warnConfirmed: 24
-  }
+  },
+
+  openingHours: {}
 };
 
 let foodModalState = {
@@ -80,12 +82,28 @@ function setActiveSidebar() {
  **********************/
 const Auth = (() => {
   function logout() {
+    const modal = document.getElementById("logoutModal");
+    if (!modal) return;
+
+    modal.classList.remove("modal-hidden");
+    requestAnimationFrame(() => modal.classList.add("open"));
+  }
+
+  function closeLogoutModal() {
+    const modal = document.getElementById("logoutModal");
+    if (!modal) return;
+
+    modal.classList.remove("open");
+    setTimeout(() => modal.classList.add("modal-hidden"), 200);
+  }
+
+  function confirmLogout() {
     localStorage.removeItem("isAdmin");
     localStorage.removeItem("userName");
     window.location.href = "../html/homepage.html";
   }
 
-  return { logout };
+  return { logout, closeLogoutModal, confirmLogout };
 })();
 
 
@@ -127,8 +145,30 @@ let appData = Store.load();
 /**********************
  * 🎛️ UI MODULE
  **********************/
+const SECTION_TITLES = {
+  "dashboard-section": "Dashboard",
+  "orders-section": "Rendelések",
+  "menu-section": "Menük kezelése",
+  "bookings-section": "Foglalások",
+  "messages-section": "Üzenetek",
+  "settings-section": "Beállítások",
+};
+
 const UI = (() => {
   function switchSection(targetId) {
+    const leavingSettingsWithUnsaved =
+      window.settingsDirty &&
+      targetId !== "settings-section" &&
+      document.getElementById("settings-section")?.classList.contains("active");
+
+    if (leavingSettingsWithUnsaved) {
+      const confirmed = window.confirm(
+        "El nem mentett módosításaid vannak a Beállításokon. Biztosan elnavigálsz mentés nélkül?"
+      );
+      if (!confirmed) return;
+      window.settingsDirty = false;
+    }
+
     document.querySelectorAll(".section").forEach(s => {
       s.classList.remove("active");
     });
@@ -138,15 +178,26 @@ const UI = (() => {
       target.classList.add("active");
     }
 
+    // topbar cím frissítése
+    const pageTitle = document.getElementById("pageTitle");
+    if (pageTitle && SECTION_TITLES[targetId]) {
+      pageTitle.textContent = SECTION_TITLES[targetId];
+    }
+
     // sidebar szinkronizálása
     document.querySelectorAll(".menu a").forEach(a => {
       a.classList.toggle("active", a.dataset.target === targetId);
     });
-    
+
+    // fixed-scroll elrendezés a rendelések, foglalások és üzenetek oldalon
+    document.querySelector(".main")?.classList.toggle("orders-layout",   targetId === "orders-section");
+    document.querySelector(".main")?.classList.toggle("bookings-layout", targetId === "bookings-section");
+    document.querySelector(".main")?.classList.toggle("messages-layout", targetId === "messages-section");
+
     // generál egy véletlenszerű időt
-     if (targetId === "orders-section") {
-        refreshDashboard({ times: true }); //belépéskor is legyen random idő
-      }
+    if (targetId === "orders-section") {
+      refreshDashboard({ times: true });
+    }
   }
 
   function switchTab(tabId, btn) {
@@ -270,24 +321,12 @@ const Food = (() => {
  * 🚀 APP
  **********************/
 const App = (() => {
+  let closeMobileSidebar = () => {};
+
   function bindEvents() {
-
-    const searchInput = document.getElementById("searchInput");
-    const statusFilter = document.getElementById("statusFilter");
-
-    // searchInput?.addEventListener("input", filterOrders);
-    // statusFilter?.addEventListener("change", filterOrders);
 
     document.addEventListener("input", (e) => {
       if (e.target.id === "searchInput") {
-        console.log("search change");
-        filterOrders();
-      }
-    });
-
-    document.addEventListener("change", (e) => {
-      if (e.target.id === "statusFilter") {
-        console.log("status change");
         filterOrders();
       }
     });
@@ -295,18 +334,145 @@ const App = (() => {
     document.querySelector(".admin-logout-btn")
       ?.addEventListener("click", Auth.logout);
 
+    const logoutModal = document.getElementById("logoutModal");
+    document.getElementById("logoutCancel")
+      ?.addEventListener("click", Auth.closeLogoutModal);
+    document.getElementById("logoutCancelBtn")
+      ?.addEventListener("click", Auth.closeLogoutModal);
+    document.getElementById("logoutConfirmBtn")
+      ?.addEventListener("click", Auth.confirmLogout);
+    logoutModal?.addEventListener("click", (e) => {
+      if (e.target === logoutModal) Auth.closeLogoutModal();
+    });
+
+    // Profil-chip kitöltése
+    const userName = localStorage.getItem("userName");
+    if (userName) {
+      const initials = userName
+        .split(" ")
+        .map(word => word[0])
+        .join("")
+        .toUpperCase();
+
+      const profileAvatar = document.getElementById("profileAvatar");
+      const profileName = document.getElementById("profileName");
+
+      if (profileAvatar) profileAvatar.textContent = initials;
+      if (profileName) profileName.textContent = userName;
+    }
+
+    // Sidebar összecsukás (asztali ikon-csík nézet)
+    const sidebar = document.querySelector(".sidebar");
+    const sidebarToggle = document.getElementById("sidebarToggle");
+
+    if (sidebar && sidebarToggle) {
+      if (localStorage.getItem("sidebarCollapsed") === "true") {
+        sidebar.classList.add("collapsed");
+        sidebarToggle.setAttribute("aria-expanded", "false");
+      }
+
+      sidebarToggle.addEventListener("click", () => {
+        const collapsed = sidebar.classList.toggle("collapsed");
+        sidebarToggle.setAttribute("aria-expanded", String(!collapsed));
+        localStorage.setItem("sidebarCollapsed", String(collapsed));
+      });
+    }
+
+    // Mobil sidebar-drawer (off-canvas, < 768px)
+    const mobileSidebarToggle = document.getElementById("mobileSidebarToggle");
+    const sidebarBackdrop = document.getElementById("sidebarBackdrop");
+
+    if (sidebar && mobileSidebarToggle && sidebarBackdrop) {
+      let wasCollapsedBeforeOpen = false;
+
+      const openMobileSidebar = () => {
+        wasCollapsedBeforeOpen = sidebar.classList.contains("collapsed");
+        sidebar.classList.remove("collapsed");
+        sidebar.classList.add("mobile-open");
+        sidebarBackdrop.classList.add("active");
+        mobileSidebarToggle.setAttribute("aria-expanded", "true");
+      };
+
+      closeMobileSidebar = () => {
+        sidebar.classList.remove("mobile-open");
+        sidebarBackdrop.classList.remove("active");
+        mobileSidebarToggle.setAttribute("aria-expanded", "false");
+        if (wasCollapsedBeforeOpen) sidebar.classList.add("collapsed");
+      };
+
+      mobileSidebarToggle.addEventListener("click", openMobileSidebar);
+      sidebarBackdrop.addEventListener("click", closeMobileSidebar);
+    }
+
+    // Topbar manuális frissítés gomb
+    const refreshBtn = document.getElementById("refreshBtn");
+    let refreshRotation = 0;
+    refreshBtn?.addEventListener("click", () => {
+      refreshDashboard({ times: true });
+      if (document.getElementById("orders-section")?.classList.contains("active")) {
+        if (typeof renderOrders === "function") renderOrders(true);
+      }
+      if (document.getElementById("bookings-section")?.classList.contains("active")) {
+        if (typeof Bookings !== "undefined") Bookings.renderBookings(true);
+      }
+      if (document.getElementById("messages-section")?.classList.contains("active")) {
+        if (typeof Messages !== "undefined") Messages.render(true);
+      }
+      if (document.getElementById("menu-section")?.classList.contains("active")) {
+        if (typeof MenuManager !== "undefined") MenuManager.refresh();
+      }
+      refreshRotation += 360;
+      refreshBtn.querySelector("i").style.transform = `rotate(${refreshRotation}deg)`;
+    });
+
+    // Teendők KPI -> ugrás a releváns kezeletlen listára (rendelés, ha van, különben foglalás)
+    const kpiTodosCard = document.getElementById("kpi-todos");
+
+    function activateTodosKpi() {
+      if (!kpiTodosCard?.classList.contains("has-todos")) return;
+
+      const ordersList = document.getElementById("todo-orders-list");
+      const bookingsList = document.getElementById("todo-bookings-list");
+
+      const hasOrderTodos = ordersList?.querySelector(".todo-item");
+      const target = hasOrderTodos
+        ? ordersList.closest(".dash-todos")
+        : bookingsList?.closest(".dash-todos");
+
+      if (!target) return;
+
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      target.classList.remove("highlight");
+      requestAnimationFrame(() => target.classList.add("highlight"));
+      target.addEventListener("animationend", () => target.classList.remove("highlight"), { once: true });
+    }
+
+    kpiTodosCard?.addEventListener("click", activateTodosKpi);
+    kpiTodosCard?.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        activateTodosKpi();
+      }
+    });
+
+    // Dashboard gyorsműveletek -> sidebar szekcióváltás
+    document.querySelectorAll(".quick-action-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const target = btn.dataset.target;
+        UI.switchSection(target);
+
+        document.querySelectorAll(".menu a").forEach(a => {
+          a.classList.toggle("active", a.dataset.target === target);
+        });
+      });
+    });
+
     document.querySelectorAll(".tab").forEach(btn => {
       btn.addEventListener("click", () => {
         UI.switchTab(btn.dataset.tab, btn);
       });
     });
 
-    document.addEventListener("click", (e) => {
-      const btn = e.target.closest(".edit-btn");
-      if (!btn) return;
-
-      openEditModal({ currentTarget: btn });
-    });
   }
 
   function bindSidebar() {
@@ -317,6 +483,7 @@ const App = (() => {
         const target = link.dataset.target;
 
         UI.switchSection(target);
+        closeMobileSidebar();
 
         document.querySelectorAll(".menu a")
           .forEach(a => a.classList.remove("active"));
@@ -331,12 +498,15 @@ const App = (() => {
     //  KÖZÖS ORDERS STATE
     window.appData = window.appData || {};
     window.appData.orders = demoOrders;
+    window.appData.messages = Messages.getMessages();
 
     bindEvents();
     bindSidebar();
     Food.render();
-    
+
+    MenuManager.render();
     Bookings.render();
+    Messages.render();
 
     updateDashboardStats();
 
@@ -347,6 +517,50 @@ const App = (() => {
 
   return { init };
 })();
+
+
+/**********************
+ * 🔔 TOAST MODUL
+ **********************/
+window.showToast = function(message, type = "info", options = {}) {
+  let container = document.querySelector(".toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.className = "toast-container";
+    document.body.appendChild(container);
+  }
+
+  const icons = { success: "fa-circle-check", error: "fa-circle-xmark", info: "fa-circle-info", deleted: "fa-trash" };
+
+  const toast = document.createElement("div");
+  toast.className = `toast toast-${type}`;
+  toast.setAttribute("role", "status");
+  toast.setAttribute("aria-live", "polite");
+  toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i><span>${message}</span>`;
+
+  if (options.actionLabel && options.onAction) {
+    const actionBtn = document.createElement("button");
+    actionBtn.type = "button";
+    actionBtn.className = "toast-action";
+    actionBtn.textContent = options.actionLabel;
+    toast.appendChild(actionBtn);
+  }
+
+  container.appendChild(toast);
+
+  let dismissTimer = setTimeout(dismiss, 3500);
+
+  function dismiss() {
+    clearTimeout(dismissTimer);
+    toast.classList.add("toast-out");
+    toast.addEventListener("animationend", () => toast.remove(), { once: true });
+  }
+
+  toast.querySelector(".toast-action")?.addEventListener("click", () => {
+    options.onAction();
+    dismiss();
+  });
+};
 
 
 

@@ -1,11 +1,20 @@
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-
 :root {
     --menu-header-color: #ebcb91; 
     --background-color:#fcf8f2;
 }
 
 .container { display: flex; height: 100vh; background-color: var(--background-color) }
+
+/* ================= FRISSÍTÉS CROSSFADE (mint a többi lapon) ================= */
+#menu-section .food-table tbody,
+#menu-section #weeklyMenuBody {
+    transition: opacity 150ms ease;
+}
+
+#menu-section .food-table tbody.is-refreshing,
+#menu-section #weeklyMenuBody.is-refreshing {
+    opacity: 0;
+}
 
 /* Fő tartalom */
 .content {
@@ -47,80 +56,71 @@
 
 .logout { margin-top: auto; padding: 10px; background: #d4af37; border: none; cursor: pointer; }
 
-/* --- Heti menü kártyák --- */
-.menu-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    align-items: stretch;
-    gap: 10px; 
-    flex-grow: 1;
-}
-
-.day-column {
+/* --- Heti menü táblázat --- */
+.weekly-menu-card {
     background: #fff;
     border: 1px solid #d4af37;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    padding-bottom: 15px;
-    font-size: 11px;
+    border-radius: 12px;
+    padding: 20px;
+    overflow-x: auto;
 }
 
-.day-column h3 {
-    background: #2c241e;
-    color: #ffffff; 
-    padding: 10px 0;
-    text-align: center;
-    font-size: 16px;
-    text-transform: uppercase;
-    border-radius: 7px 7px 0 0;
-    margin-bottom: 2px;
-}
+.weekly-menu-table { width: 100%; border-collapse: collapse; }
 
-.menu-block {
-    margin-bottom: 20px;
-    background: #fdf5e6;
-    margin: 10px 8px; 
-    padding: 10px;
-    border-radius: 4px;
-    border: 1px solid #eee8db;
-}
-
-.menu-block h4 {
-    font-size: 13px;
+.weekly-menu-table th {
+    text-align: left;
+    padding: 12px 14px;
     color: #2c241e;
-    background: var(--menu-header-color);
-    text-transform: uppercase;
-    margin: -8px -8px 10px -8px; 
-    padding: 6px;
-    border-radius: 4px 4px 0 0; 
-    text-align: center;
     font-weight: bold;
+    background-color: #f8f5f0;
 }
 
-.day-column label {
-    display: block;
-    font-size: 14px;
+.weekly-menu-table td {
+    padding: 12px 14px;
+    border-bottom: 1px solid #eaddcc;
+    vertical-align: top;
+}
+
+.weekly-menu-table th:nth-child(1), .weekly-menu-table td:nth-child(1) { width: 12%; font-weight: 600; }
+.weekly-menu-table th:nth-child(2), .weekly-menu-table td:nth-child(2) { width: 38%; }
+.weekly-menu-table th:nth-child(3), .weekly-menu-table td:nth-child(3) { width: 38%; }
+.weekly-menu-table th:nth-child(4), .weekly-menu-table td:nth-child(4) { width: 12%; text-align: center; }
+
+.weekly-menu-empty {
+    color: #aaa;
+    font-style: italic;
+}
+
+#menu-section .day-menu-edit-btn:hover {
+    background: rgba(200, 155, 99, 0.14);
+    color: var(--gold);
+}
+
+#menu-section .day-menu-delete-btn:hover {
+    background: rgba(154, 48, 40, 0.1);
+    color: #9a3028;
+}
+
+/* ================= NAPI MENÜ MODAL ================= */
+#day-menu-modal-overlay .modal-box {
+    max-width: 480px;
+}
+
+.modal-section-label {
+    font-family: "Playfair Display", serif;
     font-weight: 700;
+    font-size: 15px;
     color: #2c241e;
-    margin: 14px 0 8px 2px;
-}
-
-.day-column select {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #d4af37;
-    border-radius: 4px;
-    background: #fff;
-    color: #333;
-    font-size: 13px;
-    cursor: pointer;
+    margin-top: 4px;
 }
 
 .table-wrapper {
     padding: 10px;
     overflow-x: auto; /* Vízszintes görgetés, ha a tábla túl széles */
+    overflow-y: auto; /* Függőleges görgetés, ha sok étel van egy kategóriában */
     max-width: 100%;
+    flex: 1;
+    min-height: 0;
 }
 
 /* --- Ételek kezelése (kétoszlopos nézet) --- */
@@ -144,41 +144,108 @@
     border-radius: 12px;
     overflow: hidden;
     border: 1px solid #d4af37;
-    align-items: flex-start;
 }
 
 /* Bal oldali sáv: Világos háttér */
-.category-sidebar { 
-    width: 275px; 
-    background: #f8f5f0; 
-    padding: 20px; 
-    border-radius: 8px; 
+.category-sidebar {
+    width: 275px;
+    background: #f8f5f0;
+    padding: 20px;
+    border-radius: 8px;
     flex-shrink: 0; /* Biztosítja, hogy ne zsugorodjon össze */
+    overflow-y: auto;
 }
 
-.category-sidebar h3 { 
-    color: #2c241e; 
-    margin-bottom: 15px; 
+.category-sidebar h3 {
+    color: #2c241e;
+    margin-bottom: 15px;
     font-size: 18px;
 }
 
-.category-sidebar ul { list-style: none; }
+.category-sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
 
-.cat-item { 
-    padding: 12px; 
-    cursor: pointer; 
-    border-radius: 6px; 
-    margin-bottom: 5px; 
+.category-sidebar-header h3 {
+    margin-bottom: 0;
+}
+
+.category-add-btn {
+    border: none;
+    background: var(--gold);
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 160ms ease, transform 160ms ease;
+}
+
+.category-add-btn:hover { background: #8b5e3c; }
+.category-add-btn:active { transform: scale(0.93); }
+
+.category-sidebar ul { list-style: none; margin-top: 15px; }
+
+.cat-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 12px;
+    cursor: pointer;
+    border-radius: 6px;
+    margin-bottom: 5px;
     color: #2c241e;
     transition: background 0.3s;
-    
+
+}
+
+.cat-item-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+.cat-item-actions {
+    display: flex;
+    gap: 2px;
+    flex-shrink: 0;
+}
+
+.cat-action-btn {
+    border: none;
+    background: transparent;
+    width: 26px;
+    height: 26px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 160ms ease;
+    color: #6b5d52;
+}
+
+.cat-item.active .cat-action-btn {
+    color: #fff;
+}
+
+.cat-action-btn:hover {
+    background: rgba(0, 0, 0, 0.12);
 }
 
 /* Itt adjuk meg, hogy csak az aktív elem legyen sötét */
-.cat-item.active { 
+.cat-item.active {
     background: #2c241e; /* Sötét háttér az aktívnak */
     color: #ffffff;      /* Fehér betűszín az aktívnak */
-    font-weight: bold; 
+    font-weight: bold;
 }
 
 .cat-item:hover:not(.active) {
@@ -186,9 +253,10 @@
 }
 
 /* Jobb oldali terület: Fehér háttér */
-.category-table-area { 
-    flex-grow: 1; 
-    background: #ffffff; 
+.category-table-area {
+    flex-grow: 1;
+    min-height: 0; /* enélkül a táblázat nem tudna belül görgetni a rögzített magasságú content-card-on belül */
+    background: #ffffff;
     padding: 20px;
     border-radius: 8px;
     border: 1px solid #eaddcc;
@@ -198,16 +266,42 @@
 }
 
 .table-header {
-   
+    flex-shrink: 0;
     padding: 15px;
     border-radius: 8px;
     margin-bottom: 20px;
-    
+
     display: flex;
+    flex-wrap: wrap;
+    row-gap: 10px;
     justify-content: space-between;
     align-items: center;
 }
 .add-btn { background: #2c241e; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; }
+
+/* ================= KERESÉS ================= */
+.food-search-row {
+    flex-shrink: 0;
+    display: flex;
+}
+
+#menu-section .food-search-row input {
+    width: 100%;
+    max-width: 280px;
+    padding: 9px 14px 9px 32px;
+    border: 1.5px solid rgba(200, 155, 99, 0.3);
+    background: #f8f5f0;
+    border-radius: 10px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+#menu-section .food-search-row input:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(200, 155, 99, 0.15);
+    background: #fff;
+}
 
 .food-table { width: 100%; border-collapse: collapse; }
 .food-table th { text-align: left; padding: 10px;  color: #2c241e; font-weight: bold;}
@@ -237,22 +331,126 @@
 /* Műveletek */
 .food-table th:nth-child(4), .food-table td:nth-child(4) { width: 15%; text-align: center; }
 
-.icon-btn { 
+/* ================= AKCIÓ GOMBOK ================= */
+#menu-section .action-btn {
     border: none;
-    padding: 6px 8px;
-    border-radius: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
     cursor: pointer;
-    font-size: 11px;
-    color: #fff;
+    font-size: 13px;
+    background: transparent;
+    color: #a08a78;
     margin: 0 2px;
-    transition: 0.2s ease;
-}
-.actions .edit-btn{
-    background: #c89b63;
+    transition: background 160ms ease, color 160ms ease, transform 160ms ease-out;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.actions .delete-btn {
-    background: #b93c3c;
+@media (hover: hover) and (pointer: fine) {
+    #menu-section .menu-edit-btn:hover {
+        background: rgba(200, 155, 99, 0.14);
+        color: var(--gold);
+    }
+
+    #menu-section .menu-delete-btn:hover {
+        background: rgba(154, 48, 40, 0.1);
+        color: #9a3028;
+    }
+}
+
+#menu-section .action-btn:active { transform: scale(0.93); }
+
+/* ================= ELÉRHETŐSÉG (KIFUTOTT ÉTEL) ================= */
+#menu-section .food-row-unavailable {
+    opacity: 0.55;
+}
+
+#menu-section .food-availability-badge {
+    margin-left: 8px;
+    padding: 2px 9px;
+    border: none;
+    border-radius: 999px;
+    background: #f1e4d4;
+    color: #8b5e3c;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    vertical-align: middle;
+    transition: background 160ms ease;
+}
+
+#menu-section .food-availability-badge:hover {
+    background: #e7d3b8;
+}
+
+/* ================= ALLERGÉNEK ================= */
+.allergen-checklist {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 10px;
+    border: 1.5px solid rgba(200, 155, 99, 0.3);
+    border-radius: 10px;
+    background: #f8f5f0;
+}
+
+.allergen-check {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #2d221b;
+    cursor: pointer;
+}
+
+.allergen-check:hover {
+    background: rgba(200, 155, 99, 0.12);
+}
+
+/* a .form-group input globális szabálya (szövegmezőkre szánt padding/border)
+   ráörökölne a checkboxokra is — itt visszaállítjuk a natív megjelenésükhöz közelit */
+.allergen-check input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    margin: 0;
+    border: 1.5px solid rgba(200, 155, 99, 0.5);
+    border-radius: 4px;
+    background: #fff;
+    flex-shrink: 0;
+    accent-color: var(--gold);
+}
+
+.allergen-check-icon-box {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.allergen-check-icon {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+#menu-section .food-allergen-icons {
+    display: flex;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+#menu-section .food-allergen-icon {
+    width: 16px;
+    height: 16px;
 }
 
 #food-desc {
@@ -260,12 +458,11 @@
     resize: vertical; 
 }
 
-.save-btn, .heti-menu-save-btn {
-        
+.save-btn {
         padding:10px 16px;
         border:none;
         border-radius:12px;
-        background:linear-gradient(135deg,#c89b63,#8b5e3c);
+        background:linear-gradient(135deg,var(--gold),#8b5e3c);
         color:white;
         font-weight:600;
         cursor:pointer;
@@ -273,14 +470,6 @@
         font-size:15px;
         transform:translateY(-2px);
         margin-top: 7px;
-}
-
-.heti-menu-save-btn {
-    display: block;
-    margin: auto;
-    padding:10px 16px;
-    margin-top: 8px;
-    
 }
 
 .cancel-btn{
@@ -300,11 +489,161 @@
 
 .cancel-btn:hover{
       background: rgba(200, 155, 99, 0.12);
-      border-color: #c89b63;
+      border-color: var(--gold);
       color: #2d221b;
       transform: translateY(-1px);
 }
 
 .cancel-btn:active{
       transform: translateY(0px) scale(0.98);
+}
+
+/* ================= RESZPONZÍV KÖR (< 1200px) =================
+   Ugyanaz az ok és töréspont, mint a Rendeléseken/Foglalásokon: a
+   táblázatok (Étel-lista, Heti menü) több-soros tartalmat hordoznak,
+   ezért laptop-szélességű ablaknál is szűkek lennének sima táblázatként. */
+@media (max-width: 1200px) {
+  .content {
+    height: auto;
+    overflow-y: visible;
+  }
+
+  .content-card {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .category-sidebar {
+    width: 100%;
+    max-height: 280px;
+  }
+
+  #menu-section .food-search-row input {
+    max-width: none;
+  }
+
+  /* --- Kártya-nézet: Étel-táblázat és Heti menü táblázat egyformán --- */
+  #menu-section .food-table,
+  #menu-section .food-table thead,
+  #menu-section .food-table tbody,
+  #menu-section .food-table th,
+  #menu-section .food-table td,
+  #menu-section .food-table tr,
+  #menu-section .weekly-menu-table,
+  #menu-section .weekly-menu-table thead,
+  #menu-section .weekly-menu-table tbody,
+  #menu-section .weekly-menu-table th,
+  #menu-section .weekly-menu-table td,
+  #menu-section .weekly-menu-table tr {
+    display: block;
+  }
+
+  #menu-section .food-table thead,
+  #menu-section .weekly-menu-table thead {
+    display: none;
+  }
+
+  #menu-section .food-table tbody tr,
+  #menu-section .weekly-menu-table tbody tr {
+    background: #fff;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(200, 155, 99, 0.12);
+  }
+
+  #menu-section .food-table td,
+  #menu-section .weekly-menu-table td {
+    padding: 7px 0;
+    border: none;
+    border-bottom: 1px solid rgba(200, 155, 99, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    font-size: 13px;
+    gap: 8px;
+  }
+
+  /* a táblázat-oszlopok :nth-child-dal megadott %-os szélessége
+     specifikusabb, mint egy sima "td" szelektor — ugyanazzal a
+     specificitással kell felülírni, lásd Foglalások/Rendelések minta */
+  #menu-section .food-table td:nth-child(n),
+  #menu-section .weekly-menu-table td:nth-child(n) {
+    width: 100%;
+    min-width: 0;
+  }
+
+  #menu-section .food-table td:last-child,
+  #menu-section .weekly-menu-table td:last-child {
+    border-bottom: none;
+    padding-top: 10px;
+    justify-content: flex-end;
+  }
+
+  #menu-section .food-table td::before,
+  #menu-section .weekly-menu-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #8b5e3c;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    flex-shrink: 0;
+    min-width: 80px;
+    padding-top: 2px;
+  }
+
+  #menu-section .food-table td:last-child::before,
+  #menu-section .weekly-menu-table td:last-child::before {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .tabs {
+    flex-wrap: wrap;
+  }
+
+  .tab-btn {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  /* Szűk kijelzőn (pl. iPhone SE) a sok egymásba ágyazott padding
+     (.content > .content-card > .category-table-area > .table-wrapper >
+     kártya-sor) összesen 200px+-ot evett el 375px-ből, alig hagyva helyet
+     a kártya-nézet szövegének — emiatt tördelt betűnként a hosszú szavakat. */
+  .content {
+    padding: 10px;
+  }
+
+  .content-card {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .category-table-area {
+    padding: 12px;
+  }
+
+  .table-wrapper {
+    padding: 4px;
+  }
+
+  #menu-section .food-table tbody tr,
+  #menu-section .weekly-menu-table tbody tr {
+    padding: 12px;
+  }
+
+  #menu-section .food-table td::before,
+  #menu-section .weekly-menu-table td::before {
+    min-width: 60px;
+  }
+
+  .cat-action-btn {
+    width: 22px;
+    height: 22px;
+    font-size: 10px;
+  }
 }

@@ -36,7 +36,9 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class OrderItemCreateSerializer(serializers.Serializer):
 
-    weekly_menu = serializers.ImageField()
+    weekly_menu = serializers.PrimaryKeyRelatedField(
+        queryset=WeeklyMenu.objects.all()
+    )
 
     quantity = serializers.IntegerField(
         min_value=1
@@ -64,10 +66,8 @@ class OrderCreateSerializer(serializers.Serializer):
         total_price = 0
 
         for item_data in items_data:
-            weekly_menu = WeeklyMenu.objects.get(
-                id=item_data['weekly_menu']
-            )
-
+            weekly_menu = item_data['weekly_menu']
+         
             quantity = item_data['quantity']
 
             unit_price = weekly_menu.price

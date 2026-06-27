@@ -10,5 +10,7 @@ urlpatterns = [
 
     path('api/reservations/', include('reservations.urls')),
 
-    path('api/contact/', include('contact.urls'))
+    path('api/contact/', include('contact.urls')),
+
+    path('api/users/', include('users.urls'))
 ]

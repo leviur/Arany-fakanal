@@ -36,7 +36,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class OrderItemCreateSerializer(serializers.Serializer):
 
-    weekly_menu = serializers.ImageField()
+    weekly_menu = serializers.IntegerField() # korábban ez volt: ImageField
 
     quantity = serializers.IntegerField(
         min_value=1

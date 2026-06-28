@@ -1,9 +1,24 @@
 from rest_framework import serializers
 from .models import MenuItem, WeeklyMenu, WeeklyMenuItem
+# ,Category, Allergen
+
+# 1. Category serializer - objektumként adja vissza (id + name)
+# class CategorySerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Category
+#         fields = ['id', 'name']
 
 
+# 2. Allergen serializer - a frontend name, icon, label mezőket vár
+# class AllergenSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Allergen
+#         fields = ['name', 'icon', 'label']
+
+# 3. Javított MenuItemSerializer
 class MenuItemSerializer(serializers.ModelSerializer):
     category = serializers.StringRelatedField()
+    #category = CategorySerializer()        # objektum, nem string
 
     class Meta:
         model = MenuItem
@@ -30,7 +45,7 @@ class SimpleMenuItemSerializer(serializers.ModelSerializer):
 class WeeklyMenuItemSerializer(serializers.ModelSerializer):
 
     class Meta:
-        models = WeeklyMenuItem
+        model = WeeklyMenuItem
         fields = '__all__'
 
 class WeeklyMenuSerializer(serializers.ModelSerializer):

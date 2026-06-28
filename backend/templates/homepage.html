@@ -226,10 +226,7 @@
                       </button>
                     </div>
                   </div>
-                  <p class="menu-desc">
-                    Húsleves gazdagon, rántott hús rizi-bizivel, túrós
-                    palacsinta
-                  </p>
+                  <p class="menu-desc" id="menuA-desc">Betöltés...</p> {% comment %} A menüt JSON-ból.{% endcomment %}
                 </div>
                 <div class="checkbox-wrapper">
                   <div class="menu-row">
@@ -258,9 +255,7 @@
                       </button>
                     </div>
                   </div>
-                  <p class="menu-desc">
-                    Jókai bableves, túrós tészta, mákos guba
-                  </p>
+                  <p class="menu-desc" id="menuB-desc">Betöltés...</p> {% comment %} B menüt JSON-ból. {% endcomment %}
                 </div>
               </div>
               <button class="card-btn">Kosárba helyezés</button>
@@ -519,6 +514,58 @@
   
     
     <script src="{% static 'js/contact-form.js' %}"></script>
+
+    <!-- ===================== Napi menü betöltése JSON-ból ===================== -->
+    <script>
+      let weeklyMenuData = [];
+
+      function formatMenuDesc(menuItem) {
+        if (!menuItem) return "Nem elérhető";
+        const parts = [];
+        if (menuItem.soup) parts.push(menuItem.soup.name);
+        if (menuItem.main_course) parts.push(menuItem.main_course.name);
+        if (menuItem.dessert) parts.push(menuItem.dessert.name);
+        return parts.join(", ") || "Nem elérhető";
+      }
+
+      function updateMenuDisplay(dayValue) {
+        const menuA = weeklyMenuData.find(m => m.day === dayValue && m.menu_type === "A");
+        const menuB = weeklyMenuData.find(m => m.day === dayValue && m.menu_type === "B");
+
+        document.getElementById("menuA-desc").textContent = menuA
+          ? formatMenuDesc(menuA)
+          : "Ezen a napon nincs A menü.";
+
+        document.getElementById("menuB-desc").textContent = menuB
+          ? formatMenuDesc(menuB)
+          : "Ezen a napon nincs B menü.";
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const menuUrl = "{% static 'data/weekly_menu.json' %}";
+
+        fetch(menuUrl)
+          .then(res => {
+            if (!res.ok) throw new Error("Nem sikerült betölteni a heti menüt");
+            return res.json();
+          })
+          .then(data => {
+            weeklyMenuData = data;
+            const daySelect = document.getElementById("day");
+            updateMenuDisplay(daySelect.value);
+
+            daySelect.addEventListener("change", () => {
+              updateMenuDisplay(daySelect.value);
+            });
+          })
+          .catch(err => {
+            console.error("Hiba a heti menü betöltésekor:", err);
+            document.getElementById("menuA-desc").textContent = "Nem sikerült betölteni.";
+            document.getElementById("menuB-desc").textContent = "Nem sikerült betölteni.";
+          });
+      });
+    </script>
+
 
     <!-- ===================== Hero Háttérkép váltakozása ===================== -->
     <script>

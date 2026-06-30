@@ -19,8 +19,9 @@ class Order(models.Model):
         on_delete=models.CASCADE,
         related_name='orders'
     )
+   
 
-    delivery_date = models.DateField()
+    # delivery_date = models.DateField()
 
     delivery_address = models.TextField()
 
@@ -53,6 +54,8 @@ class OrderItem(models.Model):
         WeeklyMenu,
         on_delete=models.PROTECT
     )
+
+    delivery_date = models.DateField()
 
     quantity = models.PositiveIntegerField(default=1)
 

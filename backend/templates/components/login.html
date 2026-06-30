@@ -1,11 +1,13 @@
 <!-- login.html -->
+
+{% load static %}
 <div class="modal" id="authModal">
     <div class="login-box">
 
         <button class="close-modal" id="closeAuth">✕</button>
 
         <div class="login-header">
-            <img src="../static/images/logo2.png" alt="Arany Fakanál" class="login-logo">
+            <img src="{% static 'images/logo2.png' %}" alt="Arany Fakanál" class="login-logo">
             <h2 id="authTitle">Bejelentkezés</h2>
             <div class="divider"></div>
         </div>
@@ -13,11 +15,11 @@
         <form id="loginForm">
             <div class="input-group">
                 <i class="fa-regular fa-envelope"></i>
-                <input type="email" placeholder="E-mail cím" required>
+                <input type="email" id="login-email" placeholder="E-mail cím" required>
             </div>
             <div class="input-group">
                 <i class="fa-solid fa-lock"></i>
-                <input type="password" placeholder="Jelszó" required>
+                <input type="password" id="login-password" placeholder="Jelszó" required>
             </div>
             <button type="submit" class="btn-gold btn-full">Belépés</button>
         </form>
@@ -26,34 +28,34 @@
     
             <div class="input-group">
                 <i class="fa-regular fa-user"></i>
-                <input type="text" placeholder="Teljes név" required>
+                <input type="text" id="reg-name" placeholder="Teljes név" required>
             </div>
 
             <div class="input-group">
                 <i class="fa-regular fa-envelope"></i>
-                <input type="email" placeholder="E-mail cím" required>
+                <input type="email" id="reg-email" placeholder="E-mail cím" required>
             </div>
 
             <div class="input-group">
                 <i class="fa-solid fa-phone"></i>
-                <input type="tel" placeholder="Telefonszám" required>
+                <input type="tel" id="reg-phone" placeholder="Telefonszám" required>
             </div>
 
             <div class="input-group">
                 <i class="fa-solid fa-location-dot"></i>
                 <input
-                    type="text" placeholder="Szállítási cím" required>
+                    type="text" id="reg-address" placeholder="Szállítási cím" required>
             </div>
 
             <div class="input-group">
                 <i class="fa-solid fa-lock"></i>
-                <input type="password" placeholder="Jelszó" required>
+                <input type="password" id="reg-password" placeholder="Jelszó" required>
             </div>
 
             <div class="input-group">
                 <i class="fa-solid fa-lock"></i>
                 <input
-                    type="password" placeholder="Jelszó megerősítése" required>
+                    type="password" id="reg-password-confirm" placeholder="Jelszó megerősítése" required>
             </div>
 
             <button type="submit" class="btn-gold btn-full">Regisztráció</button>
@@ -66,4 +68,3 @@
 
     </div>
 </div>
-

@@ -42,9 +42,11 @@ class OrderItemCreateSerializer(serializers.Serializer):
         min_value=1
     )
 
+    delivery_date = serializers.DateField()
+
 class OrderCreateSerializer(serializers.Serializer):
 
-    delivery_date = serializers.DateField()
+    # delivery_date = serializers.DateField()
 
     delivery_address = serializers.CharField()
 
@@ -57,9 +59,9 @@ class OrderCreateSerializer(serializers.Serializer):
         user = self.context['request'].user
         order = Order.objects.create(
             user=user,
-            delivery_date=validated_data['delivery_date'],
             delivery_address=validated_data['delivery_address']
         )
+
 
         total_price = 0
 

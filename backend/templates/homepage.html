@@ -185,7 +185,7 @@
             <h2 class="card-title">Napi menü</h2>
             <div class="divider"></div>
             <!-- Az adott nap kiválasztása -->
-            <form class="daily-menu-form">
+            <form class="daily-menu-form" id="dailyMenuForm">
               <div class="day-options">
                 <label for="day">Nap kiválasztása</label>
                 <select name="day" id="day">
@@ -258,7 +258,7 @@
                   <p class="menu-desc" id="menuB-desc">Betöltés...</p> {% comment %} B menüt JSON-ból. {% endcomment %}
                 </div>
               </div>
-              <button class="card-btn">Kosárba helyezés</button>
+              <button type="submit" class="card-btn" id="addToCartBtn">Kosárba helyezés</button>
             </form>
           </div>
         </div>
@@ -664,6 +664,330 @@
         el.textContent = val;
       }
     </script>
+
+    <!-- ===================== Kosárba helyezés - bejelentkezés ellenőrzése ===================== -->
+<script>
+  function findSelectedMenu(day, type) {
+
+    return weeklyMenuData.find(menu =>
+        menu.day === day &&
+        menu.menu_type === type &&
+        menu.is_available === true
+    );
+
+  }
+
+  function getMenu(day, type) {
+
+    return weeklyMenuData.find(menu =>
+
+        menu.day === day &&
+        menu.menu_type === type &&
+        menu.is_available === true
+
+    );
+  }
+
+
+ <!-- ===================== Kosár objektum létrehozása ===================== -->
+  function createCartData(
+    day,
+    menuAChecked,
+    menuBChecked,
+    qtyA,
+    qtyB
+) {
+
+    //const deliveryDate = calculateDeliveryDate(day);
+
+    const items = [];
+
+    if(menuAChecked && qtyA > 0){
+
+        const menuA =getMenu(day,"A");
+
+
+        if(menuA){
+
+            items.push({
+
+                weekly_menu_id:
+                    menuA.id,
+
+                day:
+                    menuA.day,
+
+                menu_type:
+                    menuA.menu_type,
+
+                quantity:
+                    qtyA,
+
+                unit_price:
+                    menuA.price,
+
+                name:
+                    getMenuName(menuA)
+
+            });
+
+        }
+
+    }
+
+    if(menuBChecked && qtyB > 0){
+
+        const menuB =
+            getMenu(day,"B");
+
+        if(menuB){
+            items.push({
+
+                weekly_menu_id:
+                    menuB.id,
+
+                day:
+                    menuB.day,
+
+                menu_type:
+                    menuB.menu_type,
+
+                quantity:
+                    qtyB,
+
+                unit_price:
+                    menuB.price,
+
+                name:
+                    getMenuName(menuB)
+
+            });
+
+        }
+
+    }
+
+
+
+    return {
+
+        items: items,
+
+        total_price:
+            calculateTotal(items)
+    };
+}
+<!-- =====================  Menü megnevezés ===================== -->
+  function getMenuName(menu){
+
+    return (
+
+        menu.soup.name
+        +
+        " / "
+        +
+        menu.main_course.name
+        +
+        " / "
+        +
+        menu.dessert.name
+
+    );
+
+}
+
+function calculateTotal(items){
+
+    return items.reduce(
+
+        (sum,item)=>{
+
+            return sum +
+            (
+                item.unit_price *
+                item.quantity
+            );
+
+        },
+
+        0
+
+    );
+
+}
+
+  // Kosárba helyezés
+  // Ha kap paramétert, akkor a mentett pending adatot használja
+  // Ha nincs paraméter, akkor a jelenlegi oldalon kiválasztott adatokat olvassa ki
+  function addDailyMenuToCart(item = null) {
+
+    // =====================================
+    // 1. ha nincs paraméter → UI-ból olvas
+    // =====================================
+    if (!item) {
+
+        const day = document.getElementById("day").value;
+
+        const menuAChecked = document.getElementById("menuA").checked;
+        const menuBChecked = document.getElementById("menuB").checked;
+
+        const qtyA = parseInt(document.getElementById("qtyA").textContent);
+        const qtyB = parseInt(document.getElementById("qtyB").textContent);
+
+        if (!menuAChecked && !menuBChecked) {
+            alert("Kérem válasszon legalább egy menüt!");
+            return;
+        }
+
+        item = createCartData(
+            day,
+            menuAChecked,
+            menuBChecked,
+            qtyA,
+            qtyB
+        );
+    }
+
+    // =====================================
+    // 2. meglévő kosár betöltése
+    // =====================================
+    let cart = JSON.parse(sessionStorage.getItem("cart"));
+
+    if (!cart) {
+        cart = {
+            items: [],
+            total_price: 0
+        };
+    }
+
+    // =====================================
+    // 3. új itemek hozzáadása
+    // =====================================
+    cart.items.push(...item.items);
+
+    // =====================================
+    // 4. összeg újraszámolás
+    // =====================================
+    cart.total_price = cart.items.reduce(
+        (sum, i) => sum + (i.unit_price * i.quantity),
+        0
+    );
+
+    // =====================================
+    // 5. mentés
+    // =====================================
+    sessionStorage.setItem(
+        "cart",
+        JSON.stringify(cart)
+    );
+
+    console.log("Kosár frissítve:", cart);
+}
+
+
+
+  document.addEventListener("DOMContentLoaded", () => {
+
+
+    const dailyMenuForm =
+      document.getElementById("dailyMenuForm");
+
+
+    dailyMenuForm?.addEventListener("submit", (e) => {
+
+      e.preventDefault();
+
+
+
+      const userName =
+        localStorage.getItem("userName");
+
+
+
+      // Nincs bejelentkezve
+      if (!userName) {
+
+
+        const day =
+          document.getElementById("day").value;
+
+
+        const menuAChecked =
+          document.getElementById("menuA").checked;
+
+
+        const menuBChecked =
+          document.getElementById("menuB").checked;
+
+
+        const qtyA =
+          parseInt(
+            document.getElementById("qtyA").textContent
+          );
+
+
+        const qtyB =
+          parseInt(
+            document.getElementById("qtyB").textContent
+          );
+
+
+
+        if (!menuAChecked && !menuBChecked) {
+
+          alert("Kérem válasszon legalább egy menüt!");
+
+          return;
+
+        }
+
+
+
+        const pendingCart =
+            createCartData(
+                day,
+                menuAChecked,
+                menuBChecked,
+                qtyA,
+                qtyB
+            );
+
+
+        localStorage.setItem(
+            "pendingCart",
+            JSON.stringify(pendingCart)
+        );
+
+
+
+        const modal =
+          document.getElementById("authModal");
+
+
+
+        if (modal) {
+
+          modal.style.display = "flex";
+
+        }
+
+
+        return;
+
+      }
+
+
+      // Már be van jelentkezve
+      addDailyMenuToCart();
+
+
+    });
+
+
+  });
+
+
+</script>
 
 {% endblock %}
     

@@ -42,6 +42,8 @@
 
 <body>
 
+{# CSRF token: beállítja a csrftoken cookie-t a POST kérésekhez (login, logout) #}
+{% csrf_token %} 
 
 {% include "components/navbar.html" %}
 

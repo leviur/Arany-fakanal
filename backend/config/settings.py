@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework_simplejwt',
     'users.apps.UsersConfig',
     'menu',
     'orders',
@@ -129,3 +128,15 @@ STATIC_URL = 'static/'
 STATICFILES_DIRS = [
     BASE_DIR.parent / "frontend" / "static"
 ]
+
+# Django REST Framework — session authentication beállítás
+REST_FRAMEWORK = {
+  # Minden API kérésnél a Django session cookie-val azonosítjuk a usert
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+  # Egyelőre minden végpont nyitott; később végpontonként szigorítjuk (IsAuthenticated)
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ]
+}

@@ -5,6 +5,9 @@ from . import views
 urlpatterns = [
     path('admin/', admin.site.urls),
 
+    # Session auth végpontok: login, logout, register, me
+    path('api/auth/', include('users.urls')),
+
     path('api/', include('menu.urls')),
 
     path('api/orders/', include('orders.urls')),

@@ -7,7 +7,13 @@ const MenuManager = (() => {
   let pendingDayMenuDelete = null;     // day name
   let foodSearchTerm = '';
 
+  // ======================== API URL (API-hoz kell - aktiváld ha API készen van) ========================
+  // const WEEKLY_MENU_API_URL = '/api/weekly-menu/';
+  // ======================== VÉGE ========================
+
+  // ======================== localStorage (JSON alapú - töröld ha API-ra vált) ========================
   const WEEKLY_MENU_STORAGE_KEY = 'aranyfakanal_weekly_menu';
+  // ======================== VÉGE ========================
   let weeklyMenu = {}; // { "Hétfő": { A: {leves, foetel, desszert, ar}, B: {...} }, ... }
 
   /* ================= KATEGÓRIÁK ================= */
@@ -497,6 +503,36 @@ const MenuManager = (() => {
   }
 
   /* ================= HETI MENÜ MENTÉS ================= */
+  // ======================== API alapú betöltés (API-hoz kell - aktiváld ha API készen van) ========================
+  // function loadWeeklyMenu() {
+  //   fetch(WEEKLY_MENU_API_URL)
+  //     .then(res => {
+  //       if (!res.ok) throw new Error('Nem sikerült betölteni a heti menüt');
+  //       return res.json();
+  //     })
+  //     .then(data => {
+  //       weeklyMenu = {};
+  //       const dayNames = { hetfo: 'Hétfő', kedd: 'Kedd', szerda: 'Szerda', csutortok: 'Csütörtök', pentek: 'Péntek' };
+  //       data.forEach(item => {
+  //         const dayName = dayNames[item.day] || item.day;
+  //         if (!weeklyMenu[dayName]) weeklyMenu[dayName] = {};
+  //         weeklyMenu[dayName][item.menu_type] = {
+  //           id: item.id,
+  //           leves: item.soup?.name || '',
+  //           foetel: item.main_course?.name || '',
+  //           desszert: item.dessert?.name || '',
+  //           ar: item.price + ' Ft'
+  //         };
+  //       });
+  //       renderWeeklyMenuTable();
+  //     })
+  //     .catch(err => {
+  //       console.error('Hiba a heti menü betöltésekor:', err);
+  //     });
+  // }
+  // ======================== VÉGE ========================
+
+  // ======================== localStorage alapú betöltés (JSON alapú - töröld ha API-ra vált) ========================
   function loadWeeklyMenu() {
     try {
       weeklyMenu = JSON.parse(localStorage.getItem(WEEKLY_MENU_STORAGE_KEY) || '{}');
@@ -504,10 +540,72 @@ const MenuManager = (() => {
       weeklyMenu = {};
     }
   }
+  // ======================== VÉGE ========================
 
+  // ======================== API alapú mentés (API-hoz kell - aktiváld ha API készen van) ========================
+  // function saveWeeklyMenuToStorage(day, menuData) {
+  //   const id = menuData?.id;
+  //   const method = id ? 'PUT' : 'POST';
+  //   const url = id ? WEEKLY_MENU_API_URL + id + '/' : WEEKLY_MENU_API_URL + 'create/';
+  //   fetch(url, {
+  //     method: method,
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //       'X-CSRFToken': getCookie('csrftoken')
+  //     },
+  //     body: JSON.stringify(menuData)
+  //   })
+  //     .then(res => {
+  //       if (!res.ok) throw new Error('Mentés sikertelen');
+  //       return res.json();
+  //     })
+  //     .then(() => {
+  //       loadWeeklyMenu();
+  //       window.showToast?.('Heti menü mentve', 'success');
+  //     })
+  //     .catch(err => {
+  //       console.error('Hiba a mentéskor:', err);
+  //       window.showToast?.('Mentés sikertelen!', 'error');
+  //     });
+  // }
+  // ======================== VÉGE ========================
+
+  // ======================== localStorage alapú mentés (JSON alapú - töröld ha API-ra vált) ========================
   function saveWeeklyMenuToStorage() {
     localStorage.setItem(WEEKLY_MENU_STORAGE_KEY, JSON.stringify(weeklyMenu));
   }
+  // ======================== VÉGE ========================
+
+  // ======================== CSRF token helper (API-hoz kell - aktiváld ha API készen van) ========================
+  // function getCookie(name) {
+  //   const value = `; ${document.cookie}`;
+  //   const parts = value.split(`; ${name}=`);
+  //   if (parts.length === 2) return parts.pop().split(';').shift();
+  //   return '';
+  // }
+  // ======================== VÉGE ========================
+
+  // ======================== API alapú törlés (API-hoz kell - aktiváld ha API készen van) ========================
+  // function deleteWeeklyMenu(day) {
+  //   const entry = weeklyMenu[day];
+  //   if (!entry) return;
+  //   const deleteRequests = Object.values(entry)
+  //     .filter(m => m.id)
+  //     .map(m => fetch(WEEKLY_MENU_API_URL + m.id + '/', {
+  //       method: 'DELETE',
+  //       headers: { 'X-CSRFToken': getCookie('csrftoken') }
+  //     }));
+  //   Promise.all(deleteRequests)
+  //     .then(() => {
+  //       loadWeeklyMenu();
+  //       window.showToast?.('Napi menü törölve', 'deleted');
+  //     })
+  //     .catch(err => {
+  //       console.error('Hiba a törléskor:', err);
+  //       window.showToast?.('Törlés sikertelen!', 'error');
+  //     });
+  // }
+  // ======================== VÉGE ========================
 
   /* ================= NAPI MENÜ MODAL (hozzáadás/szerkesztés) ================= */
   function openDayMenuModal(day) {
@@ -559,15 +657,24 @@ const MenuManager = (() => {
       return;
     }
 
+    // ======================== API alapú mentés (API-hoz kell - aktiváld ha API készen van) ========================
+    // const entry = weeklyMenu[day] || {};
+    // const dayKeys = { 'Hétfő': 'hetfo', 'Kedd': 'kedd', 'Szerda': 'szerda', 'Csütörtök': 'csutortok', 'Péntek': 'pentek' };
+    // saveWeeklyMenuToStorage(day, { id: entry.A?.id || null, day: dayKeys[day], menu_type: 'A', soup: values['day-a-leves'], main_course: values['day-a-foetel'], dessert: values['day-a-desszert'], price: parseInt(values['day-a-ar']) });
+    // saveWeeklyMenuToStorage(day, { id: entry.B?.id || null, day: dayKeys[day], menu_type: 'B', soup: values['day-b-leves'], main_course: values['day-b-foetel'], dessert: values['day-b-desszert'], price: parseInt(values['day-b-ar']) });
+    // ======================== VÉGE ========================
+
+    // ======================== localStorage alapú mentés (JSON alapú - töröld ha API-ra vált) ========================
     weeklyMenu[day] = {
       A: { leves: values['day-a-leves'], foetel: values['day-a-foetel'], desszert: values['day-a-desszert'], ar: values['day-a-ar'] + ' Ft' },
       B: { leves: values['day-b-leves'], foetel: values['day-b-foetel'], desszert: values['day-b-desszert'], ar: values['day-b-ar'] + ' Ft' },
     };
-
     saveWeeklyMenuToStorage();
     renderWeeklyMenuTable();
-    closeDayMenuModal();
     window.showToast?.('Heti menü mentve', 'success');
+    // ======================== VÉGE ========================
+
+    closeDayMenuModal();
   }
 
   /* ================= NAPI MENÜ TÖRLÉS MEGERŐSÍTŐ MODAL ================= */
@@ -590,12 +697,19 @@ const MenuManager = (() => {
 
   function confirmDayMenuDelete() {
     if (!pendingDayMenuDelete) return;
-    delete weeklyMenu[pendingDayMenuDelete];
 
+    // ======================== API alapú törlés (API-hoz kell - aktiváld ha API készen van) ========================
+    // deleteWeeklyMenu(pendingDayMenuDelete);
+    // ======================== VÉGE ========================
+
+    // ======================== localStorage alapú törlés (JSON alapú - töröld ha API-ra vált) ========================
+    delete weeklyMenu[pendingDayMenuDelete];
     saveWeeklyMenuToStorage();
     renderWeeklyMenuTable();
-    closeDayMenuDeleteConfirm();
     window.showToast?.('Napi menü törölve', 'deleted');
+    // ======================== VÉGE ========================
+
+    closeDayMenuDeleteConfirm();
   }
 
   /* ================= KATTINTÁS-KEZELŐ (delegált) ================= */

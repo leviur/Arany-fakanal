@@ -1,19 +1,48 @@
 /**********************
- * 🔐 AUTH CHECK
+ * 🔐 AUTH CHECK — dashboard védése
+ *
+ * Régen: localStorage.isAdmin (könnyen megkerülhető)
+ * Most:  szerveroldali session ellenőrzés /api/auth/me/ végponton
  **********************/
-document.addEventListener("DOMContentLoaded", () => {
-  const isAdmin = localStorage.getItem("isAdmin");
-
-  if (isAdmin !== "true") {
-
-    alert("Ehhez az oldalhoz nincs jogosultsága!");
-
-    window.location.replace("/");
-    return;
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop().split(";").shift();
   }
+  return null;
+}
 
-  App.init();
+document.addEventListener("DOMContentLoaded", async () => {
+  try {
+    // Session ellenőrzés: van-e érvényes bejelentkezés?
+    const response = await fetch("/api/auth/me/", {
+      credentials: "include",
+    });
 
+    if (!response.ok) {
+      window.location.replace("/");
+      return;
+    }
+
+    const user = await response.json();
+
+    // Csak admin szerepkörű user férhet hozzá a dashboardhoz
+    const isAdmin = user.role === "admin";
+
+    if (!isAdmin) {
+      alert("Ehhez az oldalhoz nincs jogosultsága!");
+      window.location.replace("/");
+      return;
+    }
+
+    // Felhasználó adatai elérhetők az egész dashboard JS-ben
+    window.CURRENT_USER = user;
+    App.init();
+  } catch (error) {
+    console.error("Auth ellenőrzés sikertelen:", error);
+    window.location.replace("/");
+  }
 });
 
 
@@ -97,9 +126,20 @@ const Auth = (() => {
     setTimeout(() => modal.classList.add("modal-hidden"), 200);
   }
 
-  function confirmLogout() {
-    localStorage.removeItem("isAdmin");
-    localStorage.removeItem("userName");
+  async function confirmLogout() {
+    try {
+      // Session törlése a szerveren, majd visszairányítás a főoldalra
+      await fetch("/api/auth/logout/", {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "X-CSRFToken": getCookie("csrftoken"),
+        },
+      });
+    } catch (error) {
+      console.error("Kijelentkezés sikertelen:", error);
+    }
+
     window.location.href = "/";
   }
 
@@ -345,8 +385,8 @@ const App = (() => {
       if (e.target === logoutModal) Auth.closeLogoutModal();
     });
 
-    // Profil-chip kitöltése
-    const userName = localStorage.getItem("userName");
+    // Profil-chip kitöltése — adatok a session-ből (window.CURRENT_USER), nem localStorage-ból
+    const userName = window.CURRENT_USER?.name;
     if (userName) {
       const initials = userName
         .split(" ")

@@ -189,11 +189,7 @@
               <div class="day-options">
                 <label for="day">Nap kiválasztása</label>
                 <select name="day" id="day">
-                  <option value="hetfo">Hétfő</option>
-                  <option value="kedd">Kedd</option>
-                  <option value="szerda">Szerda</option>
-                  <option value="csutortok">Csütörtök</option>
-                  <option value="pentek">Péntek</option>
+                  <!-- A rendelhető napokat a JavaScript tölti fel (populateDaySelect) -->
                 </select>
               </div>
               <!-- Menü kiválasztása -->
@@ -541,6 +537,15 @@
           : "Ezen a napon nincs B menü.";
       }
 
+      // Nap váltásakor az A/B menü jelölések törlődnek
+      function resetMenuSelection() {
+        const menuA = document.getElementById("menuA");
+        const menuB = document.getElementById("menuB");
+
+        if (menuA) menuA.checked = false;
+        if (menuB) menuB.checked = false;
+      }
+
       document.addEventListener("DOMContentLoaded", () => {
         const menuUrl = "{% static 'data/weekly_menu.json' %}";
 
@@ -551,10 +556,19 @@
           })
           .then(data => {
             weeklyMenuData = data;
-            const daySelect = document.getElementById("day");
-            updateMenuDisplay(daySelect.value);
 
-            daySelect.addEventListener("change", () => {
+            // Csak a rendelhető napok jelennek meg a dropdownban
+            if (typeof populateDaySelect === "function") {
+              populateDaySelect();
+            }
+
+            const daySelect = document.getElementById("day");
+            if (daySelect?.value) {
+              updateMenuDisplay(daySelect.value);
+            }
+
+            daySelect?.addEventListener("change", () => {
+              resetMenuSelection();
               updateMenuDisplay(daySelect.value);
             });
           })
@@ -698,8 +712,6 @@
     qtyB
 ) {
 
-    //const deliveryDate = calculateDeliveryDate(day);
-
     const items = [];
 
     if(menuAChecked && qtyA > 0){
@@ -727,7 +739,11 @@
                     menuA.price,
 
                 name:
-                    getMenuName(menuA)
+                    getMenuName(menuA),
+
+                // Minden tételhez külön delivery_date a kiválasztott nap alapján
+                delivery_date:
+                    calculateDeliveryDate(menuA.day)
 
             });
 
@@ -759,7 +775,11 @@
                     menuB.price,
 
                 name:
-                    getMenuName(menuB)
+                    getMenuName(menuB),
+
+                // B menü ugyanarra a napra — saját delivery_date (ugyanaz a dátum)
+                delivery_date:
+                    calculateDeliveryDate(menuB.day)
 
             });
 
@@ -816,17 +836,18 @@ function calculateTotal(items){
 
 }
 
-  // Kosárba helyezés
-  // Ha kap paramétert, akkor a mentett pending adatot használja
-  // Ha nincs paraméter, akkor a jelenlegi oldalon kiválasztott adatokat olvassa ki
+  // Kosárba helyezés — a központi addItemsToCart() függvényt használja (cart.js)
   function addDailyMenuToCart(item = null) {
 
-    // =====================================
-    // 1. ha nincs paraméter → UI-ból olvas
-    // =====================================
+    // 1. ha nincs paraméter → UI-ból olvassuk ki a kiválasztást
     if (!item) {
 
         const day = document.getElementById("day").value;
+
+        if (!day) {
+            alert("Jelenleg nincs rendelhető nap.");
+            return;
+        }
 
         const menuAChecked = document.getElementById("menuA").checked;
         const menuBChecked = document.getElementById("menuB").checked;
@@ -848,40 +869,20 @@ function calculateTotal(items){
         );
     }
 
-    // =====================================
-    // 2. meglévő kosár betöltése
-    // =====================================
-    let cart = JSON.parse(sessionStorage.getItem("cart"));
+    // 2. Minden tételhez friss delivery_date számítás (pendingCart esetén is aktuális marad)
+    const itemsWithDates = item.items.map((cartItem) => ({
+        ...cartItem,
+        delivery_date: calculateDeliveryDate(cartItem.day),
+    }));
 
-    if (!cart) {
-        cart = {
-            items: [],
-            total_price: 0
-        };
+    // 3. tételek hozzáadása — duplikáció esetén figyelmeztetés (cart.js)
+    if (typeof addItemsToCart === "function") {
+        const result = addItemsToCart(itemsWithDates);
+
+        if (result.added && typeof renderCart === "function") {
+            renderCart();
+        }
     }
-
-    // =====================================
-    // 3. új itemek hozzáadása
-    // =====================================
-    cart.items.push(...item.items);
-
-    // =====================================
-    // 4. összeg újraszámolás
-    // =====================================
-    cart.total_price = cart.items.reduce(
-        (sum, i) => sum + (i.unit_price * i.quantity),
-        0
-    );
-
-    // =====================================
-    // 5. mentés
-    // =====================================
-    sessionStorage.setItem(
-        "cart",
-        JSON.stringify(cart)
-    );
-
-    console.log("Kosár frissítve:", cart);
 }
 
 
@@ -893,24 +894,22 @@ function calculateTotal(items){
       document.getElementById("dailyMenuForm");
 
 
-    dailyMenuForm?.addEventListener("submit", (e) => {
+    dailyMenuForm?.addEventListener("submit", async (e) => {
 
       e.preventDefault();
 
+      const user = await window.checkAuthSession?.();
 
-
-      const userName =
-        localStorage.getItem("userName");
-
-
-
-      // Nincs bejelentkezve
-      if (!userName) {
-
+      // Nincs bejelentkezve → mentjük a választást, majd bejelentkezés
+      if (!user) {
 
         const day =
           document.getElementById("day").value;
 
+        if (!day) {
+          alert("Jelenleg nincs rendelhető nap.");
+          return;
+        }
 
         const menuAChecked =
           document.getElementById("menuA").checked;
@@ -960,17 +959,7 @@ function calculateTotal(items){
 
 
 
-        const modal =
-          document.getElementById("authModal");
-
-
-
-        if (modal) {
-
-          modal.style.display = "flex";
-
-        }
-
+        window.openAuthModal?.();
 
         return;
 

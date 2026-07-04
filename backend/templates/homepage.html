@@ -546,6 +546,22 @@
         if (menuB) menuB.checked = false;
       }
 
+      // Kosár megnyitásakor: első rendelhető nap + menüjelölések törlése
+      function resetDailyMenuForm() {
+        if (typeof populateDaySelect === "function") {
+          populateDaySelect();
+        }
+
+        resetMenuSelection();
+
+        const daySelect = document.getElementById("day");
+        if (daySelect?.value) {
+          updateMenuDisplay(daySelect.value);
+        }
+      }
+
+      window.resetDailyMenuForm = resetDailyMenuForm;
+
       document.addEventListener("DOMContentLoaded", () => {
         const menuUrl = "{% static 'data/weekly_menu.json' %}";
 
@@ -845,7 +861,7 @@ function calculateTotal(items){
         const day = document.getElementById("day").value;
 
         if (!day) {
-            alert("Jelenleg nincs rendelhető nap.");
+            window.showToast?.("Jelenleg nincs rendelhető nap.", "error");
             return;
         }
 
@@ -856,7 +872,7 @@ function calculateTotal(items){
         const qtyB = parseInt(document.getElementById("qtyB").textContent);
 
         if (!menuAChecked && !menuBChecked) {
-            alert("Kérem válasszon legalább egy menüt!");
+            window.showToast?.("Kérem válasszon legalább egy menüt!", "error");
             return;
         }
 
@@ -907,7 +923,7 @@ function calculateTotal(items){
           document.getElementById("day").value;
 
         if (!day) {
-          alert("Jelenleg nincs rendelhető nap.");
+          window.showToast?.("Jelenleg nincs rendelhető nap.", "error");
           return;
         }
 
@@ -933,11 +949,8 @@ function calculateTotal(items){
 
 
         if (!menuAChecked && !menuBChecked) {
-
-          alert("Kérem válasszon legalább egy menüt!");
-
+          window.showToast?.("Kérem válasszon legalább egy menüt!", "error");
           return;
-
         }
 
 

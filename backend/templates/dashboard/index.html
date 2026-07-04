@@ -18,18 +18,22 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
     />
+
+    <link rel="icon" href="{% static 'images/favicon.ico' %}">
     
+    <link rel="stylesheet" href="{% static 'css/toast.css' %}">
     <link rel="stylesheet" href="{% static 'dashboard/css/index.css' %}?v=39">
     <link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}?v=39">
-    <link rel="stylesheet" href="{% static 'dashboard/css/orders.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/css/orders.css' %}?v=43">
     <link rel="stylesheet" href="{% static 'dashboard/css/menu-manager.css' %}">
     <link rel="stylesheet" href="{% static 'dashboard/css/bookings.css' %}">
     <link rel="stylesheet" href="{% static 'dashboard/css/settings.css' %}">
     <link rel="stylesheet" href="{% static 'dashboard/css/messages.css' %}">
 
-    <script src="{% static 'dashboard/js/index.js' %}" defer></script>
-    <script src="{% static 'dashboard/js/dashboard.js' %}" defer></script>
-    <script src="{% static 'dashboard/js/orders.js' %}" defer></script>
+    <script src="{% static 'js/toast.js' %}" defer></script>
+    <script src="{% static 'dashboard/js/index.js' %}?v=40" defer></script>
+    <script src="{% static 'dashboard/js/dashboard.js' %}?v=40" defer></script>
+    <script src="{% static 'dashboard/js/orders.js' %}?v=45" defer></script>
     <script src="{% static 'dashboard/js/menu-manager.js' %}?v=39" defer></script>
     <script src="{% static 'dashboard/js/bookings.js' %}?v=39" defer></script>
     <script src="{% static 'dashboard/js/settings.js' %}?v=39" defer></script>
@@ -453,7 +457,10 @@
                     </th>
                     <th>Kapcsolat</th>
                     <th data-sort="menu" class="sortable">
-                      Menü <span class="sort-icon">↕</span>
+                      Rendelés <span class="sort-icon">↕</span>
+                    </th>
+                    <th data-sort="delivery" class="sortable">
+                      Kiszállítás <span class="sort-icon">↕</span>
                     </th>
                     <th data-sort="time" class="sortable">
                       Rend. idő <span class="sort-icon">↕</span>
@@ -485,11 +492,8 @@
             <label for="editAddress">Cím</label>
             <input type="text" id="editAddress" />
 
-            <label for="editMenu">Menü</label>
-            <input type="text" id="editMenu" />
-
-            <label for="editQty">Darab</label>
-            <input type="number" id="editQty" />
+            <label for="editOrderItems">Rendelés</label>
+            <textarea id="editOrderItems" rows="4" readonly></textarea>
 
             <div style="display: flex; gap: 10px; margin-top: 15px">
               <button onclick="saveEdit()" class="login-btn">Mentés</button>

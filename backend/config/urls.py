@@ -1,9 +1,16 @@
 from django.contrib import admin
 from django.urls import path, include
+from django.views.generic import RedirectView
 from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # Böngésző alapértelmezetten /favicon.ico-t kér — átirányítás a statikus fájlra
+    path(
+        "favicon.ico",
+        RedirectView.as_view(url="/static/images/favicon.ico", permanent=True),
+    ),
 
     # Session auth végpontok: login, logout, register, me
     path('api/auth/', include('users.urls')),

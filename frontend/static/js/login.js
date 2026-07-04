@@ -274,12 +274,19 @@ function initLogin() {
             
 
             if (!response.ok) {
-                alert(loginData.detail || "Sikertelen bejelentkezés.");
+                window.showToast?.(loginData.detail || "Sikertelen bejelentkezés.", "error");
                 return;
             }
 
             if (isAdminUser(loginData)) {
-                // Admin felhasználó → dashboard oldalra irányítás
+                const sessionUser = await checkAuthSession();
+                if (!sessionUser || sessionUser.role !== "admin") {
+                    window.showToast?.(
+                        "Bejelentkezés sikeres, de a munkamenet nem jött létre. Próbáld újra.",
+                        "error"
+                    );
+                    return;
+                }
                 window.location.href = "/dashboard/";
                 return;
             }
@@ -300,7 +307,7 @@ function initLogin() {
             handlePendingCartItem();
         } catch (error) {
             console.error("Bejelentkezés sikertelen:", error);
-            alert("Hiba történt a bejelentkezés során.");
+            window.showToast?.("Hiba történt a bejelentkezés során.", "error");
         }
     });
 
@@ -314,8 +321,13 @@ function initLogin() {
         const password = document.getElementById("reg-password").value;
         const passwordConfirm = document.getElementById("reg-password-confirm").value;
 
+        if (password.length < 8) {
+            window.showToast?.("A jelszónak legalább 8 karakter hosszúnak kell lennie!", "error");
+            return;
+        }
+
         if (password !== passwordConfirm) {
-            alert("A két jelszó nem egyezik!");
+            window.showToast?.("A két jelszó nem egyezik!", "error");
             return;
         }
 
@@ -342,13 +354,13 @@ function initLogin() {
                 const message = Array.isArray(firstError)
                     ? firstError[0]
                     : (data.detail || "Sikertelen regisztráció.");
-                alert(message);
+                window.showToast?.(message, "error");
                 return;
             }
 
             currentUser = data;
             setUserUI(loginBtn, data.name);
-            alert("Sikeres regisztráció!");
+            window.showToast?.("Sikeres regisztráció!", "success");
 
             // Regisztráció után is üres kosárral indul, majd pendingCart hozzáadása
             if (typeof setCartUserId === "function") {
@@ -363,7 +375,7 @@ function initLogin() {
             handlePendingCartItem();
         } catch (error) {
             console.error("Regisztráció sikertelen:", error);
-            alert("Hiba történt a regisztráció során.");
+            window.showToast?.("Hiba történt a regisztráció során.", "error");
         }
     });
 }

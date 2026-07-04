@@ -27,21 +27,25 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const user = await response.json();
 
-    // Csak admin szerepkörű user férhet hozzá a dashboardhoz
-    const isAdmin = user.role === "admin";
-
-    if (!isAdmin) {
+    // /api/auth/me/ nem bejelentkezve: { authenticated: false }
+    if (!user.id || user.authenticated === false || user.role !== "admin") {
       alert("Ehhez az oldalhoz nincs jogosultsága!");
       window.location.replace("/");
       return;
     }
 
-    // Felhasználó adatai elérhetők az egész dashboard JS-ben
     window.CURRENT_USER = user;
-    App.init();
   } catch (error) {
     console.error("Auth ellenőrzés sikertelen:", error);
     window.location.replace("/");
+    return;
+  }
+
+  try {
+    await App.init();
+  } catch (error) {
+    console.error("Dashboard betöltése sikertelen:", error);
+    window.showToast?.("A dashboard betöltése közben hiba történt.", "error");
   }
 });
 
@@ -72,19 +76,6 @@ let foodModalState = {
   category: null,
   editIndex: null
 };
-
-function loadStatusLimits() {
-  const saved = localStorage.getItem("statusLimits");
-
-  if (saved) {
-    statusLimits = JSON.parse(saved);
-  }
-
-  document.getElementById("limit-new").value = statusLimits["Új"];
-  document.getElementById("limit-accepted").value = statusLimits["Elfogadva"];
-  document.getElementById("limit-preparing").value = statusLimits["Készül"];
-  document.getElementById("limit-delivery").value = statusLimits["Kiszállítás alatt"];
-}
 
 /**********************
  * 📌 SIDEBAR ACTIVE
@@ -447,8 +438,18 @@ const App = (() => {
     // Topbar manuális frissítés gomb
     const refreshBtn = document.getElementById("refreshBtn");
     let refreshRotation = 0;
-    refreshBtn?.addEventListener("click", () => {
+    refreshBtn?.addEventListener("click", async () => {
+      if (document.getElementById("orders-section")?.classList.contains("active")) {
+        try {
+          await loadOrdersFromApi();
+        } catch (error) {
+          console.error("Rendelések frissítése sikertelen:", error);
+          window.showToast?.("Nem sikerült frissíteni a rendeléseket.", "error");
+        }
+      }
+
       refreshDashboard({ times: true });
+
       if (document.getElementById("orders-section")?.classList.contains("active")) {
         if (typeof renderOrders === "function") renderOrders(true);
       }
@@ -533,11 +534,19 @@ const App = (() => {
     });
   }
 
-  function init() {
+  async function init() {
 
-    //  KÖZÖS ORDERS STATE
     window.appData = window.appData || {};
-    window.appData.orders = demoOrders;
+
+    // Rendelések betöltése az adatbázisból (demoOrders helyett)
+    try {
+      await loadOrdersFromApi();
+    } catch (error) {
+      console.error("Rendelések betöltése sikertelen:", error);
+      window.appData.orders = [];
+      window.showToast?.("Nem sikerült betölteni a rendeléseket.", "error");
+    }
+
     window.appData.messages = Messages.getMessages();
 
     bindEvents();
@@ -552,6 +561,10 @@ const App = (() => {
 
     loadStatusLimits();
 
+    if (typeof renderOrders === "function") {
+      renderOrders();
+    }
+
     refreshDashboard({ times: true });
   }
 
@@ -561,46 +574,9 @@ const App = (() => {
 
 /**********************
  * 🔔 TOAST MODUL
+ * A showToast függvény közös komponensbe lett kiemelve:
+ * static/js/toast.js — betöltve a dashboard/index.html <head>-jében.
  **********************/
-window.showToast = function(message, type = "info", options = {}) {
-  let container = document.querySelector(".toast-container");
-  if (!container) {
-    container = document.createElement("div");
-    container.className = "toast-container";
-    document.body.appendChild(container);
-  }
-
-  const icons = { success: "fa-circle-check", error: "fa-circle-xmark", info: "fa-circle-info", deleted: "fa-trash" };
-
-  const toast = document.createElement("div");
-  toast.className = `toast toast-${type}`;
-  toast.setAttribute("role", "status");
-  toast.setAttribute("aria-live", "polite");
-  toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i><span>${message}</span>`;
-
-  if (options.actionLabel && options.onAction) {
-    const actionBtn = document.createElement("button");
-    actionBtn.type = "button";
-    actionBtn.className = "toast-action";
-    actionBtn.textContent = options.actionLabel;
-    toast.appendChild(actionBtn);
-  }
-
-  container.appendChild(toast);
-
-  let dismissTimer = setTimeout(dismiss, 3500);
-
-  function dismiss() {
-    clearTimeout(dismissTimer);
-    toast.classList.add("toast-out");
-    toast.addEventListener("animationend", () => toast.remove(), { once: true });
-  }
-
-  toast.querySelector(".toast-action")?.addEventListener("click", () => {
-    options.onAction();
-    dismiss();
-  });
-};
 
 
 

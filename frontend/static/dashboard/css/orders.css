@@ -248,9 +248,46 @@
   vertical-align: middle;
 }
 
-/* Zebra csíkozás */
-#orders-section tbody tr:nth-child(even) {
+/* Belső wrapper — függőleges középre igazítás flex nélkül a td-n */
+.cell-vcenter {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+}
+
+/* Rendelés-csoportok — ugyanahhoz a rendeléshez tartozó nap-sorok (orders.js) */
+#orders-section tbody tr.order-group-even {
   background: #fafafa;
+}
+
+#orders-section tbody tr.order-group-odd {
+  background: #fff;
+}
+
+#orders-section tbody tr.order-group-first:not(.order-group-only),
+#orders-section tbody tr.order-group-middle {
+  border-bottom-color: rgba(0, 0, 0, 0.03);
+}
+
+#orders-section tbody tr.order-group-last,
+#orders-section tbody tr.order-group-only {
+  border-bottom: 2px solid rgba(200, 155, 99, 0.22);
+}
+
+#orders-section tbody tr.order-group-first td:first-child,
+#orders-section tbody tr.order-group-only td:first-child {
+  box-shadow: inset 3px 0 0 rgba(200, 155, 99, 0.45);
+}
+
+#orders-section tbody tr.order-group-middle td:first-child,
+#orders-section tbody tr.order-group-last td:first-child {
+  box-shadow: inset 3px 0 0 rgba(200, 155, 99, 0.18);
+}
+
+/* Zebra csíkozás — kikapcsolva, helyette order-group-even/odd */
+#orders-section tbody tr:nth-child(even) {
+  background: inherit;
 }
 
 /* Sor hover — halvány, dizájnba illő */
@@ -272,9 +309,7 @@
 }
 
 /* Kapcsolat cella (telefon + cím egymás alatt) */
-.cell-contact {
-  display: flex;
-  flex-direction: column;
+.cell-contact-inner {
   gap: 2px;
 }
 
@@ -290,6 +325,71 @@
   white-space: normal;
   word-break: break-word;
   line-height: 1.3;
+}
+
+/* Rendelés tételek (több menü egy sorban) */
+.cell-order-items {
+  min-width: 180px;
+}
+
+.order-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.order-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.order-line-day {
+  font-weight: 600;
+  color: #2d221b;
+}
+
+.order-line-menu {
+  color: #4a3f35;
+}
+
+.cell-delivery-dates {
+  min-width: 130px;
+}
+
+.order-time-inner {
+  gap: 1px;
+}
+
+.delivery-line {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #4a3f35;
+  white-space: nowrap;
+}
+
+.delivery-line i {
+  font-size: 11px;
+  color: var(--gold);
+}
+
+#editOrderItems {
+  width: 100%;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  background: #faf8f4;
+  border: 1px solid #e0d8cc;
+  border-radius: 8px;
+  padding: 10px 12px;
 }
 
 /* Menü darabszám chip */
@@ -423,14 +523,45 @@
   transform: scale(0.93);
 }
 
-/* ================= OSZLOPSZÉLESSÉGEK (6 oszlop: # nélkül) ================= */
+/* ================= OSZLOPSZÉLESSÉGEK (7 oszlop) ================= */
 
-#orders-section th:nth-child(1), #orders-section td:nth-child(1) { width: 20%; }
-#orders-section th:nth-child(2), #orders-section td:nth-child(2) { min-width: 180px; width: 24%; }
-#orders-section th:nth-child(3), #orders-section td:nth-child(3) { width: 14%; }
-#orders-section th:nth-child(4), #orders-section td:nth-child(4) { width: 13%; }
-#orders-section th:nth-child(5), #orders-section td:nth-child(5) { width: 17%; }
-#orders-section th:nth-child(6), #orders-section td:nth-child(6) { width: 10%; text-align: right; }
+#orders-section th:nth-child(1), #orders-section td:nth-child(1) { width: 18%; }
+#orders-section th:nth-child(2), #orders-section td:nth-child(2) { min-width: 170px; width: 22%; }
+#orders-section th:nth-child(3), #orders-section td:nth-child(3) { width: 16%; }
+#orders-section th:nth-child(4), #orders-section td:nth-child(4) { width: 12%; }
+#orders-section th:nth-child(5), #orders-section td:nth-child(5) { width: 14%; }
+#orders-section th:nth-child(6), #orders-section td:nth-child(6) { width: 12%; text-align: left; }
+#orders-section th:nth-child(7), #orders-section td:nth-child(7) { width: 8%; text-align: right; white-space: nowrap; }
+
+.cell-status {
+  text-align: left;
+}
+
+/* Badge csak a felirat szélességére — a .cell-vcenter flex alapból szétnyújtaná */
+.cell-status .cell-vcenter {
+  align-items: flex-start;
+  width: fit-content;
+  max-width: 100%;
+}
+
+#orders-section .cell-status .status-badge {
+  width: auto;
+  align-self: flex-start;
+}
+
+.cell-actions-wrap {
+  text-align: right;
+}
+
+.cell-actions {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  white-space: nowrap;
+}
 
 /* ================= ROW STATES ================= */
 
@@ -480,13 +611,20 @@
     display: none;
   }
 
-  /* Zebra visszaállítása mobilon (kártya nézetben nem kell) */
+  /* Csoport-háttér mobilon is megmarad */
   #orders-section tbody tr:nth-child(even) {
+    background: inherit;
+  }
+
+  #orders-section tbody tr.order-group-even {
+    background: #fafafa;
+  }
+
+  #orders-section tbody tr.order-group-odd {
     background: #fff;
   }
 
   #orders-section tbody tr {
-    background: #fff;
     border-radius: 16px;
     margin-bottom: 12px;
     padding: 14px 16px;
@@ -508,13 +646,38 @@
   #orders-section tbody tr.row-warning::before { background: #f0ad4e; }
   #orders-section tbody tr.row-problem::before { background: #e74c3c; }
 
+  /* Csoportosítás mobilon — összetartozó nap-sorok */
+  #orders-section tbody tr.order-group-middle,
+  #orders-section tbody tr.order-group-last {
+    margin-top: -8px;
+    border-top: none;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  #orders-section tbody tr.order-group-first:not(.order-group-only) {
+    margin-bottom: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  #orders-section tbody tr.order-group-last,
+  #orders-section tbody tr.order-group-only {
+    margin-bottom: 12px;
+  }
+
+  #orders-section tbody tr.order-group-middle::before,
+  #orders-section tbody tr.order-group-last::before {
+    opacity: 0.55;
+  }
+
   #orders-section td {
     padding: 7px 0;
     border: none;
     border-bottom: 1px solid rgba(200, 155, 99, 0.08);
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     font-size: 13px;
     gap: 8px;
   }

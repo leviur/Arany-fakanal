@@ -397,8 +397,10 @@ function renderTopItems() {
   const counts = {};
 
   orders.forEach(o => {
-    const key = o.menu || "Ismeretlen";
-    counts[key] = (counts[key] || 0) + (o.qty || 1);
+    (o.items || []).forEach((item) => {
+      const key = `${item.day} ${item.menu}`;
+      counts[key] = (counts[key] || 0) + (item.qty || 1);
+    });
   });
 
   const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 5);

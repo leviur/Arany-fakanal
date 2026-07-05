@@ -1,6 +1,8 @@
 from django.utils import timezone
 from rest_framework import serializers
 
+from opening_hours.services import validate_reservation_slot
+
 from .models import Reservation
 
 STATUS_API_TO_HU = {
@@ -76,6 +78,10 @@ class ReservationCreateSerializer(serializers.ModelSerializer):
         if value < timezone.localdate():
             raise serializers.ValidationError("A foglalás dátuma nem lehet múltbeli!")
         return value
+
+    def validate(self, attrs):
+        validate_reservation_slot(attrs["date"], attrs["time"])
+        return attrs
 
     def create(self, validated_data):
         request = self.context.get("request")

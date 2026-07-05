@@ -61,13 +61,17 @@ function applyOpeningHoursToForm() {
   OPENING_HOURS_DAYS.forEach(day => {
     const dayHours = openingHours[day];
     document.getElementById(`hours-${day}-closed`).checked = dayHours.closed;
-    document.getElementById(`hours-${day}-open`).value = dayHours.open;
-    document.getElementById(`hours-${day}-close`).value = dayHours.close;
+    document.getElementById(`hours-${day}-open`).value = dayHours.open || "";
+    document.getElementById(`hours-${day}-close`).value = dayHours.close || "";
     updateHoursRowDisabledState(day);
   });
 }
 
 function saveOpeningHours() {
+  saveOpeningHoursAsync();
+}
+
+async function saveOpeningHoursAsync() {
   OPENING_HOURS_DAYS.forEach(day => {
     openingHours[day] = {
       closed: document.getElementById(`hours-${day}-closed`).checked,
@@ -76,10 +80,10 @@ function saveOpeningHours() {
     };
   });
 
-  localStorage.setItem("openingHours", JSON.stringify(openingHours));
-  window.APP_STATE.openingHours = openingHours;
-
-  window.showToast?.("Nyitvatartás mentve!", "success");
+  const ok = await persistOpeningHoursToApi();
+  if (ok) {
+    window.showToast?.("Nyitvatartás mentve!", "success");
+  }
 }
 
 /* ================= ESETI KIVÉTELEK (ünnepnapok stb.) ================= */
@@ -126,6 +130,10 @@ function renderExceptionsList() {
 }
 
 function addOpeningHoursException() {
+  addOpeningHoursExceptionAsync();
+}
+
+async function addOpeningHoursExceptionAsync() {
   const date = document.getElementById("exception-date").value;
   const label = document.getElementById("exception-label").value.trim();
   const closed = document.getElementById("exception-closed").checked;
@@ -142,8 +150,17 @@ function addOpeningHoursException() {
   }
 
   openingHoursExceptions = openingHoursExceptions.filter(ex => ex.date !== date);
-  openingHoursExceptions.push({ date, label, closed, open, close });
-  saveOpeningHoursExceptions();
+  openingHoursExceptions.push({
+    date,
+    label,
+    closed,
+    open: closed ? null : open,
+    close: closed ? null : close,
+  });
+
+  const ok = await persistOpeningHoursToApi();
+  if (!ok) return;
+
   renderExceptionsList();
 
   document.getElementById("exception-date").value = "";
@@ -155,44 +172,63 @@ function addOpeningHoursException() {
 }
 
 function deleteOpeningHoursException(date) {
+  deleteOpeningHoursExceptionAsync(date);
+}
+
+async function deleteOpeningHoursExceptionAsync(date) {
   openingHoursExceptions = openingHoursExceptions.filter(ex => ex.date !== date);
-  saveOpeningHoursExceptions();
+
+  const ok = await persistOpeningHoursToApi();
+  if (!ok) return;
+
   renderExceptionsList();
   window.showToast?.("Kivétel törölve", "deleted");
 }
 
-function saveOpeningHoursExceptions() {
-  localStorage.setItem("openingHoursExceptions", JSON.stringify(openingHoursExceptions));
-  window.APP_STATE.openingHoursExceptions = openingHoursExceptions;
+async function persistOpeningHoursToApi() {
+  try {
+    await OpeningHours.saveOpeningHours({
+      opening_hours: openingHours,
+      exceptions: openingHoursExceptions,
+    });
+    clearSettingsDirty();
+    return true;
+  } catch (err) {
+    console.error("Nyitvatartás mentése sikertelen:", err);
+    const message = typeof parseApiError === "function"
+      ? parseApiError(err, "Nyitvatartás mentése sikertelen")
+      : "Nyitvatartás mentése sikertelen";
+    window.showToast?.(message, "error");
+    return false;
+  }
 }
 
-function loadSettings() {
+async function loadSettings() {
   const savedStatus = localStorage.getItem("statusLimits");
   const savedBooking = localStorage.getItem("bookingLimits");
-  const savedHours = localStorage.getItem("openingHours");
-  const savedExceptions = localStorage.getItem("openingHoursExceptions");
 
   if (savedStatus) {
     statusLimits = JSON.parse(savedStatus);
-    window.APP_STATE.statusLimits = statusLimits; // Szinkronizáld a globális állapottal
+    window.APP_STATE.statusLimits = statusLimits;
   }
 
   if (savedBooking) {
-    bookingLimits = JSON.parse(savedBooking); // JAVÍTVA: bookingRules -> bookingLimits
+    bookingLimits = JSON.parse(savedBooking);
     window.APP_STATE.bookingLimits = bookingLimits;
   }
 
-  if (savedHours) {
-    openingHours = JSON.parse(savedHours);
+  try {
+    const data = await OpeningHours.fetchOpeningHours();
+    openingHours = data.opening_hours;
+    openingHoursExceptions = data.exceptions || [];
+    applyOpeningHoursToForm();
+    renderExceptionsList();
+  } catch (err) {
+    console.error("Nyitvatartás betöltése sikertelen:", err);
+    window.showToast?.("Nyitvatartás betöltése sikertelen", "error");
+    applyOpeningHoursToForm();
+    renderExceptionsList();
   }
-  window.APP_STATE.openingHours = openingHours;
-  applyOpeningHoursToForm();
-
-  if (savedExceptions) {
-    openingHoursExceptions = JSON.parse(savedExceptions);
-  }
-  window.APP_STATE.openingHoursExceptions = openingHoursExceptions;
-  renderExceptionsList();
 }
 
 /* ================= EL NEM MENTETT MÓDOSÍTÁS FIGYELMEZTETÉS ================= */
@@ -293,4 +329,4 @@ function getBookingStatus(booking) {
   };
 }
 
-loadSettings();
+void loadSettings();

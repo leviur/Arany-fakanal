@@ -546,6 +546,13 @@ const App = (() => {
 
     window.appData = window.appData || {};
 
+    try {
+      await OpeningHours.fetchOpeningHours();
+    } catch (error) {
+      console.error("Nyitvatartás betöltése sikertelen:", error);
+      window.showToast?.("Nyitvatartás betöltése sikertelen", "error");
+    }
+
     // Rendelések betöltése az adatbázisból (demoOrders helyett)
     try {
       await loadOrdersFromApi();

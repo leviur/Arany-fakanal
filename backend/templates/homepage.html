@@ -479,15 +479,13 @@
 
       <div class="footer-column">
         <h3>Nyitvatartás</h3>
-        <div class="hours-row">
-          <span>Hétfő – Csütörtök</span><span>11:00 – 22:00</span>
-        </div>
-        <div class="hours-row">
-          <span>Péntek – Szombat</span><span>11:00 – 23:00</span>
-        </div>
-        <div class="hours-row">
-          <span>Vasárnap</span><span>11:00 – 20:00</span>
-        </div>
+        <div id="footer-opening-hours"></div>
+        <div
+          id="footer-opening-exceptions"
+          class="footer-opening-exceptions"
+          data-heading="Közelgő eltérések"
+          hidden
+        ></div>
       </div>
 
       <div class="footer-column">
@@ -989,6 +987,24 @@ function calculateTotal(items){
   });
 
 
+</script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", async () => {
+    try {
+      await OpeningHours.fetchOpeningHours();
+      OpeningHours.renderWeeklyHours(
+        document.getElementById("footer-opening-hours"),
+        { abbrev: false },
+      );
+      OpeningHours.renderUpcomingExceptions(
+        document.getElementById("footer-opening-exceptions"),
+        { daysAhead: 90 },
+      );
+    } catch (err) {
+      console.error("Nyitvatartás betöltése sikertelen:", err);
+    }
+  });
 </script>
 
 {% endblock %}

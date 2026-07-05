@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'orders',
     'reservations',
     'contact',
+    'opening_hours',
 
 ]
 

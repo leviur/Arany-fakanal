@@ -823,3 +823,15 @@ html {
 @media (prefers-reduced-motion: reduce) {
   .toast, .toast.toast-out { animation: none; }
 }
+
+.opening-hours-exceptions-title {
+  margin-top: 0.75rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
+.hours-row--exception span:last-child {
+  white-space: nowrap;
+}

@@ -758,47 +758,7 @@ const Bookings = (() => {
 })();
 
 
-/* ================= IDŐ STEPPER (a Nyitvatartás beállításai alapján) ================= */
-const DAY_KEY_BY_INDEX = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-
-function getDayKeyFromDateStr(dateStr) {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  const date = new Date(y, m - 1, d);
-  return DAY_KEY_BY_INDEX[date.getDay()];
-}
-
-// a kiválasztott naphoz tartozó nyitvatartást adja vissza: előbb az eseti
-// kivételek között keres (pl. ünnepnap), csak ha ott nincs találat, esik
-// vissza a heti rendre (Beállítások lap, Nyitvatartás blokk)
-function getDayHoursInfo(dateStr) {
-  const exceptions = window.APP_STATE?.openingHoursExceptions || [];
-  const exception = exceptions.find(ex => ex.date === dateStr);
-  if (exception) return exception;
-
-  const dayKey = getDayKeyFromDateStr(dateStr);
-  return window.APP_STATE?.openingHours?.[dayKey];
-}
-
-function getTimeSlotsForDate(dateStr) {
-  if (!dateStr) return [];
-
-  const dayInfo = getDayHoursInfo(dateStr);
-  if (!dayInfo || dayInfo.closed || !dayInfo.open || !dayInfo.close) return [];
-
-  const [openH, openM] = dayInfo.open.split(":").map(Number);
-  const [closeH, closeM] = dayInfo.close.split(":").map(Number);
-  const startMin = openH * 60 + openM;
-  const endMin = closeH * 60 + closeM;
-
-  const slots = [];
-  for (let t = startMin; t <= endMin; t += 30) {
-    const h = Math.floor(t / 60);
-    const m = t % 60;
-    slots.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
-  }
-  return slots;
-}
-
+/* ================= IDŐ STEPPER (nyitvatartás API alapján) ================= */
 let currentTimeSlots = [];
 let timeIndex = 0;
 
@@ -818,7 +778,7 @@ function updateTimeUI() {
 }
 
 function initTimeStepper(selectedTime, dateStr) {
-  currentTimeSlots = getTimeSlotsForDate(dateStr);
+  currentTimeSlots = window.OpeningHours?.getTimeSlotsForDate(dateStr) || [];
   const idx = currentTimeSlots.indexOf(selectedTime);
   timeIndex = idx >= 0 ? idx : 0;
   updateTimeUI();

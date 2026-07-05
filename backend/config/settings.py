@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'reservations',
     'contact',
     'opening_hours',
+    'sync.apps.SyncConfig',  # globális revision (élő szinkron böngészők között)
 
 ]
 

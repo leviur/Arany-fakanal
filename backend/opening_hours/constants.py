@@ -27,3 +27,20 @@ DEFAULT_WEEKLY_HOURS = {
     "saturday": {"closed": False, "open": "11:00", "close": "23:00"},
     "sunday": {"closed": False, "open": "11:00", "close": "20:00"},
 }
+
+# Dashboard SLA — rendelés státuszok (perc) és foglalás figyelmeztetések
+DEFAULT_ORDER_STATUS_LIMITS = {
+    "Új": 30,
+    "Elfogadva": 45,
+    "Készül": 60,
+    "Kiszállítás alatt": 90,
+}
+
+DEFAULT_BOOKING_LIMITS = {
+    "warnNew": 60,
+    "problemNew": 180,
+    "warnConfirmed": 24,
+}
+
+ORDER_STATUS_LIMIT_KEYS = list(DEFAULT_ORDER_STATUS_LIMITS.keys())
+BOOKING_LIMIT_KEYS = list(DEFAULT_BOOKING_LIMITS.keys())

@@ -1,20 +1,22 @@
+// Rendelési + foglalási SLA — alapértelmezések (API betöltés előtt, index.js APP_STATE)
 let statusLimits = {
   "Új": 30,
   "Elfogadva": 45,
   "Készül": 60,
-  "Kiszállítás alatt": 90
+  "Kiszállítás alatt": 90,
 };
 
 let bookingLimits = {
   warnNew: 60,
   problemNew: 180,
-  warnConfirmed: 24
+  warnConfirmed: 24,
 };
 
 const OPENING_HOURS_DAYS = [
-  "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"
+  "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
 ];
 
+// Nyitvatartás munkapéldány — API tölti felül (lásd loadSettings)
 let openingHours = {
   monday:    { closed: false, open: "11:00", close: "22:00" },
   tuesday:   { closed: false, open: "11:00", close: "22:00" },
@@ -22,10 +24,9 @@ let openingHours = {
   thursday:  { closed: false, open: "11:00", close: "22:00" },
   friday:    { closed: false, open: "11:00", close: "22:00" },
   saturday:  { closed: false, open: "11:00", close: "22:00" },
-  sunday:    { closed: false, open: "11:00", close: "22:00" }
+  sunday:    { closed: false, open: "11:00", close: "22:00" },
 };
 
-// eseti kivételek a heti rend alól (pl. ünnepnapok): [{ date, label, closed, open, close }]
 let openingHoursExceptions = [];
 
 function applySettingsUpdate() {
@@ -33,22 +34,25 @@ function applySettingsUpdate() {
 }
 
 function saveBookingsRules() {
-    bookingLimits = {
-        warnNew: Number(document.getElementById("booking-warn-minutes").value || 0),
-        problemNew: Number(document.getElementById("booking-problem-minutes").value || 0),
-        warnConfirmed: Number(document.getElementById("booking-warn-hours").value || 0)
-    };
+  saveBookingsRulesAsync();
+}
 
-    // mentés localStorage-be
-    localStorage.setItem("bookingLimits", JSON.stringify(bookingLimits));
-
-    //  A GLOBÁLIS ÁLLAPOT FRISSSÍTÉSE!
-    window.APP_STATE.bookingLimits = bookingLimits;
-
-  // UI / dashboard frissítés
-  applySettingsUpdate();
-
-  window.showToast?.("Foglalási szabályok mentve!", "success");
+// Foglalási SLA mentése az adatbázisba (PUT /api/sla-rules/)
+async function saveBookingsRulesAsync() {
+  try {
+    await SlaRules.saveSlaRules({
+      booking_limits: SlaRules.readBookingLimitsFromForm(),
+    });
+    bookingLimits = window.APP_STATE.bookingLimits;
+    applySettingsUpdate();
+    window.showToast?.("Foglalási szabályok mentve!", "success");
+  } catch (err) {
+    console.error("Foglalási szabályok mentése sikertelen:", err);
+    const message = typeof parseApiError === "function"
+      ? parseApiError(err, "Foglalási szabályok mentése sikertelen")
+      : "Foglalási szabályok mentése sikertelen";
+    window.showToast?.(message, "error");
+  }
 }
 
 function updateHoursRowDisabledState(day) {
@@ -76,7 +80,7 @@ async function saveOpeningHoursAsync() {
     openingHours[day] = {
       closed: document.getElementById(`hours-${day}-closed`).checked,
       open: document.getElementById(`hours-${day}-open`).value,
-      close: document.getElementById(`hours-${day}-close`).value
+      close: document.getElementById(`hours-${day}-close`).value,
     };
   });
 
@@ -203,24 +207,12 @@ async function persistOpeningHoursToApi() {
   }
 }
 
+// Beállítások betöltése: nyitvatartás + SLA az API-ból (adatbázis)
 async function loadSettings() {
-  const savedStatus = localStorage.getItem("statusLimits");
-  const savedBooking = localStorage.getItem("bookingLimits");
-
-  if (savedStatus) {
-    statusLimits = JSON.parse(savedStatus);
-    window.APP_STATE.statusLimits = statusLimits;
-  }
-
-  if (savedBooking) {
-    bookingLimits = JSON.parse(savedBooking);
-    window.APP_STATE.bookingLimits = bookingLimits;
-  }
-
   try {
-    const data = await OpeningHours.fetchOpeningHours();
-    openingHours = data.opening_hours;
-    openingHoursExceptions = data.exceptions || [];
+    const hoursData = await OpeningHours.fetchOpeningHours();
+    openingHours = hoursData.opening_hours;
+    openingHoursExceptions = hoursData.exceptions || [];
     applyOpeningHoursToForm();
     renderExceptionsList();
   } catch (err) {
@@ -228,6 +220,19 @@ async function loadSettings() {
     window.showToast?.("Nyitvatartás betöltése sikertelen", "error");
     applyOpeningHoursToForm();
     renderExceptionsList();
+  }
+
+  try {
+    await SlaRules.fetchSlaRules();
+    statusLimits = window.APP_STATE.statusLimits;
+    bookingLimits = window.APP_STATE.bookingLimits;
+    SlaRules.applyOrderLimitsToForm();
+    SlaRules.applyBookingLimitsToForm();
+  } catch (err) {
+    console.error("SLA szabályok betöltése sikertelen:", err);
+    window.showToast?.("SLA szabályok betöltése sikertelen", "error");
+    SlaRules.applyOrderLimitsToForm();
+    SlaRules.applyBookingLimitsToForm();
   }
 }
 
@@ -249,7 +254,6 @@ function bindSettingsDirtyTracking() {
   section.addEventListener("input", markSettingsDirty);
   section.addEventListener("change", markSettingsDirty);
 
-  // bármelyik mentés/hozzáadás gomb megnyomása "elintézettnek" számít
   section.addEventListener("click", (e) => {
     if (e.target.closest(".save-menu-btn") || e.target.closest(".hours-exception-add-btn")) {
       setTimeout(clearSettingsDirty, 0);
@@ -259,6 +263,37 @@ function bindSettingsDirtyTracking() {
 
 bindSettingsDirtyTracking();
 
+/**
+ * Beállítások űrlap frissítése revision változásra — live-sync.js hívja.
+ * Ha van elmentetlen módosítás (settingsDirty), nem írunk felül.
+ */
+window.refreshSettingsFromApi = async function refreshSettingsFromApi() {
+  if (window.settingsDirty) return;
+
+  try {
+    const hoursData = await OpeningHours.fetchOpeningHours({ force: true });
+    openingHours = hoursData.opening_hours;
+    openingHoursExceptions = hoursData.exceptions || [];
+    applyOpeningHoursToForm();
+    renderExceptionsList();
+  } catch (err) {
+    console.error("Nyitvatartás szinkron sikertelen:", err);
+  }
+
+  if (typeof SlaRules === "undefined") return;
+
+  try {
+    await SlaRules.fetchSlaRules({ force: true });
+    statusLimits = window.APP_STATE.statusLimits;
+    bookingLimits = window.APP_STATE.bookingLimits;
+    SlaRules.applyOrderLimitsToForm();
+    SlaRules.applyBookingLimitsToForm();
+    if (typeof loadStatusLimits === "function") loadStatusLimits();
+  } catch (err) {
+    console.error("SLA szinkron sikertelen:", err);
+  }
+};
+
 window.addEventListener("beforeunload", (e) => {
   if (window.settingsDirty) {
     e.preventDefault();
@@ -266,67 +301,38 @@ window.addEventListener("beforeunload", (e) => {
   }
 });
 
+// Foglalás sor SLA állapota — booking_limits az APP_STATE-ből (adatbázis)
 function getBookingStatus(booking) {
   const now = new Date();
-
-  // ha nincs státuszváltás → ÚJ
   const status = booking.status || "Új";
-
   const createdAt = new Date(booking.createdAt);
   const diffMin = (now - createdAt) / 60000;
-
-  const limits = bookingLimits;
+  const limits = window.APP_STATE?.bookingLimits || bookingLimits;
 
   if (!limits) return { state: "ok", label: "OK" };
 
-  // =========================
-  // ÚJ - elapsed alapú logika
-  // =========================
   if (status === "Új") {
     if (diffMin >= limits.problemNew) {
-      return {
-        state: "problem",
-        label: "Problémás"
-      };
+      return { state: "problem", label: "Problémás" };
     }
-
     if (diffMin >= limits.warnNew) {
-      return {
-        state: "warning",
-        label: "Figyelmeztetés"
-      };
+      return { state: "warning", label: "Figyelmeztetés" };
     }
-
-    return {
-      state: "ok",
-      label: "Új"
-    };
+    return { state: "ok", label: "Új" };
   }
 
-  // =========================
-  // VISSZAIGAZOLT - event alapú (külön logika)
-  // =========================
   if (status === "Visszaigazolt") {
     const eventTime = new Date(booking.dateTime);
     const diffHours = (eventTime - now) / 3600000;
 
     if (diffHours <= limits.warnConfirmed) {
-      return {
-        state: "warning",
-        label: "Közelgő foglalás"
-      };
+      return { state: "warning", label: "Közelgő foglalás" };
     }
 
-    return {
-      state: "ok",
-      label: "Visszaigazolt"
-    };
+    return { state: "ok", label: "Visszaigazolt" };
   }
 
-  return {
-    state: "ok",
-    label: status
-  };
+  return { state: "ok", label: status };
 }
 
 void loadSettings();

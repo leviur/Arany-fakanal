@@ -98,3 +98,11 @@ def validate_reservation_slot(reservation_date, reservation_time):
         )
 
     return True
+
+
+def ensure_sla_settings():
+    """Egyetlen SLA sor létrehozása alapértelmezésekkel, ha még nincs."""
+    from .models import SlaSettings
+
+    SlaSettings.objects.get_or_create(pk=1)
+

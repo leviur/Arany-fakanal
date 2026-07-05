@@ -1,5 +1,5 @@
 // ======================================================
-// ORDERS HELPERS
+// ORDERS HELPERS — statusLimits az APP_STATE-ből (GET /api/sla-rules/)
 // ======================================================
 function isProblemOrder(o) {
   const status = (o.status || "").trim();

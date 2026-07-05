@@ -1,8 +1,7 @@
 /**********************
  * 🔐 AUTH CHECK — dashboard védése
  *
- * Régen: localStorage.isAdmin (könnyen megkerülhető)
- * Most:  szerveroldali session ellenőrzés /api/auth/me/ végponton
+ *   szerveroldali session ellenőrzés /api/auth/me/ végponton
  **********************/
 function getCookie(name) {
   const value = `; ${document.cookie}`;
@@ -56,20 +55,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 
 window.APP_STATE = {
+  // SLA küszöbök — SlaRules.fetchSlaRules() tölti fel az API-ból (lásd sla-rules.js)
   statusLimits: {
     "Új": 30,
     "Elfogadva": 45,
     "Készül": 60,
-    "Kiszállítás alatt": 90
+    "Kiszállítás alatt": 90,
   },
 
   bookingLimits: {
     warnNew: 60,
     problemNew: 180,
-    warnConfirmed: 24
+    warnConfirmed: 24,
   },
 
-  openingHours: {}
+  openingHours: {},
 };
 
 let foodModalState = {
@@ -547,10 +547,13 @@ const App = (() => {
     window.appData = window.appData || {};
 
     try {
-      await OpeningHours.fetchOpeningHours();
+      await Promise.all([
+        OpeningHours.fetchOpeningHours(),
+        SlaRules.fetchSlaRules(),
+      ]);
     } catch (error) {
-      console.error("Nyitvatartás betöltése sikertelen:", error);
-      window.showToast?.("Nyitvatartás betöltése sikertelen", "error");
+      console.error("Beállítások betöltése sikertelen:", error);
+      window.showToast?.("Beállítások betöltése sikertelen", "error");
     }
 
     // Rendelések betöltése az adatbázisból (demoOrders helyett)

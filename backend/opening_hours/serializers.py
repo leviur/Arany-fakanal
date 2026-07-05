@@ -117,6 +117,11 @@ class OpeningHoursPayloadSerializer(serializers.Serializer):
             )
 
         OpeningHoursException.objects.exclude(date__in=exception_dates).delete()
+
+        # Nyitvatartás mentés → revision++ → más böngészők frissítik a footer/foglalás oldalt
+        from sync.services import bump_revision
+
+        bump_revision()
         return build_opening_hours_payload()
 
 
@@ -151,3 +156,70 @@ def build_opening_hours_payload():
         "opening_hours": weekly,
         "exceptions": exceptions,
     }
+
+
+class SlaRulesPayloadSerializer(serializers.Serializer):
+    """Dashboard SLA — rendelés státusz limitek (perc) + foglalás figyelmeztetések."""
+
+    status_limits = serializers.DictField(child=serializers.IntegerField(min_value=1))
+    booking_limits = serializers.DictField(child=serializers.IntegerField(min_value=1))
+
+    def validate_status_limits(self, value):
+        from .constants import ORDER_STATUS_LIMIT_KEYS
+
+        missing = [key for key in ORDER_STATUS_LIMIT_KEYS if key not in value]
+        if missing:
+            raise serializers.ValidationError(f"Hiányzó rendelés státusz: {', '.join(missing)}")
+        return value
+
+    def validate_booking_limits(self, value):
+        from .constants import BOOKING_LIMIT_KEYS
+
+        missing = [key for key in BOOKING_LIMIT_KEYS if key not in value]
+        if missing:
+            raise serializers.ValidationError(f"Hiányzó foglalás mező: {', '.join(missing)}")
+        return value
+
+    def save(self):
+        from .models import SlaSettings
+
+        status_limits = self.validated_data["status_limits"]
+        booking_limits = self.validated_data["booking_limits"]
+
+        settings, _ = SlaSettings.objects.get_or_create(pk=1)
+        settings.order_limit_new = status_limits["Új"]
+        settings.order_limit_confirmed = status_limits["Elfogadva"]
+        settings.order_limit_preparing = status_limits["Készül"]
+        settings.order_limit_ready = status_limits["Kiszállítás alatt"]
+        settings.booking_warn_new_minutes = booking_limits["warnNew"]
+        settings.booking_problem_new_minutes = booking_limits["problemNew"]
+        settings.booking_warn_confirmed_hours = booking_limits["warnConfirmed"]
+        settings.save()
+
+        # SLA mentés → revision++ → dashboard beállítások + rendelés színezés frissül ("valami megváltozott, érdemes újratölteni az adatokat”.)
+        from sync.services import bump_revision
+
+        bump_revision()
+        return build_sla_rules_payload()
+
+
+def build_sla_rules_payload():
+    from .models import SlaSettings
+    from .services import ensure_sla_settings
+
+    ensure_sla_settings()
+    settings = SlaSettings.objects.get(pk=1)
+    return {
+        "status_limits": {
+            "Új": settings.order_limit_new,
+            "Elfogadva": settings.order_limit_confirmed,
+            "Készül": settings.order_limit_preparing,
+            "Kiszállítás alatt": settings.order_limit_ready,
+        },
+        "booking_limits": {
+            "warnNew": settings.booking_warn_new_minutes,
+            "problemNew": settings.booking_problem_new_minutes,
+            "warnConfirmed": settings.booking_warn_confirmed_hours,
+        },
+    }
+

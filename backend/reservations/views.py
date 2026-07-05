@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from orders.permissions import IsAppAdmin
+from sync.services import bump_revision
 
 from .models import Reservation
 from .serializers import (
@@ -57,6 +58,8 @@ class ReservationStatusAPIView(APIView):
             )
 
         Reservation.objects.filter(pk=pk).update(status=db_status)
+        # QuerySet.update() nem küld post_save signalt → revision kézzel
+        bump_revision()
         reservation.refresh_from_db()
         return Response(ReservationSerializer(reservation).data)
 

@@ -3,6 +3,8 @@ from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from sync.services import bump_revision  # revision++ (státusz .update() esetén, lásd alább)
+
 from .models import Order, OrderItem
 from .permissions import IsAppAdmin
 from .serializers import (
@@ -125,6 +127,8 @@ class OrderItemsStatusAPIView(APIView):
             )
 
         items.update(status=db_status)
+        # QuerySet.update() nem küld post_save signalt → revision kézzel
+        bump_revision()
         order = _order_with_relations(pk)
         return Response(OrderSerializer(order).data)
 

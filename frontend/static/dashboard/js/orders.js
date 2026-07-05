@@ -599,54 +599,31 @@ function openStatusPopover(badge) {
 }
 
 /**********************
- * BEÁLLÍTÁSOK
+ * BEÁLLÍTÁSOK — rendelés SLA (adatbázis: PUT /api/sla-rules/)
  **********************/
 
 function loadStatusLimits() {
-  const defaults = window.APP_STATE?.statusLimits || {
-    "Új": 30,
-    "Elfogadva": 45,
-    "Készül": 60,
-    "Kiszállítás alatt": 90,
-  };
-
-  let limits = { ...defaults };
-  const saved = localStorage.getItem("statusLimits");
-  if (saved) {
-    try {
-      limits = { ...limits, ...JSON.parse(saved) };
-    } catch (_) {
-      /* érvénytelen localStorage → alapértelmezés marad */
-    }
-  }
-
-  window.APP_STATE = window.APP_STATE || {};
-  window.APP_STATE.statusLimits = limits;
-
-  const setLimit = (id, key) => {
-    const el = document.getElementById(id);
-    if (el) el.value = limits[key];
-  };
-
-  setLimit("limit-new", "Új");
-  setLimit("limit-accepted", "Elfogadva");
-  setLimit("limit-preparing", "Készül");
-  setLimit("limit-delivery", "Kiszállítás alatt");
+  SlaRules.applyOrderLimitsToForm();
 }
 
 function saveStatusLimits() {
-  const limits = {
-    "Új":                 Number(document.getElementById("limit-new").value),
-    "Elfogadva":          Number(document.getElementById("limit-accepted").value),
-    "Készül":            Number(document.getElementById("limit-preparing").value),
-    "Kiszállítás alatt": Number(document.getElementById("limit-delivery").value),
-  };
+  saveStatusLimitsAsync();
+}
 
-  window.APP_STATE = window.APP_STATE || {};
-  window.APP_STATE.statusLimits = limits;
-  localStorage.setItem("statusLimits", JSON.stringify(limits));
-  refreshDashboard();
-  window.showToast?.("Rendelési beállítások mentve!", "success");
+async function saveStatusLimitsAsync() {
+  try {
+    await SlaRules.saveSlaRules({
+      status_limits: SlaRules.readOrderLimitsFromForm(),
+    });
+    refreshDashboard();
+    window.showToast?.("Rendelési beállítások mentve!", "success");
+  } catch (err) {
+    console.error("Rendelési SLA mentése sikertelen:", err);
+    const message = typeof parseApiError === "function"
+      ? parseApiError(err, "Rendelési beállítások mentése sikertelen")
+      : "Rendelési beállítások mentése sikertelen";
+    window.showToast?.(message, "error");
+  }
 }
 
 /**********************

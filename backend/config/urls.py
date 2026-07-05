@@ -19,6 +19,8 @@ urlpatterns = [
 
     path('api/', include('opening_hours.urls')),
 
+    path('api/', include('sync.urls')),  # GET /api/revision/
+
     path('api/orders/', include('orders.urls')),
 
     path('api/reservations/', include('reservations.urls')),

@@ -140,17 +140,99 @@ class OrderCreateSerializer(serializers.Serializer):
 
         return order
     
+class OrderItemLineUpdateSerializer(serializers.Serializer):
+    """Egy nap A vagy B menüjének darabszáma (delivery_date nem változik)."""
+
+    menu_type = serializers.ChoiceField(choices=["A", "B"])
+    quantity = serializers.IntegerField(min_value=0, max_value=20)
+
+
 class OrderUpdateSerializer(serializers.Serializer):
     """
-    Dashboard szerkesztő: vevő neve, telefonja, szállítási cím.
-    Nem Order mezők közvetlenül — user / profile / delivery_address frissül.
+    Dashboard szerkesztő: vevő adatai + opcionálisan egy nap menü-tételei.
+    item_lines: ugyanarra a delivery_date-re A/B menü és darabszám (nap nem változik).
     """
 
     customer_name = serializers.CharField(required=False, allow_blank=True)
     customer_phone = serializers.CharField(required=False, allow_blank=True)
     delivery_address = serializers.CharField(required=False, allow_blank=True)
+    delivery_date = serializers.DateField(required=False)
+    item_lines = OrderItemLineUpdateSerializer(many=True, required=False)
+
+    def validate(self, attrs):
+        delivery_date = attrs.get("delivery_date")
+        item_lines = attrs.get("item_lines")
+
+        if (delivery_date is None) ^ (item_lines is None):
+            raise serializers.ValidationError(
+                "A tételek módosításához delivery_date és item_lines együtt szükséges."
+            )
+
+        if item_lines is not None:
+            quantities = {line["menu_type"]: line["quantity"] for line in item_lines}
+            total_qty = quantities.get("A", 0) + quantities.get("B", 0)
+            if total_qty < 1:
+                raise serializers.ValidationError(
+                    "Legalább egy menü darabszáma legyen legalább 1."
+                )
+
+        return attrs
+
+    def _update_delivery_day_items(self, order, delivery_date, item_lines):
+        from menu.models import WeeklyMenu
+
+        quantities = {line["menu_type"]: line["quantity"] for line in item_lines}
+        existing_items = list(
+            order.items.filter(delivery_date=delivery_date).select_related("weekly_menu")
+        )
+        if not existing_items:
+            raise serializers.ValidationError("Ehhez a kiszállítási naphoz nem tartozik tétel.")
+
+        row_status = existing_items[0].status
+        # A heti menü sablon napja (WeeklyMenu.day) ≠ kiszállítási dátum (delivery_date).
+        menu_slot_day = existing_items[0].weekly_menu.day
+
+        for menu_type in ("A", "B"):
+            qty = quantities.get(menu_type, 0)
+            existing = next(
+                (item for item in existing_items if item.weekly_menu.menu_type == menu_type),
+                None,
+            )
+
+            if qty <= 0:
+                if existing:
+                    existing.delete()
+                continue
+
+            weekly_menu = WeeklyMenu.objects.filter(
+                day=menu_slot_day,
+                menu_type=menu_type,
+            ).first()
+            if not weekly_menu:
+                raise serializers.ValidationError(
+                    f"Nincs {menu_type} menü a rendeléshez tartozó heti menü napon."
+                )
+
+            if existing:
+                existing.weekly_menu = weekly_menu
+                existing.quantity = qty
+                existing.unit_price = weekly_menu.price
+                existing.save()
+            else:
+                OrderItem.objects.create(
+                    order=order,
+                    weekly_menu=weekly_menu,
+                    delivery_date=delivery_date,
+                    quantity=qty,
+                    unit_price=weekly_menu.price,
+                    status=row_status,
+                )
+
+        order.recalculate_total()
 
     def update(self, instance, validated_data):
+        delivery_date = validated_data.pop("delivery_date", None)
+        item_lines = validated_data.pop("item_lines", None)
         user = instance.user
 
         if "customer_name" in validated_data:
@@ -167,4 +249,8 @@ class OrderUpdateSerializer(serializers.Serializer):
 
         user.save()
         instance.save()
+
+        if delivery_date is not None and item_lines is not None:
+            self._update_delivery_day_items(instance, delivery_date, item_lines)
+
         return instance

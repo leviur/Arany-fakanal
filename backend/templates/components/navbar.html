@@ -19,8 +19,15 @@
     <button class="icon-btn login-btn" title="Profil">
       <i class="fa-regular fa-user"></i>
     </button>
-    <button class="icon-btn" onclick="openCart()" title="Kosár">
-      <i class="fa-solid fa-bag-shopping"></i>
+    <button
+      type="button"
+      class="icon-btn cart-icon-btn"
+      onclick="openCart()"
+      title="Kosár"
+      aria-label="Kosár"
+    >
+      <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
+      <span class="cart-badge is-hidden" id="cartBadge" aria-hidden="true">0</span>
     </button>
   </div>
 </div>

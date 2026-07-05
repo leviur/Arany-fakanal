@@ -202,6 +202,34 @@ html {
     transform: translateY(-3px);
 }
 
+/* Kosár ikon — tételszám jelvény */
+.cart-icon-btn {
+    position: relative;
+}
+
+.cart-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #c0392b;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+}
+
+.cart-badge.is-hidden {
+    display: none;
+}
+
 /* Hamburger gomb */
 .nav-toggle {
     display: none;

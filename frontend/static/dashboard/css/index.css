@@ -1011,6 +1011,69 @@ h1, h2, h3 {
   color: #2c241e;
 }
 
+.modal-box .field-hint {
+  margin: -4px 0 8px;
+  font-size: 11px;
+  color: #888;
+  font-weight: normal;
+}
+
+/* Rendelés szerkesztő — A/B menü darabszám (nap fix) */
+#editModal .order-edit-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+#editModal .order-edit-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f3f0ea;
+}
+
+#editModal .order-edit-line-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d221b;
+}
+
+#editModal .order-edit-stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#editModal .order-edit-step-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(200, 155, 99, 0.2);
+  color: #8b5e3c;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+#editModal .order-edit-step-btn:hover {
+  background: rgba(200, 155, 99, 0.35);
+}
+
+#editModal .order-edit-qty {
+  min-width: 24px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d221b;
+  font-variant-numeric: tabular-nums;
+}
+
 
 .modal-box input {
   padding: 14px;

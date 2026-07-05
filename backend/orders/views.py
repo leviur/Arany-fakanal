@@ -1,4 +1,3 @@
-from django.db.models import F, Sum
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
@@ -50,8 +49,8 @@ class OrderCreateAPIView(generics.CreateAPIView):
 class OrderUpdateAPIView(generics.UpdateAPIView):
     """
     PATCH /api/orders/<id>/
-    Admin szerkeszti a vevő adatait (név, telefon, cím).
-  """
+    Admin: vevő adatai; opcionálisan egy nap A/B menü és darabszám (delivery_date fix).
+    """
     serializer_class = OrderUpdateSerializer
     permission_classes = [IsAppAdmin]
 
@@ -81,11 +80,7 @@ def _order_with_relations(pk):
 
 
 def _recalculate_order_total(order):
-    total = order.items.aggregate(
-        total=Sum(F("unit_price") * F("quantity"))
-    )["total"] or 0
-    order.total_price = total
-    order.save(update_fields=["total_price"])
+    order.recalculate_total()
 
 
 class OrderItemsStatusAPIView(APIView):

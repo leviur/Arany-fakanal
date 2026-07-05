@@ -1,6 +1,6 @@
 // ======================================================
-// KOSÁR — felhasználóhoz kötött tárolás (sessionStorage)
-// Backend kosár API későbbre van halasztva.
+// KOSÁR — felhasználóhoz kötött tárolás (localStorage)
+// Beküldés előtt itt marad; POST /api/orders/create/ után törlődik.
 // ======================================================
 
 // Aktuális bejelentkezett user ID — csak ő látja a saját kosarát
@@ -38,11 +38,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const user = await window.checkAuthSession?.();
     setCartUserId(user?.id ?? null);
 
-    // Régi, felhasználóhoz nem kötött kosár kulcs törlése (migráció)
-    sessionStorage.removeItem("cart");
-
+    migrateLegacyCartStorage();
     initCart();
+    validateCartItems({ silent: false });
     renderCart();
+    initCartUnloadWarning();
 });
 
 
@@ -54,13 +54,33 @@ function setCartUserId(userId) {
 window.setCartUserId = setCartUserId;
 
 
-// sessionStorage kulcs: minden usernek saját kosara van
+// localStorage kulcs: minden usernek saját kosara van
 function getCartStorageKey() {
     if (!window.CART_USER_ID) {
         return null;
     }
 
     return `cart_user_${window.CART_USER_ID}`;
+}
+
+
+// Régi sessionStorage / közös kulcs → localStorage
+function migrateLegacyCartStorage() {
+    const legacyKeys = ["cart"];
+
+    if (window.CART_USER_ID) {
+        const userKey = getCartStorageKey();
+        const fromSession = sessionStorage.getItem(userKey);
+        if (fromSession && !localStorage.getItem(userKey)) {
+            localStorage.setItem(userKey, fromSession);
+        }
+        sessionStorage.removeItem(userKey);
+    }
+
+    legacyKeys.forEach((key) => {
+        sessionStorage.removeItem(key);
+        localStorage.removeItem(key);
+    });
 }
 
 
@@ -195,35 +215,52 @@ function getCookie(name) {
 }
 
 
+function lockPageScroll() {
+    // Kosár nyitva: csak a drawer görgethető, ne az oldal mögötte
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    document.body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) {
+        document.body.style.paddingRight = `${scrollbarWidth}px`;
+    }
+}
+
+function unlockPageScroll() {
+    document.body.style.overflow = "";
+    document.body.style.paddingRight = "";
+}
+
+function closeCartDrawer() {
+    document.getElementById("cartDrawer")?.classList.remove("active");
+    document.getElementById("cartOverlay")?.classList.remove("active");
+    unlockPageScroll();
+}
+
+window.closeCart = closeCartDrawer;
+
 function initCart() {
-    const cartDrawer = document.getElementById("cartDrawer");
-    const cartOverlay = document.getElementById("cartOverlay");
     const closeCart = document.getElementById("closeCart");
     const checkoutBtn = document.getElementById("checkoutBtn");
 
     window.openCart = () => {
-        cartDrawer.classList.add("active");
-        cartOverlay.classList.add("active");
+        document.getElementById("cartDrawer")?.classList.add("active");
+        document.getElementById("cartOverlay")?.classList.add("active");
+        lockPageScroll();
+        validateCartItems({ silent: true });
         renderCart();
 
         // Napi menü űrlap visszaállítása: első rendelhető nap + A/B jelölés törlése
         window.resetDailyMenuForm?.();
     };
 
-    function closeCartFn() {
-        cartDrawer.classList.remove("active");
-        cartOverlay.classList.remove("active");
-    }
-
-    closeCart?.addEventListener("click", closeCartFn);
-    cartOverlay?.addEventListener("click", closeCartFn);
+    closeCart?.addEventListener("click", closeCartDrawer);
+    document.getElementById("cartOverlay")?.addEventListener("click", closeCartDrawer);
     checkoutBtn?.addEventListener("click", handleCheckout);
 
     renderCart();
 }
 
 
-// Kosár betöltése — nincs bejelentkezve → mindig üres
+// Kosár betöltése — nincs bejelentkezve → mindig üres (adat localStorage-ban megmarad)
 function getCart() {
     const storageKey = getCartStorageKey();
 
@@ -234,7 +271,7 @@ function getCart() {
         };
     }
 
-    const cart = sessionStorage.getItem(storageKey);
+    const cart = localStorage.getItem(storageKey);
 
     if (!cart) {
         return {
@@ -244,6 +281,105 @@ function getCart() {
     }
 
     return JSON.parse(cart);
+}
+
+
+/**
+ * Elavult / nem rendelhető tételek eltávolítása, delivery_date frissítése.
+ * @returns {{ removed: number, updated: boolean }}
+ */
+function validateCartItems({ silent = true } = {}) {
+    const storageKey = getCartStorageKey();
+    if (!storageKey) {
+        return { removed: 0, updated: false };
+    }
+
+    const cart = getCart();
+    if (!cart.items.length) {
+        return { removed: 0, updated: false };
+    }
+
+    const availableDays = getAvailableOrderDays();
+    const today = formatDateISO(new Date());
+    const kept = [];
+    let removed = 0;
+
+    cart.items.forEach((item) => {
+        if (!item.day || !availableDays.includes(item.day)) {
+            removed += 1;
+            return;
+        }
+
+        item.delivery_date = calculateDeliveryDate(item.day);
+
+        if (item.delivery_date < today) {
+            removed += 1;
+            return;
+        }
+
+        kept.push(item);
+    });
+
+    const changed = removed > 0 || kept.length !== cart.items.length;
+
+    if (changed) {
+        cart.items = sortCartItems(kept);
+        cart.total_price = calculateCartTotal(cart.items);
+
+        if (cart.items.length) {
+            localStorage.setItem(storageKey, JSON.stringify(cart));
+        } else {
+            localStorage.removeItem(storageKey);
+        }
+
+        if (!silent && removed > 0) {
+            window.showToast?.(
+                removed === 1
+                    ? "1 elavult tétel eltávolítva a kosárból."
+                    : `${removed} elavult tétel eltávolítva a kosárból.`,
+                "info",
+            );
+        }
+
+        return { removed, updated: true };
+    }
+
+    // Dátumok frissítése (pl. hét váltás után)
+    let datesChanged = false;
+    cart.items.forEach((item) => {
+        const nextDate = calculateDeliveryDate(item.day);
+        if (item.delivery_date !== nextDate) {
+            item.delivery_date = nextDate;
+            datesChanged = true;
+        }
+    });
+
+    if (datesChanged) {
+        saveCart(cart);
+    }
+
+    return { removed: 0, updated: datesChanged };
+}
+
+window.validateCartItems = validateCartItems;
+
+
+function getCartLineCount() {
+    return getCart().items.length;
+}
+
+window.getCartLineCount = getCartLineCount;
+
+
+function initCartUnloadWarning() {
+    window.addEventListener("beforeunload", (event) => {
+        if (!window.CART_USER_ID || getCartLineCount() === 0) {
+            return;
+        }
+
+        event.preventDefault();
+        event.returnValue = "";
+    });
 }
 
 
@@ -283,19 +419,21 @@ function saveCart(cart) {
     cart.items = sortCartItems(cart.items);
     cart.total_price = calculateCartTotal(cart.items);
 
-    sessionStorage.setItem(storageKey, JSON.stringify(cart));
+    localStorage.setItem(storageKey, JSON.stringify(cart));
+    sessionStorage.removeItem(storageKey);
 }
 
 
-// Kosár teljes törlése (kijelentkezéskor / bejelentkezéskor)
+// Kosár teljes törlése — sikeres rendelés után
 function clearCart() {
     const storageKey = getCartStorageKey();
 
     if (storageKey) {
+        localStorage.removeItem(storageKey);
         sessionStorage.removeItem(storageKey);
     }
 
-    // Biztonsági törlés: régi közös kulcs is
+    localStorage.removeItem("cart");
     sessionStorage.removeItem("cart");
 
     if (typeof renderCart === "function") {
@@ -356,6 +494,48 @@ function addItemsToCart(newItems) {
 window.addItemsToCart = addItemsToCart;
 
 
+/** Kosárban lévő menük összes darabszáma (pl. 2× A + 1× B → 3). */
+function getCartTotalQuantity() {
+    if (!window.CART_USER_ID) {
+        return 0;
+    }
+
+    return getCart().items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+}
+
+/** Külön kosársorok száma (pl. hétfő A + hétfő B → 2). */
+function getCartLineCount() {
+    if (!window.CART_USER_ID) {
+        return 0;
+    }
+
+    return getCart().items.length;
+}
+
+function updateCartBadge() {
+    const badge = document.getElementById("cartBadge");
+    const btn = document.querySelector(".cart-icon-btn");
+    if (!badge) {
+        return;
+    }
+
+    const count = getCartTotalQuantity();
+
+    if (count > 0) {
+        badge.textContent = count > 99 ? "99+" : String(count);
+        badge.classList.remove("is-hidden");
+        btn?.setAttribute("aria-label", `Kosár, ${count} tétel`);
+        btn?.setAttribute("title", `Kosár (${count} tétel)`);
+    } else {
+        badge.classList.add("is-hidden");
+        btn?.setAttribute("aria-label", "Kosár");
+        btn?.setAttribute("title", "Kosár");
+    }
+}
+
+window.updateCartBadge = updateCartBadge;
+
+
 function renderCart() {
     const cartItems = document.getElementById("cartItems");
     const cartTotal = document.getElementById("cartTotalPrice");
@@ -376,6 +556,7 @@ function renderCart() {
         `;
 
         cartTotal.textContent = "0 Ft";
+        updateCartBadge();
         return;
     }
 
@@ -437,6 +618,7 @@ function renderCart() {
     });
 
     cartTotal.textContent = `${cart.total_price} Ft`;
+    updateCartBadge();
 }
 
 
@@ -496,15 +678,18 @@ async function createCheckoutData() {
 
 
 async function handleCheckout() {
-    const cart = getCart();
-
     if (!window.CART_USER_ID) {
         window.showToast?.("A rendeléshez be kell jelentkeznie!", "error");
         return;
     }
 
+    validateCartItems({ silent: false });
+
+    const cart = getCart();
+
     if (cart.items.length === 0) {
-        window.showToast?.("A kosár üres!", "error");
+        window.showToast?.("A kosár üres, vagy minden tétel lejárt.", "error");
+        renderCart();
         return;
     }
 
@@ -556,6 +741,7 @@ async function handleCheckout() {
         console.log("Sikeres rendelés:", data);
         window.showToast?.("Rendelés sikeresen elküldve!", "success");
         clearCart();
+        closeCartDrawer();
     } catch (error) {
         console.error("Rendelési hiba:", error);
         window.showToast?.("Hiba történt a rendelés elküldésekor!", "error");

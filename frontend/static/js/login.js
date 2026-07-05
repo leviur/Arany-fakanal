@@ -90,8 +90,7 @@ window.openAuthModal = openAuthModal;
 // ======================================================
 // Függőben lévő kosár tétel folytatása login után
 // ======================================================
-// Bejelentkezés után: először törlődik a régi kosár (clearCart a hívóban),
-// majd ide kerül be a pendingCart, amit a napi menü űrlap mentett el.
+// Bejelentkezés után: pendingCart (localStorage) hozzáadása a meglévő kosárhoz.
 function handlePendingCartItem() {
     const pendingCart = localStorage.getItem("pendingCart");
 
@@ -193,12 +192,19 @@ function initLogin() {
 
         currentUser = user;
 
-        // Bejelentkezett user ID beállítása a kosárhoz
         if (typeof setCartUserId === "function") {
             setCartUserId(user.id);
         }
 
+        if (typeof validateCartItems === "function") {
+            validateCartItems({ silent: true });
+        }
+
         setUserUI(loginBtn, user.name);
+
+        if (typeof renderCart === "function") {
+            renderCart();
+        }
     }
 
     refreshAuthState();
@@ -207,7 +213,14 @@ function initLogin() {
         e.preventDefault();
 
         if (currentUser) {
-            if (confirm("Kijelentkezik?")) {
+            const lineCount =
+                typeof getCartLineCount === "function" ? getCartLineCount() : 0;
+            const message =
+                lineCount > 0
+                    ? `Kosarában ${lineCount} tétel van — a kosár megmarad bejelentkezés után. Biztosan kijelentkezik?`
+                    : "Kijelentkezik?";
+
+            if (confirm(message)) {
                 logout();
             }
             return;
@@ -294,17 +307,23 @@ function initLogin() {
             currentUser = loginData;
             setUserUI(loginBtn, loginData.name);
 
-            // Bejelentkezéskor a régi kosár törlődik, csak a pendingCart maradhat
             if (typeof setCartUserId === "function") {
                 setCartUserId(loginData.id);
-            }
-            if (typeof clearCart === "function") {
-                clearCart();
             }
 
             modal.style.display = "none";
             loginForm.reset();
             handlePendingCartItem();
+
+            if (typeof validateCartItems === "function") {
+                validateCartItems({ silent: true });
+            }
+            if (typeof renderCart === "function") {
+                renderCart();
+            }
+            if (typeof window.prefillBookingFormFromUser === "function") {
+                window.prefillBookingFormFromUser(loginData);
+            }
         } catch (error) {
             console.error("Bejelentkezés sikertelen:", error);
             window.showToast?.("Hiba történt a bejelentkezés során.", "error");
@@ -362,17 +381,23 @@ function initLogin() {
             setUserUI(loginBtn, data.name);
             window.showToast?.("Sikeres regisztráció!", "success");
 
-            // Regisztráció után is üres kosárral indul, majd pendingCart hozzáadása
             if (typeof setCartUserId === "function") {
                 setCartUserId(data.id);
-            }
-            if (typeof clearCart === "function") {
-                clearCart();
             }
 
             modal.style.display = "none";
             registerForm.reset();
             handlePendingCartItem();
+
+            if (typeof validateCartItems === "function") {
+                validateCartItems({ silent: true });
+            }
+            if (typeof renderCart === "function") {
+                renderCart();
+            }
+            if (typeof window.prefillBookingFormFromUser === "function") {
+                window.prefillBookingFormFromUser(data);
+            }
         } catch (error) {
             console.error("Regisztráció sikertelen:", error);
             window.showToast?.("Hiba történt a regisztráció során.", "error");
@@ -386,7 +411,6 @@ function initLogin() {
 // ======================================================
 async function logout() {
     try {
-        // POST /api/auth/logout/ → Django logout() törli a session-t
         await authRequest("/api/auth/logout/", {
             method: "POST",
         });
@@ -394,10 +418,6 @@ async function logout() {
         console.error("Kijelentkezés sikertelen:", error);
     }
 
-    // Kijelentkezéskor a kosár tartalma törlődik
-    if (typeof clearCart === "function") {
-        clearCart();
-    }
-
+    // A kosár localStorage-ban megmarad — újra bejelentkezéskor visszatöltődik
     location.reload();
 }

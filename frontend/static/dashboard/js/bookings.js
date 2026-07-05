@@ -1,3 +1,10 @@
+/**********************
+ * FOGLALÁSOK — dashboard táblázat
+ *
+ * Adat: bookings[] memória (GET /api/reservations/ után normalizeReservations).
+ * Sikeres PATCH/DELETE után: applyBookingUpdate / removeBooking (orders.js mintájára).
+ **********************/
+
 const Bookings = (() => {
 
   /* ================= STATE ================= */
@@ -9,29 +16,9 @@ const Bookings = (() => {
   let pendingDeleteId = null;
   let bookingsEventsbound = false;
 
-  /* ================= DEMO ADATOK ================= */
-  const demoBookings = [
-    { id: "001", name: "Kiss János",             email: "kiss.janos@gmail.com",      phone: "+36 30 111 2233", occasion: "Születésnap",       date: "2026.06.09", time: "17:00", eventDateTime: "2026.06.09 17:00", createdAt: "2026.06.08 09:00", guests: 4,  note: "Ablak melletti asztalt kérnek, lehetőleg a déli oldalon. Allergén: mogyoró, glutén. A tortát 19:00-ra kérik, gyertyával. Zenét is kértek, de halk legyen.", status: "Új" },
-    { id: "002", name: "Nagy Anna",              email: "anna.nagy@gmail.com",        phone: "+36 20 444 5566", occasion: "Évforduló",          date: "2026.06.09", time: "18:30", eventDateTime: "2026.06.09 18:30", createdAt: "2026.06.08 09:15", guests: 2,  note: "",                      status: "Új" },
-    { id: "003", name: "Szabó Péter",            email: "szabo.peter@freemail.hu",    phone: "+36 70 777 8899", occasion: "Céges vacsora",      date: "2026.06.09", time: "20:00", eventDateTime: "2026.06.09 20:00", createdAt: "2026.06.08 10:00", guests: 8,  note: "VIP asztal",            status: "Új" },
-    { id: "004", name: "Tóth Réka",              email: "reka.toth@gmail.com",        phone: "+36 30 222 3344", occasion: "Baráti találkozó",   date: "2026.06.09", time: "21:00", eventDateTime: "2026.06.09 21:00", createdAt: "2026.06.08 10:30", guests: 3,  note: "",                      status: "Új" },
-    { id: "005", name: "Horváth László",         email: "laci.horvath@gmail.com",     phone: "+36 20 123 4567", occasion: "Családi ebéd",       date: "2026.06.10", time: "13:00", eventDateTime: "2026.06.10 13:00", createdAt: "2026.06.08 11:00", guests: 5,  note: "Etetőszék szükséges",   status: "Visszaigazolt" },
-    { id: "006", name: "Kovács Dóra",            email: "kovacs.dora@gmail.com",      phone: "+36 70 987 6543", occasion: "Születésnap",       date: "2026.06.10", time: "19:00", eventDateTime: "2026.06.10 19:00", createdAt: "2026.06.08 11:30", guests: 6,  note: "Torta szükséges",       status: "Visszaigazolt" },
-    { id: "007", name: "Varga Tamás",            email: "tamas.varga@gmail.com",      phone: "+36 30 555 6677", occasion: "Randevú",           date: "2026.06.10", time: "19:30", eventDateTime: "2026.06.10 19:30", createdAt: "2026.06.08 12:00", guests: 2,  note: "",                      status: "Visszaigazolt" },
-    { id: "008", name: "Farkas Lilla",           email: "lilla.farkas@gmail.com",     phone: "+36 20 333 4455", occasion: "Évforduló",          date: "2026.06.10", time: "20:00", eventDateTime: "2026.06.10 20:00", createdAt: "2026.06.08 12:45", guests: 2,  note: "Romantikus asztal",     status: "Visszaigazolt" },
-    { id: "009", name: "Molnár Zoltán",          email: "zoltan.molnar@gmail.com",    phone: "+36 70 111 9988", occasion: "Üzleti ebéd",        date: "2026.06.11", time: "12:00", eventDateTime: "2026.06.11 12:00", createdAt: "2026.06.08 13:00", guests: 3,  note: "Csendesebb sarok",      status: "Új" },
-    { id: "010", name: "Balogh Katalin",         email: "kati.balogh@gmail.com",      phone: "+36 30 666 7788", occasion: "Névnap",            date: "2026.06.11", time: "18:00", eventDateTime: "2026.06.11 18:00", createdAt: "2026.06.08 13:30", guests: 4,  note: "",                      status: "Lemondva" },
-    { id: "011", name: "Lakatos Imre",           email: "imre.lakatos@gmail.com",     phone: "+36 20 222 1100", occasion: "Baráti sörözés",    date: "2026.06.11", time: "20:30", eventDateTime: "2026.06.11 20:30", createdAt: "2026.06.08 14:00", guests: 6,  note: "",                      status: "Visszaigazolt" },
-    { id: "012", name: "Papp Viktória",          email: "viktoria.papp@gmail.com",    phone: "+36 70 444 3322", occasion: "Születésnap",       date: "2026.06.12", time: "17:00", eventDateTime: "2026.06.12 17:00", createdAt: "2026.06.08 14:30", guests: 5,  note: "Gyertyák kellenek",     status: "Visszaigazolt" },
-    { id: "013", name: "Németh Ádám",            email: "adam.nemeth@gmail.com",      phone: "+36 30 888 7766", occasion: "Randevú",           date: "2026.06.12", time: "18:30", eventDateTime: "2026.06.12 18:30", createdAt: "2026.06.08 15:00", guests: 2,  note: "",                      status: "Új" },
-    { id: "014", name: "Oláh Zsófia",            email: "zsofia.olah@gmail.com",      phone: "+36 20 999 0011", occasion: "Családi vacsora",    date: "2026.06.12", time: "19:00", eventDateTime: "2026.06.12 19:00", createdAt: "2026.06.08 15:30", guests: 4,  note: "",                      status: "Új" },
-    { id: "015", name: "Gulyás Tamás",           email: "tamas.gulyas@gmail.com",     phone: "+36 70 222 5566", occasion: "Céges csapatépítő", date: "2026.06.13", time: "19:00", eventDateTime: "2026.06.13 19:00", createdAt: "2026.06.08 16:00", guests: 10, note: "Hosszú asztal",         status: "Visszaigazolt" },
-    { id: "016", name: "Takács Éva",             email: "eva.takacs@gmail.com",       phone: "+36 30 444 8877", occasion: "Baráti találkozó",   date: "2026.06.13", time: "20:00", eventDateTime: "2026.06.13 20:00", createdAt: "2026.06.08 16:30", guests: 4,  note: "",                      status: "Új" },
-    { id: "017", name: "Simon Krisztián",        email: "krisztian.simon@gmail.com",  phone: "+36 20 111 6677", occasion: "Születésnap",       date: "2026.06.14", time: "18:00", eventDateTime: "2026.06.14 18:00", createdAt: "2026.06.08 17:00", guests: 7,  note: "",                      status: "Visszaigazolt" },
-    { id: "018", name: "Boros Dóra",             email: "dora.boros@gmail.com",       phone: "+36 70 555 4433", occasion: "Évforduló",          date: "2026.06.14", time: "19:30", eventDateTime: "2026.06.14 19:30", createdAt: "2026.06.08 17:30", guests: 2,  note: "Pezsgő bekészítve",     status: "Teljesítve" },
-    { id: "019", name: "Kerekes Márk",           email: "mark.kerekes@gmail.com",     phone: "+36 30 777 0099", occasion: "Randevú",           date: "2026.06.14", time: "20:00", eventDateTime: "2026.06.14 20:00", createdAt: "2026.06.08 18:00", guests: 2,  note: "",                      status: "Teljesítve" },
-    { id: "020", name: "Szalai Petra",           email: "petra.szalai@gmail.com",     phone: "+36 20 888 2233", occasion: "Baráti sörözés",    date: "2026.06.15", time: "21:00", eventDateTime: "2026.06.15 21:00", createdAt: "2026.06.08 18:30", guests: 3,  note: "Pult közelébe",         status: "Lemondva" },
-  ];
+  let bookings = [];
+  let isLoading = false;
+  let isReady = false;
 
   /* ================= STÁTUSZ TÉRKÉP ================= */
   const STATUS_TO_KEY = {
@@ -41,13 +28,237 @@ const Bookings = (() => {
     "Teljesítve":    "done"
   };
 
+  // Dashboard felirat → API/DB kulcs
+  const STATUS_LABEL_TO_API = {
+    "Új": "pending",
+    "Visszaigazolt": "confirmed",
+    "Lemondva": "cancelled",
+    "Teljesítve": "done",
+  };
+
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) {
+      return parts.pop().split(";").shift();
+    }
+    return null;
+  }
+  // rendelések  módosításához 
+  async function reservationsApiRequest(url, options = {}) {
+    const headers = {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    };
+    const csrfToken = getCookie("csrftoken");
+    if (csrfToken) {
+      headers["X-CSRFToken"] = csrfToken;
+    }
+    return fetch(url, {
+      credentials: "include",
+      ...options,
+      headers,
+    });
+  }
+
+  // dataset.id mindig string — az API numerikus id-t ad
+  function findBooking(id) {
+    const numId = Number(id);
+    return bookings.find((b) => b.id === numId || String(b.id) === String(id));
+  }
+
+  // DB kód → magyar megjelenítés (asztalfoglalas.html opciók)
+  const OCCASION_LABELS = {
+    csaladi: "Családi összejövetel",
+    uzleti: "Üzleti ebéd / vacsora",
+    szulinap: "Születésnap",
+    evfordulo: "Évforduló",
+    egyeb: "Egyéb",
+  };
+
+  function mapOccasion(value) {
+    if (!value) return "—";
+    return OCCASION_LABELS[value] || value;
+  }
+
+  function setLoading(state) {
+    isLoading = state;
+    document.body.classList.toggle("is-loading", state);
+  }
+
+  function mapStatus(s) {
+    switch (s) {
+      case "pending": return "Új";
+      case "confirmed": return "Visszaigazolt";
+      case "cancelled": return "Lemondva";
+      case "done": return "Teljesítve";
+      default: return "Új";
+    }
+  }
+  // átalakítja a backend mezőket  (pl. guest_name → name, pending → Új):
+  function normalizeReservations(data) {
+    return data.map(r => ({
+      id: r.id,
+
+      name: r.guest_name,
+      email: r.guest_email,
+      phone: r.guest_phone,
+      guests: r.guest_count,
+
+      occasion: mapOccasion(r.occasion),
+      occasionCode: r.occasion ?? "",
+
+      date: r.date?.replace(/-/g, ".") ?? "",
+      time: r.time?.slice(0, 5) ?? "",
+
+      status: mapStatus(r.status),
+
+      note: r.notes ?? "",
+
+      createdAt: r.created_at
+      ? r.created_at.slice(0, 16).replace("T", " ")
+      : "",
+
+      eventDateTime: `${r.date} ${r.time?.slice(0,5)}`
+
+    }));
+  }
+
+  // feltölti a bookings-ot, itt csak datokat olvasunk az adatbázisból - GET request, nem kell X-CSRFToken.
+  async function loadBookings() {
+  
+    try {
+
+      console.log("API RAW RESPONSE START");
+
+      setLoading(true);
+
+      const res = await fetch("/api/reservations/", {
+        credentials: "include",
+      });
+
+      if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
+
+      const data = await res.json();
+
+      console.log("RAW DATA:", data);
+
+      bookings = normalizeReservations(data);
+
+      console.log("NORMALIZED BOOKINGS:", bookings);
+
+      isReady = true;
+      
+      renderBookings(false);
+
+    } catch (err) {
+        console.error("Bookings load error:", err);
+        bookings = [];
+        renderBookings(false);
+        window.showToast?.("Hiba a foglalások betöltésekor", "error");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function isLoaded() {
+    return isReady;
+  }
+
+  function refresh() {
+    return loadBookings();
+  }
+
+  function render() {
+    bindEvents();
+    return loadBookings();
+  }
+
+  /* ================= HELYI ÁLLAPOT SZINKRON (sikeres API után) ================= */
+
+  /**
+   * Backend Reservation JSON → bookings[] frissítés + táblázat újrarenderelés.
+   * Használat: PATCH státusz, PATCH szerkesztés után.
+   */
+  function applyBookingUpdate(apiReservation, { refreshDashboard = false } = {}) {
+    const mapped = normalizeReservations([apiReservation])[0];
+    const index = bookings.findIndex((b) => b.id === mapped.id);
+
+    if (index !== -1) {
+      bookings[index] = mapped;
+    } else {
+      bookings.push(mapped);
+    }
+
+    renderBookings(false);
+
+    if (refreshDashboard) {
+      window.refreshDashboard?.();
+    }
+  }
+
+  /**
+   * Foglalás eltávolítása a memóriából.
+   * Használat: DELETE /api/reservations/<id>/ után (204).
+   */
+  function removeBooking(bookingId, { refreshDashboard = false } = {}) {
+    const numId = Number(bookingId);
+    const index = bookings.findIndex(
+      (b) => b.id === numId || String(b.id) === String(bookingId),
+    );
+
+    if (index !== -1) {
+      bookings.splice(index, 1);
+    }
+
+    renderBookings(false);
+
+    if (refreshDashboard) {
+      window.refreshDashboard?.();
+    }
+  }
+
+  // PATCH /api/reservations/<id>/status/ — Reservation.status frissül az adatbázisban
+  async function updateBookingStatus(id, statusLabel) {
+    const booking = findBooking(id);
+    const apiStatus = STATUS_LABEL_TO_API[statusLabel];
+    if (!booking || !apiStatus) return;
+
+    const previousStatus = booking.status;
+    booking.status = statusLabel;
+    renderBookings(false);
+
+    try {
+      const res = await reservationsApiRequest(`/api/reservations/${booking.id}/status/`, {
+        method: "PATCH",
+        body: JSON.stringify({ status: apiStatus }),
+      });
+
+      if (!res.ok) {
+        booking.status = previousStatus;
+        renderBookings(false);
+        const message = await readApiErrorMessage(res, "Státusz mentés sikertelen");
+        window.showToast?.(message, "error");
+        return;
+      }
+
+      const updated = await res.json();
+      applyBookingUpdate(updated, { refreshDashboard: true });
+    } catch (err) {
+      console.error("Foglalás státusz mentés sikertelen:", err);
+      booking.status = previousStatus;
+      renderBookings(false);
+      window.showToast?.("Státusz mentés sikertelen", "error");
+    }
+  }
+
   /* ================= KPI FRISSÍTÉS ================= */
   function updateBookingsKpis() {
     const counts = { new: 0, confirmed: 0, cancelled: 0, done: 0 };
     let hasProblem = false;
     let hasWarn = false;
 
-    demoBookings.forEach(b => {
+    bookings.forEach(b => {
       const key = STATUS_TO_KEY[b.status] || "new";
       counts[key]++;
 
@@ -86,7 +297,10 @@ const Bookings = (() => {
   function getSortedFiltered() {
     const search = (document.getElementById("bookingSearch")?.value || "").toLowerCase();
 
-    let list = demoBookings.filter(b => {
+    console.log("FILTER INPUT:", document.getElementById("bookingSearch")?.value);
+    console.log("BOOKINGS LENGTH:", bookings.length);
+
+    let list = bookings.filter(b => {
       if (!matchesKpiFilter(b)) return false;
       if (!search) return true;
       return (
@@ -94,6 +308,7 @@ const Bookings = (() => {
         b.email.toLowerCase().includes(search) ||
         b.phone.toLowerCase().includes(search) ||
         b.occasion.toLowerCase().includes(search) ||
+        (b.occasionCode || "").toLowerCase().includes(search) ||
         b.date.includes(search)
       );
     });
@@ -143,7 +358,7 @@ const Bookings = (() => {
         <td data-label="Részletek">
           <div class="booking-cell-detail">
             <span class="booking-detail-occasion">${b.occasion}</span>
-            <span class="booking-detail-guests"><span class="booking-guests-chip">× ${b.guests}</span> fő</span>
+            <span class="booking-detail-guests"><span class="booking-guests-chip">${b.guests} fő</span></span>
           </div>
         </td>
         <td data-label="Időpont">
@@ -174,11 +389,21 @@ const Bookings = (() => {
 
   /* ================= RENDER ================= */
   function renderBookings(animate = false) {
+    console.log("RENDER BOOKINGS CALLED");
     const tbody = document.getElementById("bookingTableBody");
+
+    console.log("TBODY:", tbody);
+    console.log("bookings:", bookings);
+
+
     const kpiRow = document.getElementById("bookingsKpiRow");
-    if (!tbody) return;
+    if (!tbody) {
+      console.warn("❌ bookingTableBody NINCS az oldalon!");
+      return;
+    }
 
     const list = getSortedFiltered();
+    console.log("FILTERED LIST:", list);
 
     function drawTable() {
       updateBookingsKpis();
@@ -203,7 +428,7 @@ const Bookings = (() => {
   function openBookingStatusPopover(badge) {
     closeBookingStatusPopover();
     const id = badge.dataset.id;
-    const booking = demoBookings.find(b => b.id === id);
+    const booking = findBooking(id);
     if (!booking) return;
 
     const pop = document.createElement("div");
@@ -254,7 +479,7 @@ const Bookings = (() => {
   function openBookingNotePopover(cell) {
     closeBookingNotePopover();
     const id = cell.dataset.id;
-    const booking = demoBookings.find(b => b.id === id);
+    const booking = findBooking(id);
     if (!booking?.note) return;
 
     const pop = document.createElement("div");
@@ -288,14 +513,14 @@ const Bookings = (() => {
 
   /* ================= EDIT MODAL ================= */
   function openBookingModal(id) {
-    const booking = demoBookings.find(b => b.id === id);
+    const booking = findBooking(id);
     if (!booking) return;
     editingBookingId = id;
 
     document.getElementById("m-name").value    = booking.name;
     document.getElementById("m-email").value   = booking.email;
     document.getElementById("m-phone").value   = booking.phone;
-    document.getElementById("m-occasion").value = booking.occasion;
+    document.getElementById("m-occasion").value = booking.occasionCode || "";
     document.getElementById("m-date").value    = booking.date.replace(/\./g, "-");
     document.getElementById("m-guests").value  = booking.guests;
     document.getElementById("m-note").value    = booking.note || "";
@@ -314,29 +539,59 @@ const Bookings = (() => {
   }
 
   function saveBookingModal() {
+    saveBookingModalAsync();
+  }
+
+  // PATCH /api/reservations/<id>/ — vendég adatok + dátum/idő/alkalom/létszám/megjegyzés
+  async function saveBookingModalAsync() {
     if (!editingBookingId) return;
-    const booking = demoBookings.find(b => b.id === editingBookingId);
+    const booking = findBooking(editingBookingId);
     if (!booking) return;
 
-    if (!document.getElementById("m-time").value) {
+    const timeValue = document.getElementById("m-time").value;
+    if (!timeValue) {
       window.showToast?.("Ezen a napon zárva vagyunk, válassz másik dátumot!", "error");
       return;
     }
 
-    booking.name     = document.getElementById("m-name").value;
-    booking.email    = document.getElementById("m-email").value;
-    booking.phone    = document.getElementById("m-phone").value;
-    booking.occasion = document.getElementById("m-occasion").value;
-    booking.date     = document.getElementById("m-date").value.replace(/-/g, ".");
-    booking.time     = document.getElementById("m-time").value;
-    booking.eventDateTime = `${booking.date} ${booking.time}`;
-    booking.guests   = document.getElementById("m-guests").value;
-    booking.note     = document.getElementById("m-note").value;
+    const guestCount = Number(document.getElementById("m-guests").value);
+    if (!Number.isFinite(guestCount) || guestCount < 1) {
+      window.showToast?.("A létszámnak legalább 1 főnek kell lennie.", "error");
+      return;
+    }
 
-    closeBookingModal();
-    renderBookings(false);
-    window.refreshDashboard?.();
-    window.showToast?.("Foglalás mentve", "success");
+    const occasionValue = document.getElementById("m-occasion").value;
+    const payload = {
+      guest_name: document.getElementById("m-name").value.trim(),
+      guest_email: document.getElementById("m-email").value.trim(),
+      guest_phone: document.getElementById("m-phone").value.trim(),
+      occasion: occasionValue || null,
+      date: document.getElementById("m-date").value,
+      time: timeValue,
+      guest_count: guestCount,
+      notes: document.getElementById("m-note").value.trim(),
+    };
+
+    try {
+      const res = await reservationsApiRequest(`/api/reservations/${booking.id}/`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const message = await readApiErrorMessage(res, "Foglalás mentése sikertelen");
+        window.showToast?.(message, "error");
+        return;
+      }
+
+      const updated = await res.json();
+      closeBookingModal();
+      applyBookingUpdate(updated, { refreshDashboard: true });
+      window.showToast?.("Foglalás mentve", "success");
+    } catch (err) {
+      console.error("Foglalás mentés sikertelen:", err);
+      window.showToast?.("Foglalás mentése sikertelen", "error");
+    }
   }
 
   /* ================= DELETE MODAL ================= */
@@ -354,28 +609,46 @@ const Bookings = (() => {
     pendingDeleteId = null;
   }
 
-  function confirmBookingDelete() {
+  async function confirmBookingDelete() {
     if (!pendingDeleteId) return;
-    const idx = demoBookings.findIndex(b => b.id === pendingDeleteId);
-    if (idx !== -1) demoBookings.splice(idx, 1);
-    closeBookingDeleteConfirm();
-    renderBookings(false);
-    window.refreshDashboard?.();
-    window.showToast?.("Foglalás törölve", "deleted");
+
+    const bookingId = pendingDeleteId;
+
+    try {
+      // DELETE /api/reservations/<id>/ — Reservation rekord törlése az adatbázisból
+      const res = await reservationsApiRequest(`/api/reservations/${bookingId}/`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const message = await readApiErrorMessage(res, "Törlés sikertelen");
+        window.showToast?.(message, "error");
+        return;
+      }
+
+      closeBookingDeleteConfirm();
+      removeBooking(bookingId, { refreshDashboard: true });
+      window.showToast?.("Foglalás törölve", "deleted");
+    } catch (err) {
+      console.error("Foglalás törlés sikertelen:", err);
+      window.showToast?.("Törlés sikertelen", "error");
+    }
   }
 
   /* ================= CLICK HANDLER ================= */
   function handleBookingClick(e) {
-    // Popover opció
+    // Popover opció — státusz mentése API-ra
     const popOpt = e.target.closest(".booking-popover-option");
     if (popOpt) {
-      const status    = popOpt.dataset.status;
-      const bookingId = popOpt.dataset.bookingId;
-      const booking   = demoBookings.find(b => b.id === bookingId);
-      if (booking) booking.status = status;
+      updateBookingStatus(popOpt.dataset.bookingId, popOpt.dataset.status);
       closeBookingStatusPopover();
-      renderBookings(false);
-      window.refreshDashboard?.();
+      return;
+    }
+
+    // Státusz badge — popover megnyitása (előbb, mint a bezárás)
+    const badge = e.target.closest(".booking-status-badge");
+    if (badge) {
+      openBookingStatusPopover(badge);
       return;
     }
 
@@ -390,10 +663,6 @@ const Bookings = (() => {
     // Megjegyzés popover
     const noteCell = e.target.closest(".note-expandable");
     if (noteCell) { openBookingNotePopover(noteCell); return; }
-
-    // Státusz badge
-    const badge = e.target.closest(".booking-status-badge");
-    if (badge) { openBookingStatusPopover(badge); return; }
 
     // Szerkesztés
     const editBtn = e.target.closest(".bookings-edit-btn");
@@ -469,18 +738,14 @@ const Bookings = (() => {
       ?.addEventListener("click", e => { if (e.target.id === "bookingDeleteConfirmModal") closeBookingDeleteConfirm(); });
   }
 
-  /* ================= PUBLIC API ================= */
-  function render() {
-    bindEvents();
-    renderBookings(false);
-  }
-
   function getBookings() {
-    return demoBookings.map(b => ({ ...b, status: b.status || "Új" }));
+    return bookings.map(b => ({ ...b, status: b.status || "Új" }));
   }
 
   return {
     render,
+    refresh,
+    loadBookings,
     renderBookings,
     filterBookings,
     getBookings,
@@ -565,3 +830,4 @@ function initTimeStepper(selectedTime, dateStr) {
     if (timeIndex < currentTimeSlots.length - 1) { timeIndex++; updateTimeUI(); }
   };
 }
+

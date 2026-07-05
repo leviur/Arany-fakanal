@@ -454,7 +454,15 @@ const App = (() => {
         if (typeof renderOrders === "function") renderOrders(true);
       }
       if (document.getElementById("bookings-section")?.classList.contains("active")) {
-        if (typeof Bookings !== "undefined") Bookings.renderBookings(true);
+        if (typeof Bookings !== "undefined") {
+          try {
+            await Bookings.refresh();
+            Bookings.renderBookings(true);
+          } catch (error) {
+            console.error("Foglalások frissítése sikertelen:", error);
+            window.showToast?.("Nem sikerült frissíteni a foglalásokat.", "error");
+          }
+        }
       }
       if (document.getElementById("messages-section")?.classList.contains("active")) {
         if (typeof Messages !== "undefined") Messages.render(true);
@@ -554,7 +562,7 @@ const App = (() => {
     Food.render();
 
     MenuManager.render();
-    Bookings.render();
+    await Bookings.render();
     Messages.render();
 
     updateDashboardStats();

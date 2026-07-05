@@ -28,7 +28,7 @@
           </p>
         </div>
 
-        <form class="booking-form" onsubmit="handleSubmit(event)">
+        <form class="booking-form" id="bookingForm" novalidate onsubmit="handleSubmit(event)">
           <!-- Sor 1: Név + Email -->
           <div class="form-row">
             <div class="form-group">
@@ -37,7 +37,7 @@
                 type="text"
                 id="name"
                 placeholder="Pl. Kiss János"
-                required
+                autocomplete="name"
               />
             </div>
             <div class="form-group">
@@ -46,7 +46,7 @@
                 type="email"
                 id="email"
                 placeholder="pelda@email.hu"
-                required
+                autocomplete="email"
               />
             </div>
           </div>
@@ -59,11 +59,11 @@
                 type="tel"
                 id="phone"
                 placeholder="+36 30 123 4567"
-                required
+                autocomplete="tel"
               />
             </div>
             <div class="form-group">
-              <label for="occasion">Alkalom</label>
+              <label for="occasion">Alkalom <span class="req">*</span></label>
               <select id="occasion">
                 <option value="">Válasszon alkalmat…</option>
                 <option value="csaladi">Családi összejövetel</option>
@@ -79,11 +79,11 @@
           <div class="form-row form-row--three">
             <div class="form-group">
               <label for="date">Dátum <span class="req">*</span></label>
-              <input type="date" id="date" required />
+              <input type="date" id="date" />
             </div>
             <div class="form-group">
               <label for="time">Időpont <span class="req">*</span></label>
-              <select id="time" required>
+              <select id="time">
                 <option value="">Válasszon…</option>
                 <option>11:00</option>
                 <option>11:30</option>
@@ -257,24 +257,198 @@
 
   {% block scripts %}
     <script>
+    function getCSRFToken() {
+      const name = "csrftoken=";
+      const cookies = document.cookie.split(";");
+
+      for (let c of cookies) {
+        c = c.trim();
+        if (c.startsWith(name)) {
+          return c.substring(name.length);
+        }
+      }
+      return "";
+    }
+    </script>
+    <script>
       let guests = 2;
+      const DEFAULT_GUEST_COUNT = 2;
+      const submitBtnDefaultHtml = document.querySelector(".submit-btn")?.innerHTML;
+
+      const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
       function changeGuests(delta) {
         guests = Math.max(1, Math.min(20, guests + delta));
         document.getElementById("guest-count").textContent = guests;
       }
 
-      // Mai dátum minimum
       document.getElementById("date").min = new Date()
         .toISOString()
         .split("T")[0];
 
-      function handleSubmit(e) {
+      // Bejelentkezve: név, email, telefon a profilból (üres mezőket tölti ki)
+      function prefillBookingFormFromUser(user) {
+        if (!user?.id) return;
+
+        const nameEl = document.getElementById("name");
+        const emailEl = document.getElementById("email");
+        const phoneEl = document.getElementById("phone");
+        if (!nameEl || !emailEl || !phoneEl) return;
+
+        if (!nameEl.value.trim() && user.name) {
+          nameEl.value = user.name;
+        }
+        if (!emailEl.value.trim() && user.email) {
+          emailEl.value = user.email;
+        }
+        if (!phoneEl.value.trim() && user.phone_number) {
+          phoneEl.value = user.phone_number;
+        }
+      }
+
+      window.prefillBookingFormFromUser = prefillBookingFormFromUser;
+
+      // Sikeres küldés után: ürítés + vendégszám alapérték; bejelentkezve profil újratöltése
+      function resetBookingForm() {
+        const form = document.getElementById("bookingForm");
+        const btn = form?.querySelector(".submit-btn");
+
+        form?.reset();
+
+        guests = DEFAULT_GUEST_COUNT;
+        document.getElementById("guest-count").textContent = guests;
+
+        if (btn) {
+          btn.innerHTML = submitBtnDefaultHtml || "<span>Foglalás elküldése</span>";
+          btn.style.background = "";
+          btn.disabled = false;
+        }
+
+        window.checkAuthSession?.().then((user) => prefillBookingFormFromUser(user));
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        const user = await window.checkAuthSession?.();
+        prefillBookingFormFromUser(user);
+      });
+
+      function validateBookingForm() {
+        const name = document.getElementById("name").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const occasion = document.getElementById("occasion").value;
+        const date = document.getElementById("date").value;
+        const time = document.getElementById("time").value;
+        const notes = document.getElementById("note").value.trim();
+        const today = document.getElementById("date").min;
+
+        if (!name) {
+          return "Kérjük, adja meg a teljes nevét!";
+        }
+        if (!email) {
+          return "Kérjük, adja meg az e-mail címét!";
+        }
+        if (!EMAIL_RE.test(email)) {
+          return "Érvénytelen e-mail cím. Használjon formátumot: pelda@email.hu";
+        }
+        if (!phone) {
+          return "Kérjük, adja meg a telefonszámát!";
+        }
+        if (!occasion) {
+          return "Kérjük, válasszon alkalmat!";
+        }
+        if (!date) {
+          return "Kérjük, válasszon dátumot!";
+        }
+        if (date < today) {
+          return "A foglalás dátuma nem lehet múltbeli!";
+        }
+        if (!time) {
+          return "Kérjük, válasszon időpontot!";
+        }
+
+        return {
+          guest_name: name,
+          guest_email: email,
+          guest_phone: phone,
+          occasion,
+          date,
+          time,
+          guest_count: guests,
+          notes,
+        };
+      }
+
+      function formatReservationError(err) {
+        if (typeof err === "string") return err;
+        if (err?.detail) return err.detail;
+
+        const fieldMessages = {
+          guest_name: "Kérjük, adja meg a teljes nevét!",
+          guest_email: "Érvénytelen e-mail cím. Használjon formátumot: pelda@email.hu",
+          guest_phone: "Kérjük, adja meg a telefonszámát!",
+          occasion: "Kérjük, válasszon alkalmat!",
+          date: "Kérjük, válasszon érvényes dátumot!",
+          time: "Kérjük, válasszon időpontot!",
+          guest_count: "Kérjük, adja meg a személyek számát!",
+        };
+
+        for (const [field, errors] of Object.entries(err || {})) {
+          if (!Array.isArray(errors) || !errors.length) continue;
+          const msg = String(errors[0]).toLowerCase();
+          if (field === "guest_email" && msg.includes("blank")) {
+            return "Kérjük, adja meg az e-mail címét!";
+          }
+          return fieldMessages[field] || String(errors[0]);
+        }
+
+        return "Hiba történt a foglalás elküldésekor!";
+      }
+
+      async function handleSubmit(e) {
         e.preventDefault();
+
         const btn = e.target.querySelector(".submit-btn");
-        btn.innerHTML = "<span>✓ Foglalás elküldve!</span>";
-        btn.style.background = "#4CAF50";
-        btn.disabled = true;
+        const validation = validateBookingForm();
+
+        if (typeof validation === "string") {
+          window.showToast?.(validation, "error");
+          return;
+        }
+
+        try {
+          btn.disabled = true;
+          btn.innerHTML = "Küldés...";
+
+          const res = await fetch("/api/reservations/create/", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCSRFToken(),
+            },
+            body: JSON.stringify(validation),
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+            throw err;
+          }
+
+          btn.innerHTML = "✓ Foglalás sikeres!";
+          btn.style.background = "#4CAF50";
+          window.showToast?.("Foglalás sikeresen elküldve! Hamarosan visszaigazolunk.", "success");
+
+          // Rövid sikerjelzés, majd űrlap ürítése (dupla küldés elkerülése)
+          setTimeout(resetBookingForm, 2500);
+
+        } catch (err) {
+          console.error(err);
+          window.showToast?.(formatReservationError(err), "error");
+          btn.innerHTML = submitBtnDefaultHtml || "<span>Foglalás elküldése</span>";
+          btn.style.background = "";
+          btn.disabled = false;
+        }
       }
     </script>
 {% endblock %}

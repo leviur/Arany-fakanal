@@ -19,6 +19,15 @@ class Order(models.Model):
         default=0
     )
 
+    def recalculate_total(self):
+        from django.db.models import F, Sum
+
+        total = self.items.aggregate(
+            total=Sum(F("unit_price") * F("quantity"))
+        )["total"] or 0
+        self.total_price = total
+        self.save(update_fields=["total_price"])
+
     def __str__(self):
         return f"Order #{self.id}"
 

@@ -58,6 +58,8 @@
                     type="password" id="reg-password-confirm" placeholder="Jelszó megerősítése" required>
             </div>
 
+            {% include "components/privacy-consent.html" with checkbox_id="register-privacy" %}
+
             <button type="submit" class="btn-gold btn-full">Regisztráció</button>
 
         </form>

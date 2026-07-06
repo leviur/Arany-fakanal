@@ -13,7 +13,7 @@
 
     
 
-    <link rel="stylesheet" href="{% static 'css/homepage.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/homepage.css' %}?v=3" />
 
 {% endblock %}
 
@@ -415,10 +415,7 @@
                   ></textarea>
                 </div>
 
-                <label class="checkbox-row">
-                  <input type="checkbox" name="privacy" required />
-                  <span>Elfogadom az adatkezelési tájékoztatót.</span>
-                </label>
+                {% include "components/privacy-consent.html" with checkbox_id="contact-privacy" %}
 
                 <button type="submit" class="btn-gold">Üzenet küldése</button>
               </form>
@@ -446,6 +443,7 @@
           </div>
         </div>
       </section>
+
     </main>
     <!-- ===================== FOOTER ===================== -->
     <footer class="footer">
@@ -507,7 +505,7 @@
 {% block scripts %}
   
     
-    <script src="{% static 'js/contact-form.js' %}"></script>
+    <script src="{% static 'js/contact-form.js' %}?v=4"></script>
 
     <!-- ===================== Napi menü betöltése JSON-ból ===================== -->
     <script>

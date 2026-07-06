@@ -27,6 +27,7 @@
 
 
     <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/privacy-modal.css' %}?v=1">
     <link rel="stylesheet" href="{% static 'css/toast.css' %}">
 
 
@@ -55,6 +56,8 @@
 
 {% include "components/cart.html" %}
 
+{% include "components/privacy-modal.html" %}
+
 
 
 
@@ -66,11 +69,12 @@
 
 
 <script src="{% static 'js/toast.js' %}" defer></script>
+<script src="{% static 'js/privacy-modal.js' %}?v=1" defer></script>
 <script src="{% static 'js/opening-hours.js' %}?v=3" defer></script>
 <script src="{% static 'js/live-sync.js' %}?v=1" defer></script>
 <script src="{% static 'js/navbar.js' %}" defer></script>
 <script src="{% static 'js/login.js' %}" defer></script>
-    <script src="{% static 'js/cart.js' %}?v=4" defer></script>
+<script src="{% static 'js/cart.js' %}?v=4" defer></script>
 
 
 

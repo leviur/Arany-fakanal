@@ -465,7 +465,14 @@ const App = (() => {
         }
       }
       if (document.getElementById("messages-section")?.classList.contains("active")) {
-        if (typeof Messages !== "undefined") Messages.render(true);
+        if (typeof Messages !== "undefined") {
+          try {
+            await Messages.refresh();
+          } catch (error) {
+            console.error("Üzenetek frissítése sikertelen:", error);
+            window.showToast?.("Nem sikerült frissíteni az üzeneteket.", "error");
+          }
+        }
       }
       if (document.getElementById("menu-section")?.classList.contains("active")) {
         if (typeof MenuManager !== "undefined") MenuManager.refresh();
@@ -565,15 +572,13 @@ const App = (() => {
       window.showToast?.("Nem sikerült betölteni a rendeléseket.", "error");
     }
 
-    window.appData.messages = Messages.getMessages();
-
     bindEvents();
     bindSidebar();
     Food.render();
 
     MenuManager.render();
     await Bookings.render();
-    Messages.render();
+    await Messages.render();
 
     updateDashboardStats();
 

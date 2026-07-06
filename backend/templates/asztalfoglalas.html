@@ -121,6 +121,8 @@
             ></textarea>
           </div>
 
+          {% include "components/privacy-consent.html" with checkbox_id="booking-privacy" %}
+
           <button type="submit" class="submit-btn">
             <span>Foglalás elküldése</span>
             <svg
@@ -371,6 +373,9 @@
         }
         if (time === "Ezen a napon zárva vagyunk") {
           return "Ezen a napon zárva vagyunk, válassz másik dátumot!";
+        }
+        if (!document.getElementById("booking-privacy")?.checked) {
+          return "Az adatkezelési tájékoztató elfogadása kötelező.";
         }
 
         return {

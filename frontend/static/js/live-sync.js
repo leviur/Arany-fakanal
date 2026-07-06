@@ -72,6 +72,15 @@ const LiveSync = (() => {
 
     if (typeof renderOrders === "function") renderOrders(false);
     if (typeof Bookings !== "undefined") Bookings.renderBookings(false);
+
+    if (typeof Messages !== "undefined") {
+      try {
+        await Messages.refresh();
+      } catch (error) {
+        console.error("Üzenetek szinkron sikertelen:", error);
+      }
+    }
+
     window.refreshDashboard?.();
   }
 

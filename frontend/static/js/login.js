@@ -333,6 +333,10 @@ function initLogin() {
     registerForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
+        if (!window.PrivacyModal?.requireAccepted("register-privacy")) {
+            return;
+        }
+
         let fullName = document.getElementById("reg-name").value;
         const email = document.getElementById("reg-email").value;
         const phone = document.getElementById("reg-phone").value;

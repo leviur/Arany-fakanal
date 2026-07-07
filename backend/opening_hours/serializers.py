@@ -118,7 +118,7 @@ class OpeningHoursPayloadSerializer(serializers.Serializer):
 
         OpeningHoursException.objects.exclude(date__in=exception_dates).delete()
 
-        # Nyitvatartás mentés → revision++ → más böngészők frissítik a footer/foglalás oldalt
+        # Mentés után revision++ → live-sync.js → OpeningHours.fetchOpeningHours()
         from sync.services import bump_revision
 
         bump_revision()

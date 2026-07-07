@@ -506,91 +506,7 @@
   
     
     <script src="{% static 'js/contact-form.js' %}?v=4"></script>
-
-    <!-- ===================== Napi menü betöltése JSON-ból ===================== -->
-    <script>
-      let weeklyMenuData = [];
-
-      function formatMenuDesc(menuItem) {
-        if (!menuItem) return "Nem elérhető";
-        const parts = [];
-        if (menuItem.soup) parts.push(menuItem.soup.name);
-        if (menuItem.main_course) parts.push(menuItem.main_course.name);
-        if (menuItem.dessert) parts.push(menuItem.dessert.name);
-        return parts.join(", ") || "Nem elérhető";
-      }
-
-      function updateMenuDisplay(dayValue) {
-        const menuA = weeklyMenuData.find(m => m.day === dayValue && m.menu_type === "A");
-        const menuB = weeklyMenuData.find(m => m.day === dayValue && m.menu_type === "B");
-
-        document.getElementById("menuA-desc").textContent = menuA
-          ? formatMenuDesc(menuA)
-          : "Ezen a napon nincs A menü.";
-
-        document.getElementById("menuB-desc").textContent = menuB
-          ? formatMenuDesc(menuB)
-          : "Ezen a napon nincs B menü.";
-      }
-
-      // Nap váltásakor az A/B menü jelölések törlődnek
-      function resetMenuSelection() {
-        const menuA = document.getElementById("menuA");
-        const menuB = document.getElementById("menuB");
-
-        if (menuA) menuA.checked = false;
-        if (menuB) menuB.checked = false;
-      }
-
-      // Kosár megnyitásakor: első rendelhető nap + menüjelölések törlése
-      function resetDailyMenuForm() {
-        if (typeof populateDaySelect === "function") {
-          populateDaySelect();
-        }
-
-        resetMenuSelection();
-
-        const daySelect = document.getElementById("day");
-        if (daySelect?.value) {
-          updateMenuDisplay(daySelect.value);
-        }
-      }
-
-      window.resetDailyMenuForm = resetDailyMenuForm;
-
-      document.addEventListener("DOMContentLoaded", () => {
-        const menuUrl = "{% static 'data/weekly_menu.json' %}";
-
-        fetch(menuUrl)
-          .then(res => {
-            if (!res.ok) throw new Error("Nem sikerült betölteni a heti menüt");
-            return res.json();
-          })
-          .then(data => {
-            weeklyMenuData = data;
-
-            // Csak a rendelhető napok jelennek meg a dropdownban
-            if (typeof populateDaySelect === "function") {
-              populateDaySelect();
-            }
-
-            const daySelect = document.getElementById("day");
-            if (daySelect?.value) {
-              updateMenuDisplay(daySelect.value);
-            }
-
-            daySelect?.addEventListener("change", () => {
-              resetMenuSelection();
-              updateMenuDisplay(daySelect.value);
-            });
-          })
-          .catch(err => {
-            console.error("Hiba a heti menü betöltésekor:", err);
-            document.getElementById("menuA-desc").textContent = "Nem sikerült betölteni.";
-            document.getElementById("menuB-desc").textContent = "Nem sikerült betölteni.";
-          });
-      });
-    </script>
+    <script src="{% static 'js/weekly-menu.js' %}?v=1"></script>
 
 
     <!-- ===================== Hero Háttérkép váltakozása ===================== -->
@@ -695,7 +611,7 @@
 <script>
   function findSelectedMenu(day, type) {
 
-    return weeklyMenuData.find(menu =>
+    return window.weeklyMenuData.find(menu =>
         menu.day === day &&
         menu.menu_type === type &&
         menu.is_available === true
@@ -705,7 +621,7 @@
 
   function getMenu(day, type) {
 
-    return weeklyMenuData.find(menu =>
+    return window.weeklyMenuData.find(menu =>
 
         menu.day === day &&
         menu.menu_type === type &&

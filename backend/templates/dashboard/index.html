@@ -33,11 +33,12 @@
     <script src="{% static 'js/opening-hours.js' %}?v=3" defer></script>
     <script src="{% static 'dashboard/js/sla-rules.js' %}?v=1" defer></script>
     <script src="{% static 'js/toast.js' %}" defer></script>
-    <script src="{% static 'dashboard/js/index.js' %}?v=44" defer></script>
+    <script src="{% static 'dashboard/js/index.js' %}?v=45" defer></script>
     <script src="{% static 'dashboard/js/dashboard.js' %}?v=41" defer></script>
     <script src="{% static 'dashboard/js/api-errors.js' %}?v=1" defer></script>
+    <script src="{% static 'dashboard/js/weekly-menu-combobox.js' %}?v=3" defer></script>
     <script src="{% static 'dashboard/js/orders.js' %}?v=49" defer></script>
-    <script src="{% static 'dashboard/js/menu-manager.js' %}?v=39" defer></script>
+    <script src="{% static 'dashboard/js/menu-manager.js' %}?v=43" defer></script>
     <script src="{% static 'dashboard/js/bookings.js' %}?v=53" defer></script>
     <script src="{% static 'dashboard/js/settings.js' %}?v=42" defer></script>
     <script src="{% static 'js/live-sync.js' %}?v=2" defer></script>
@@ -632,18 +633,9 @@
             <div class="modal-grid">
               <div class="form-group modal-full-col modal-section-label">A Menü</div>
 
-              <div class="form-group">
-                <label for="day-a-leves">Leves</label>
-                <input type="text" id="day-a-leves" placeholder="Pl. Gulyásleves" />
-              </div>
-              <div class="form-group">
-                <label for="day-a-foetel">Főétel</label>
-                <input type="text" id="day-a-foetel" placeholder="Pl. Marhapörkölt" />
-              </div>
-              <div class="form-group">
-                <label for="day-a-desszert">Desszert</label>
-                <input type="text" id="day-a-desszert" placeholder="Pl. Somlói galuska" />
-              </div>
+              {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-a-leves" label="Leves" category="soup" %}
+              {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-a-foetel" label="Főétel" category="main" %}
+              {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-a-desszert" label="Desszert" category="dessert" %}
               <div class="form-group">
                 <label for="day-a-ar">Ár (Ft)</label>
                 <input type="number" id="day-a-ar" placeholder="pl. 2890" />
@@ -651,18 +643,9 @@
 
               <div class="form-group modal-full-col modal-section-label">B Menü</div>
 
-              <div class="form-group">
-                <label for="day-b-leves">Leves</label>
-                <input type="text" id="day-b-leves" placeholder="Pl. Zöldborsóleves" />
-              </div>
-              <div class="form-group">
-                <label for="day-b-foetel">Főétel</label>
-                <input type="text" id="day-b-foetel" placeholder="Pl. Rántott szelet" />
-              </div>
-              <div class="form-group">
-                <label for="day-b-desszert">Desszert</label>
-                <input type="text" id="day-b-desszert" placeholder="Pl. Túrógombóc" />
-              </div>
+              {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-b-leves" label="Leves" category="soup" %}
+              {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-b-foetel" label="Főétel" category="main" %}
+              {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-b-desszert" label="Desszert" category="dessert" %}
               <div class="form-group">
                 <label for="day-b-ar">Ár (Ft)</label>
                 <input type="number" id="day-b-ar" placeholder="pl. 2690" />
@@ -672,6 +655,70 @@
             <div class="modal-actions">
               <button type="button" id="save-day-menu" class="save-btn">Mentés</button>
               <button type="button" id="close-day-menu-modal" class="cancel-btn">Mégse</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= HETI MENÜ TÉTEL MODAL (új WeeklyMenuItem) ================= -->
+        <div
+          id="weekly-item-modal-overlay"
+          class="modal hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="weeklyItemModalTitle"
+        >
+          <div class="modal-box">
+            <h3 class="modal-title" id="weeklyItemModalTitle">Új heti menü tétel</h3>
+            <div class="modal-grid">
+              <div class="form-group modal-full-col">
+                <label for="weekly-item-category">Típus</label>
+                <input type="text" id="weekly-item-category" readonly />
+              </div>
+              <div class="form-group modal-full-col">
+                <label for="weekly-item-name">Név</label>
+                <input type="text" id="weekly-item-name" placeholder="Pl. Gulyásleves" />
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button type="button" id="save-weekly-item" class="save-btn">Mentés</button>
+              <button type="button" id="close-weekly-item-modal" class="cancel-btn">Mégse</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= KATALÓGUS-TÉTEL TÖRLÉS MEGERŐSÍTÉS ================= -->
+        <div
+          id="weeklyItemDeleteConfirmModal"
+          class="modal hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="weeklyItemDeleteConfirmTitle"
+        >
+          <div class="confirm-box">
+            <div class="confirm-icon">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="confirm-text">
+              <p class="confirm-title" id="weeklyItemDeleteConfirmTitle">Tétel törlése</p>
+              <p class="confirm-body" id="weeklyItemDeleteConfirmBody">
+                Biztosan törlöd ezt a tételt?
+              </p>
+            </div>
+            <div class="confirm-actions">
+              <button
+                type="button"
+                class="cancel-btn"
+                id="weeklyItemDeleteConfirmCancel"
+              >
+                Mégsem
+              </button>
+              <button
+                type="button"
+                class="btn-danger"
+                id="weeklyItemDeleteConfirmOk"
+              >
+                Törlés
+              </button>
             </div>
           </div>
         </div>

@@ -127,7 +127,8 @@ class OrderItemsStatusAPIView(APIView):
             )
 
         items.update(status=db_status)
-        # QuerySet.update() nem küld post_save signalt → revision kézzel
+        # QuerySet.update() nem küld post_save signalt → sync/signals.py nem fut
+        # → kézzel: bump_revision() → live-sync.js → loadOrdersFromApi()
         bump_revision()
         order = _order_with_relations(pk)
         return Response(OrderSerializer(order).data)

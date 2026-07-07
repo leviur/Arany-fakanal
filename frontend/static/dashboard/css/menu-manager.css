@@ -87,6 +87,148 @@
 .weekly-menu-table th:nth-child(4), .weekly-menu-table td:nth-child(4) { width: 12%; text-align: center; }
 
 .weekly-menu-empty {
+    color: #9a8b7a;
+    font-style: italic;
+}
+
+/* --- Heti menü kereshető legördülő --- */
+.wm-combobox {
+    position: relative;
+}
+
+.wm-combobox.is-open {
+    z-index: 40;
+}
+
+#day-menu-modal-overlay .modal-box,
+#day-menu-modal-overlay .modal-grid,
+#day-menu-modal-overlay .form-group {
+    overflow: visible;
+}
+
+.wm-combobox-control {
+    position: relative;
+}
+
+.wm-combobox-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d9cdb8;
+    border-radius: 8px;
+    font: inherit;
+    background: #fff;
+}
+
+.wm-combobox-input:focus {
+    outline: none;
+    border-color: #c5a059;
+    box-shadow: 0 0 0 2px rgba(197, 160, 89, 0.15);
+}
+
+.wm-combobox-dropdown {
+    position: absolute;
+    z-index: 50;
+    left: 0;
+    right: 0;
+    top: calc(100% + 4px);
+    max-height: 220px;
+    overflow-y: auto;
+    margin: 0;
+    padding: 6px 0;
+    list-style: none;
+    background: #fff;
+    border: 1px solid #eaddcc;
+    border-radius: 10px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.wm-combobox-dropdown.hidden {
+    display: none;
+}
+
+.wm-combobox-option {
+    display: block;
+    width: 100%;
+    padding: 10px 14px;
+    border: none;
+    background: none;
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+}
+
+.wm-combobox-option:hover,
+.wm-combobox-option:focus {
+    background: #f8f5f0;
+}
+
+.wm-combobox-empty {
+    padding: 10px 14px;
+    color: #8a7b6a;
+    font-size: 14px;
+}
+
+.wm-combobox-new-btn {
+    margin-top: 0;
+}
+
+.wm-combobox-footer {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 14px;
+    margin-top: 8px;
+}
+
+.wm-combobox-item-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px 14px;
+}
+
+.wm-combobox-item-actions.hidden {
+    display: none;
+}
+
+.wm-combobox-footer-btn {
+    border: none;
+    padding: 0;
+    margin: 0;
+    background: none;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.wm-combobox-new-btn,
+.wm-combobox-edit-btn {
+    color: #8a6b2e;
+}
+
+.wm-combobox-new-btn:hover,
+.wm-combobox-edit-btn:hover {
+    color: #c5a059;
+    text-decoration: underline;
+}
+
+.wm-combobox-delete-btn {
+    color: #9a3028;
+}
+
+.wm-combobox-delete-btn:hover {
+    color: #c0392b;
+    text-decoration: underline;
+}
+
+#weekly-item-category[readonly] {
+    background: #f8f5f0;
+    color: #5a4f42;
+}
+
     color: #aaa;
     font-style: italic;
 }
@@ -103,7 +245,12 @@
 
 /* ================= NAPI MENÜ MODAL ================= */
 #day-menu-modal-overlay .modal-box {
-    max-width: 480px;
+    max-width: 520px;
+    overflow: visible;
+}
+
+#day-menu-modal-overlay .modal-grid {
+    overflow: visible;
 }
 
 .modal-section-label {

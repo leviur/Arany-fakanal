@@ -72,31 +72,6 @@ window.APP_STATE = {
   openingHours: {},
 };
 
-let foodModalState = {
-  category: null,
-  editIndex: null
-};
-
-/**********************
- * 📌 SIDEBAR ACTIVE
- **********************/
-function setActiveSidebar() {
-  const currentSection =
-    document.querySelector(".section.active")?.id ||
-    window.location.hash.replace("#", "");
-
-  document.querySelectorAll(".menu a").forEach(link => {
-    const target = link.dataset.target || link.getAttribute("href");
-
-    if (target === currentSection) {
-      link.classList.add("active");
-    } else {
-      link.classList.remove("active");
-    }
-  });
-}
-
-
 /**********************
  * 🔐 AUTH MODULE
  **********************/
@@ -136,41 +111,6 @@ const Auth = (() => {
 
   return { logout, closeLogoutModal, confirmLogout };
 })();
-
-
-/**********************
- * 🧠 STORAGE MODULE
- **********************/
-const Store = (() => {
-  const KEY = "aranyfakanal_data";
-
-  const defaultData = {
-    foods: {
-      appetizers: [],          // Előételek
-      soups: [],               // Levesek
-      fish: [],                // Halételek és Szárnyasok
-      breaded: [],             // Hagyományos Rántott és Töltött Húsok
-      roasted: [],             // Szaftos és Kemencés Sültek
-      stews: [],               // Egytálételek
-      desserts: [],            // Desszertek
-      drinks: []               // Italok
-    },
-    weeklyMenu: {}
-  };
-
-  function load() {
-    const data = localStorage.getItem(KEY);
-    return data ? JSON.parse(data) : structuredClone(defaultData);
-  }
-
-  function save(data) {
-    localStorage.setItem(KEY, JSON.stringify(data));
-  }
-
-  return { load, save };
-})();
-
-let appData = Store.load();
 
 
 /**********************
@@ -255,97 +195,6 @@ const UI = (() => {
     switchTab
   };
 })();
-
-
-/**********************
- * 🍲 FOOD MODULE
- **********************/
-const Food = (() => {
-  let editState = { type: null, oldValue: null };
-
-  function add(type, value) {
-    if (!value) return;
-
-    if (editState.oldValue) {
-      const arr = appData.foods[type];
-      const idx = arr.indexOf(editState.oldValue);
-
-      if (idx !== -1) arr[idx] = value;
-
-      editState = { type: null, oldValue: null };
-    } else {
-      if (!appData.foods[type].includes(value)) {
-        appData.foods[type].push(value);
-      }
-    }
-
-    save();
-    render();
-  }
-
-  function remove(type, value) {
-    appData.foods[type] = appData.foods[type].filter(x => x !== value);
-
-    save();
-    render();
-  }
-
-  function startEdit(type, value, input) {
-    input.value = value;
-    editState = { type, oldValue: value };
-  }
-
-  function save() {
-    Store.save(appData);
-  }
-
-  function render() {
-    renderList("appetizers", appData.foods.appetizers, "appetizer-list", "new-appetizers");
-    renderList("soups", appData.foods.soups, "soup-list", "new-soups");
-    renderList("fish", appData.foods.fish, "fish-list", "new-fish");
-    renderList("breaded", appData.foods.breaded, "breaded-list", "new-breaded");
-    renderList("roasted", appData.foods.roasted, "roasted-list", "new-roasted");
-    renderList("stews", appData.foods.stews, "stew-list", "new-stews");
-    renderList("desserts", appData.foods.desserts, "dessert-list", "new-desserts");
-    renderList("drinks", appData.foods.drinks, "drink-list", "new-drinks");
-  }
-
-  function renderList(type, items, ulId, inputId) {
-    const ul = document.getElementById(ulId);
-    const input = document.getElementById(inputId);
-
-    if (!ul) return;
-
-    ul.innerHTML = "";
-
-    items.forEach(item => {
-      const li = document.createElement("li");
-
-      li.innerHTML = `
-        <div class="food-item">
-          <span class="food-item-name">${item.name}</span>
-          <span class="food-item-desc">${item.description || ""}</span>
-        </div>
-
-        <div class="food-actions">
-          <span class="food-item-price">${item.price.toLocaleString()} Ft</span>
-          <i class="fa-solid fa-pen edit"></i>
-          <i class="fa-solid fa-trash delete"></i>
-        </div>
-      `;
-
-      li.querySelector(".delete").onclick = () => remove(type, item);
-      li.querySelector(".edit").onclick = () => startEdit(type, item, input);
-
-      ul.appendChild(li);
-    });
-  }
-
-  return { add, remove, render };
-})();
-
-
-
 
 
 /**********************
@@ -574,7 +423,6 @@ const App = (() => {
 
     bindEvents();
     bindSidebar();
-    Food.render();
 
     MenuManager.render();
     await Bookings.render();

@@ -9,9 +9,11 @@ class RevisionAPIView(APIView):
     """
     GET /api/revision/ → { "revision": 42 }
 
-    Publikus olvasás: a homepage és a foglalás oldal is poll-olja
-    (admin bejelentkezés nélkül). Csak egy számot ad vissza, revision-t.
-    """
+    Csak egy számot ad vissza — a kliens ezt hasonlítja az előző poll eredményéhez.
+    Hívó oldalon: live-sync.js → fetchRevision()
+
+    Olvasás: get_revision() (sync/services.py)
+  """
 
     def get_permissions(self):
         return [AllowAny()]

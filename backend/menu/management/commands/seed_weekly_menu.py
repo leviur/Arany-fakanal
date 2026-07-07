@@ -1,5 +1,18 @@
+"""
+Demo / fejlesztői parancs: weekly_menu.json → adatbázis.
+
+Futtatás: python manage.py seed_weekly_menu
+
+Két táblát tölt:
+  1) menu_weeklymenuitem  — katalógus (leves, főétel, desszert nevek)
+  2) menu_weeklymenu      — napi A/B menük, FK-kkal a tételekre
+
+Nem az API-n keresztül megy, hanem közvetlenül Django ORM-mal (update_or_create).
+Éles üzemben a dashboard API-t használja az admin; ez csak gyors kezdeti adat.
+"""
+
 import json
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 from django.conf import settings
@@ -7,19 +20,25 @@ from django.core.management.base import BaseCommand
 
 from menu.models import WeeklyMenu, WeeklyMenuItem
 
-DAY_TO_DATE = {
-    "hetfo": date(2026, 6, 29),
-    "kedd": date(2026, 6, 30),
-    "szerda": date(2026, 7, 1),
-    "csutortok": date(2026, 7, 2),
-    "pentek": date(2026, 7, 3),
-}
-
+# JSON category → adatbázis category mező
 CATEGORY_MAP = {
     "soup": "soup",
     "main": "main",
     "dessert": "dessert",
 }
+
+
+def current_week_day_dates():
+    """Az aktuális naptári hét hétfő–péntek dátumai (a dashboard ugyanezt használja)."""
+    today = date.today()
+    monday = today - timedelta(days=today.weekday())
+    return {
+        "hetfo": monday,
+        "kedd": monday + timedelta(days=1),
+        "szerda": monday + timedelta(days=2),
+        "csutortok": monday + timedelta(days=3),
+        "pentek": monday + timedelta(days=4),
+    }
 
 
 class Command(BaseCommand):
@@ -41,9 +60,14 @@ class Command(BaseCommand):
         with json_path.open(encoding="utf-8") as handle:
             menus = json.load(handle)
 
+        day_to_date = current_week_day_dates()
         item_cache = {}
 
         def get_or_create_item(item_data):
+            """
+            WeeklyMenuItem mentése.
+            update_or_create: ha van ilyen id → UPDATE, ha nincs → INSERT.
+            """
             cache_key = item_data["id"]
             if cache_key in item_cache:
                 return item_cache[cache_key]
@@ -62,17 +86,19 @@ class Command(BaseCommand):
         created_count = 0
 
         for menu_data in menus:
+            # Előbb a 3 katalógus-tétel (FK célpontok)
             soup = get_or_create_item(menu_data["soup"])
             main_course = get_or_create_item(menu_data["main_course"])
             dessert = get_or_create_item(menu_data["dessert"])
 
+            # Aztán a napi menü sor, hivatkozással a tételekre
             _, created = WeeklyMenu.objects.update_or_create(
                 id=menu_data["id"],
                 defaults={
-                    "day": DAY_TO_DATE[menu_data["day"]],
-                    "menu_type": menu_data["menu_type"],
+                    "day": day_to_date[menu_data["day"]],  # pl. "hetfo" → konkrét dátum
+                    "menu_type": menu_data["menu_type"],   # "A" vagy "B"
                     "price": menu_data["price"],
-                    "soup": soup,
+                    "soup": soup,           # FK → WeeklyMenuItem
                     "main_course": main_course,
                     "dessert": dessert,
                     "is_available": menu_data.get("is_available", True),
@@ -85,6 +111,7 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(
                 f"Heti menü szinkronizálva: {len(menus)} menü "
-                f"({created_count} új, {len(menus) - created_count} frissítve)."
+                f"({created_count} új, {len(menus) - created_count} frissítve). "
+                f"Aktuális hét: {day_to_date['hetfo']} – {day_to_date['pentek']}."
             )
         )

@@ -7,110 +7,42 @@ const MenuManager = (() => {
   let pendingDayMenuDelete = null;     // day name
   let foodSearchTerm = '';
 
-  // ======================== API URL (API-hoz kell - aktiváld ha API készen van) ========================
-  // const WEEKLY_MENU_API_URL = '/api/weekly-menu/';
-  // ======================== VÉGE ========================
+  /*
+   * ======================== HETI MENÜ — API állapot ========================
+   *
+   * Adatfolyam (olvasás):
+   *   1) GET /api/weekly-menu-items/     → WeeklyMenuItem tábla (katalógus, legördülő)
+   *   2) GET /api/weekly-menu/?week_start= → WeeklyMenu tábla (aktuális hét A/B menüi)
+   *   3) A válasz JSON-ból összerakjuk a weeklyMenu objektumot (memória, UI-hoz)
+   *
+   * Adatfolyam (mentés):
+   *   1) A legördülőből WeeklyMenuItem *id* (soup, main_course, dessert)
+   *   2) POST /api/weekly-menu/create/  VAGY  PATCH /api/weekly-menu/<id>/
+   *   3) A backend a serializerrel INSERT / UPDATE-et ír az adatbázisba
+   *
+   * weeklyMenu struktúra (csak a böngészőben, nem adatbázis):
+   *   { "Hétfő": { A: { id, soupId, leves, ... }, B: { ... } }, ... }
+   */
+  const WEEKLY_MENU_API = "/api/weekly-menu/";
+  const WEEKLY_MENU_ITEMS_API = "/api/weekly-menu-items/";
+  let weeklyMenuItemsLoaded = false;
+  let pendingWeeklyItemTarget = null;
+  let pendingWeeklyItemDelete = null;
+  let weeklyMenu = {};
 
-  // ======================== localStorage (JSON alapú - töröld ha API-ra vált) ========================
-  const WEEKLY_MENU_STORAGE_KEY = 'aranyfakanal_weekly_menu';
-  // ======================== VÉGE ========================
-  let weeklyMenu = {}; // { "Hétfő": { A: {leves, foetel, desszert, ar}, B: {...} }, ... }
-
-  /* ================= KATEGÓRIÁK ================= */
-  const categories = [
-    { id: 'elotelek',         name: 'Előételek' },
-    { id: 'levesek',          name: 'Levesek' },
-    { id: 'halak-szarnyasok', name: 'Halételek és szárnyasok' },
-    { id: 'rantott-toltott',  name: 'Rántott és töltött húsok' },
-    { id: 'sultek',           name: 'Sültek' },
-    { id: 'egytaletelek',     name: 'Egytálételek' },
-    { id: 'desszertek',       name: 'Desszertek' },
-    { id: 'italok',           name: 'Italok' },
-  ];
-
-  let activeCategoryId = categories[0]?.id || null;
-  let categoryCounter = categories.length;
-
-  /* ================= ALLERGÉNEK ================= */
-  const ALLERGENS = [
-    { key: 'gluten',   name: 'Glutén',     icon: '/static/images/allergens/Gluten.svg' },
-    { key: 'wheat',    name: 'Búza',       icon: '/static/images/allergens/Wheat.svg' },
-    { key: 'milk',     name: 'Tej',        icon: '/static/images/allergens/Milk.svg' },
-    { key: 'eggs',     name: 'Tojás',      icon: '/static/images/allergens/Eggs.svg' },
-    { key: 'fish',     name: 'Hal',        icon: '/static/images/allergens/Fish.svg' },
-    { key: 'crab',     name: 'Rák',        icon: '/static/images/allergens/Crab.svg' },
-    { key: 'shrimp',   name: 'Garnéla',    icon: '/static/images/allergens/Shrimp.svg' },
-    { key: 'squid',    name: 'Tintahal',   icon: '/static/images/allergens/Squid.svg' },
-    { key: 'abalone',  name: 'Tengeri fül', icon: '/static/images/allergens/Abalone.svg' },
-    { key: 'beef',     name: 'Marhahús',   icon: '/static/images/allergens/Beef.svg' },
-    { key: 'pork',     name: 'Sertés',     icon: '/static/images/allergens/Pork.svg' },
-    { key: 'chicken',  name: 'Csirke',     icon: '/static/images/allergens/Chicken.svg' },
-    { key: 'nuts',     name: 'Diófélék',   icon: '/static/images/allergens/Nuts.svg' },
-    { key: 'walnut',   name: 'Dió',        icon: '/static/images/allergens/Walnut.svg' },
-    { key: 'cashew',   name: 'Kesudió',    icon: '/static/images/allergens/Cashew.svg' },
-    { key: 'sesame',   name: 'Szezámmag',  icon: '/static/images/allergens/Sesame.svg' },
-    { key: 'lupine',   name: 'Csillagfürt', icon: '/static/images/allergens/Lupine.svg' },
-    { key: 'soy',      name: 'Szója',      icon: '/static/images/allergens/Soy-Bean.svg' },
-    { key: 'celery',   name: 'Zeller',     icon: '/static/images/allergens/Celery.svg' },
-    { key: 'mushroom', name: 'Gomba',      icon: '/static/images/allergens/Mushroom.svg' },
-    { key: 'matsutake', name: 'Matsutake gomba', icon: '/static/images/allergens/Matsuke.svg' },
-    { key: 'potato',   name: 'Burgonya',   icon: '/static/images/allergens/Potato.svg' },
-    { key: 'gelatin',  name: 'Zselatin',   icon: '/static/images/allergens/Gelatin.svg' },
-    { key: 'sulfites', name: 'Szulfitok (kén-dioxid)', icon: '/static/images/allergens/Sulfites.svg' },
-    { key: 'apple',    name: 'Alma',       icon: '/static/images/allergens/Apple.svg' },
-    { key: 'banana',   name: 'Banán',      icon: '/static/images/allergens/Banana.svg' },
-    { key: 'orange',   name: 'Narancs',    icon: '/static/images/allergens/Orange.svg' },
-    { key: 'peach',    name: 'Őszibarack', icon: '/static/images/allergens/Peach.svg' },
-    { key: 'kiwi',     name: 'Kiwi',       icon: '/static/images/allergens/Kiwi.svg' },
-  ];
-
-  /* ================= DEMO ÉTELADATOK (flat array, stabil id-kkel) ================= */
-  const foods = [
-    { id: 'food-001', categoryId: 'elotelek', nev: "Kézműves krémvariációk friss kenyérrel", ar: "2690 Ft", leiras: "Mangalica tepertőkrém, fűszeres körözött és padlizsánkrém házi kovászos kenyérrel és friss kerti zöldségekkel.", available: true, allergens: ['gluten', 'wheat', 'milk'] },
-    { id: 'food-002', categoryId: 'elotelek', nev: "Érlelt bélszíntatár a kert legjavával", ar: "3990 Ft", leiras: "Hagyományos recept alapján fűszerezett, selymes textúrájú marhabélszín, friss idényzöldségekkel, vajjal/kacsazsírral és ropogós házi kovászos kenyérrel.", available: true, allergens: ['beef', 'gluten', 'wheat', 'milk'] },
-    { id: 'food-003', categoryId: 'elotelek', nev: "Kemencés velős csont lilahagyma-lekvárral", ar: "3190 Ft", leiras: "Fűszeres velős csont, házi készítésű, édeskés-savanykás lilahagyma-lekvárral és ropogós házi kovászos kenyérrel.", available: true, allergens: ['gluten', 'wheat'] },
-    { id: 'food-004', categoryId: 'elotelek', nev: "A kamra kincsei", ar: "4490 Ft", leiras: "Füstölt kolbász, pikáns paprikás szalámi, omlós sonka, érlelt és füstölt sajtok, savanyúság és kovászos kenyér.", available: true, allergens: ['pork', 'milk', 'gluten', 'wheat'] },
-
-    { id: 'food-005', categoryId: 'levesek', nev: "Gulyásleves", ar: "3490 Ft", leiras: "Omlós marhahúsból, lassú tűzön főzött gazdag gulyásleves csipetkével.", available: true, allergens: ['beef', 'gluten', 'eggs'] },
-    { id: 'food-006', categoryId: 'levesek', nev: "Füstölt csülkös Jókai bableves", ar: "3190 Ft", leiras: "Tartalmas bableves füstölt csülökkel és házi kolbásszal, tejföllel és petrezselyemmel.", available: true, allergens: ['pork', 'milk'] },
-    { id: 'food-007', categoryId: 'levesek', nev: "Marhahúsleves gazdagon", ar: "2790 Ft", leiras: "Kristálytiszta, hosszú főzésű húsleves marhafartővel és házi tésztával.", available: true, allergens: ['beef', 'gluten', 'wheat'] },
-    { id: 'food-008', categoryId: 'levesek', nev: "Tavaszi zöldborsóleves vajas galuskával", ar: "2790 Ft", leiras: "Könnyed zöldborsóleves vajas galuskával.", available: true, allergens: ['gluten', 'eggs', 'milk'] },
-    { id: 'food-009', categoryId: 'levesek', nev: "Szegedi halászlé szaftos pontyfilével", ar: "3490 Ft", leiras: "Intenzív halászlé pontyfilével és friss kenyérrel.", available: true, allergens: ['fish', 'gluten', 'wheat'] },
-
-    { id: 'food-010', categoryId: 'halak-szarnyasok', nev: "Mandulás bundában sült fogasfilé", ar: "4890 Ft", leiras: "Ropogós mandulás bundában sült fogasfilé majonézes burgonyasalátával.", available: true, allergens: ['fish', 'nuts', 'milk', 'eggs', 'potato', 'gluten', 'wheat'] },
-    { id: 'food-011', categoryId: 'halak-szarnyasok', nev: "Harcsapaprikás túrós csuszával", ar: "5890 Ft", leiras: "Szaftos harcsapaprikás túrós csuszával.", available: true, allergens: ['fish', 'milk', 'gluten', 'wheat'] },
-    { id: 'food-012', categoryId: 'halak-szarnyasok', nev: "Tanyasi paprikás csirke vajas galuskával", ar: "5490 Ft", leiras: "Tejfölös paprikás csirke vajas galuskával.", available: true, allergens: ['chicken', 'milk', 'gluten', 'eggs'] },
-    { id: 'food-013', categoryId: 'halak-szarnyasok', nev: "Mátrai borzas csirkemell", ar: "5690 Ft", leiras: "Ropogós csirkemell fokhagymás bundában, füstölt sajttal.", available: true, allergens: ['chicken', 'milk', 'potato', 'gluten', 'wheat', 'eggs'] },
-
-    { id: 'food-014', categoryId: 'rantott-toltott', nev: "Klasszikus rántott szelet", ar: "5690 Ft", leiras: "Aranybarna panko bundás rántott szelet vajas burgonyával.", available: true, allergens: ['pork', 'gluten', 'wheat', 'eggs', 'milk', 'potato'] },
-    { id: 'food-015', categoryId: 'rantott-toltott', nev: "Pásztorok kedvence karaj rántva", ar: "5890 Ft", leiras: "Töltött karaj kolbásszal és juhtúróval, burgonyapürével.", available: true, allergens: ['pork', 'milk', 'potato', 'gluten', 'wheat', 'eggs'] },
-
-    { id: 'food-016', categoryId: 'sultek', nev: "Marhapörkölt galuskával", ar: "5890 Ft", leiras: "Omlós marhalábszárból, sűrű szafttal, vörösborral és fűszerpaprikával lassan főzött pörkölt, tojásos házi galuskával és kovászos uborkával.", available: true, allergens: ['beef', 'gluten', 'eggs'] },
-    { id: 'food-017', categoryId: 'sultek', nev: "Cigánypecsenye kakastaréjjal", ar: "5890 Ft", leiras: "Fokhagymás pácban érlelt sertéstarja ropogós szalonnataréjjal, házi rósejbnivel.", available: true, allergens: ['pork', 'potato'] },
-    { id: 'food-018', categoryId: 'sultek', nev: "Kemencés csülök Pékné módra", ar: "6590 Ft", leiras: "Kívül ropogós, belül omlós csülök, hagymás-fokhagymás kemencés burgonyával.", available: true, allergens: ['pork', 'potato'] },
-
-    { id: 'food-019', categoryId: 'egytaletelek', nev: "Kolozsvári töltött káposzta", ar: "5690 Ft", leiras: "Savanyú káposzta ágyon, füstölt csülökkel és házi kolbásszal lassan összefőzött szaftos töltelékek, tejföllel és friss kenyérrel.", available: true, allergens: ['pork'] },
-    { id: 'food-020', categoryId: 'egytaletelek', nev: "Házi töltött paprika és paradicsomos húsgombóc", ar: "5390 Ft", leiras: "Fűszeres húsos rizzsel töltött paprika és omlós húsgombócok selymes paradicsommártásban, főtt burgonyával.", available: true, allergens: ['beef', 'pork'] },
-
-    { id: 'food-021', categoryId: 'desszertek', nev: "Somlói galuska", ar: "2590 Ft", leiras: "Diós, vaníliás és kakaós piskóta rétegek rumos mazsolával és csokoládéöntettel.", available: true, allergens: ['walnut', 'nuts', 'milk', 'eggs', 'gluten', 'wheat'] },
-    { id: 'food-022', categoryId: 'desszertek', nev: "Pillekönnyű túrógombóc édes tejföllel", ar: "2150 Ft", leiras: "Túrógombóc pirított morzsában, vaníliás tejföllel.", available: true, allergens: ['milk', 'eggs', 'gluten', 'wheat'] },
-    { id: 'food-023', categoryId: 'desszertek', nev: "Rákóczi túrós", ar: "2790 Ft", leiras: "Omlós tészta, citromos túrókrém és tojáshab baracklekvárral.", available: true, allergens: ['milk', 'eggs', 'gluten', 'wheat'] },
-    { id: 'food-024', categoryId: 'desszertek', nev: "Aranygaluska selymes vaníliasodóval", ar: "2790 Ft", leiras: "Foszlós kelt tészta dióval és vaníliasodóval.", available: true, allergens: ['walnut', 'nuts', 'milk', 'eggs', 'gluten', 'wheat'] },
-    { id: 'food-025', categoryId: 'desszertek', nev: "Mákos guba vaníliaöntettel", ar: "2190 Ft", leiras: "Kifli, mák és vaníliás öntet, sütve.", available: true, allergens: ['milk', 'gluten', 'wheat'] },
-
-    { id: 'food-026', categoryId: 'italok', nev: "Meggypálinka", ar: "2190 Ft", leiras: "", available: true, allergens: [] },
-    { id: 'food-027', categoryId: 'italok', nev: "Szilvapálinka", ar: "2490 Ft", leiras: "", available: true, allergens: [] },
-    { id: 'food-028', categoryId: 'italok', nev: "Kajszibarack Pálinka", ar: "3690 Ft", leiras: "", available: true, allergens: ['peach'] },
-    { id: 'food-029', categoryId: 'italok', nev: "Villányi Portugieser", ar: "6890 Ft", leiras: "", available: true, allergens: ['sulfites'] },
-    { id: 'food-030', categoryId: 'italok', nev: "Tokaji Furmint", ar: "9990 Ft", leiras: "", available: true, allergens: ['sulfites'] },
-    { id: 'food-031', categoryId: 'italok', nev: "Tokaji Aszú 5 Puttonyos", ar: "13890 Ft", leiras: "", available: true, allergens: ['sulfites'] },
-    { id: 'food-032', categoryId: 'italok', nev: "Soproni", ar: "1090 Ft", leiras: "", available: true, allergens: ['gluten'] },
-    { id: 'food-033', categoryId: 'italok', nev: "Pilsner Urquell", ar: "1190 Ft", leiras: "", available: true, allergens: ['gluten'] },
-    { id: 'food-034', categoryId: 'italok', nev: "Dreher Bak (Barna sör)", ar: "1390 Ft", leiras: "", available: true, allergens: ['gluten'] },
-    { id: 'food-035', categoryId: 'italok', nev: "Házi Limonádé szódával", ar: "1190 Ft", leiras: "", available: true, allergens: [] },
-  ];
-
-  let nextFoodId = foods.length;
+  /*
+   * ======================== ÉTELEK FÜL — API állapot ========================
+   * GET /api/categories/  GET /api/menu/  GET /api/allergens/
+   * Mentés: POST/PATCH/DELETE /api/menu/…  és /api/categories/…
+   */
+  const CATEGORIES_API = "/api/categories/";
+  const MENU_API = "/api/menu/";
+  const ALLERGENS_API = "/api/allergens/";
+  let categories = [];
+  let foods = [];
+  let ALLERGENS = [];
+  let activeCategoryId = null;
+  let menuDataLoaded = false;
 
   const days = ['Hétfő', 'Kedd', 'Szerda', 'Csütörtök', 'Péntek'];
 
@@ -121,8 +53,12 @@ const MenuManager = (() => {
     }[c]));
   }
 
+  function sameId(a, b) {
+    return String(a) === String(b);
+  }
+
   function foodsByCategory(catId) {
-    return foods.filter(f => f.categoryId === catId);
+    return foods.filter((f) => sameId(f.categoryId, catId));
   }
 
   function filteredFoodsByCategory(catId) {
@@ -205,11 +141,11 @@ const MenuManager = (() => {
   function renderCategorySidebar() {
     const ul = document.querySelector('.category-sidebar ul');
     if (!ul) return;
-    ul.innerHTML = categories.map(cat => categoryListItemHtml(cat, cat.id === activeCategoryId)).join('');
+    ul.innerHTML = categories.map(cat => categoryListItemHtml(cat, sameId(cat.id, activeCategoryId))).join('');
   }
 
   function refreshFoodTableArea() {
-    const category = categories.find(c => c.id === activeCategoryId);
+    const category = categories.find((c) => sameId(c.id, activeCategoryId));
     const title = document.getElementById('category-title');
     if (title) title.textContent = category?.name || '';
     const tbody = document.querySelector('.food-table tbody');
@@ -253,16 +189,28 @@ const MenuManager = (() => {
     container.innerHTML = contentData[target];
 
     if (target === 'heti-menu') {
-      loadWeeklyMenu();
-      renderWeeklyMenuTable();
+      // Heti menü fül: előbb katalógus + menük letöltése API-ból, aztán táblázat rajzolása
+      Promise.all([loadWeeklyMenuItems(), loadWeeklyMenuFromApi()])
+        .then(() => renderWeeklyMenuTable())
+        .catch((err) => {
+          console.error("Heti menü betöltése sikertelen:", err);
+          window.showToast?.("Nem sikerült betölteni a heti menüt.", "error");
+        });
     }
     if (target === 'etelek') {
       foodSearchTerm = '';
-      if (!categories.some(c => c.id === activeCategoryId)) {
-        activeCategoryId = categories[0]?.id || null;
-      }
-      renderCategorySidebar();
-      refreshFoodTableArea();
+      loadMenuTabData()
+        .then(() => {
+          if (!categories.some((c) => sameId(c.id, activeCategoryId))) {
+            activeCategoryId = categories[0]?.id ?? null;
+          }
+          renderCategorySidebar();
+          refreshFoodTableArea();
+        })
+        .catch((err) => {
+          console.error("Étlap betöltése sikertelen:", err);
+          window.showToast?.("Nem sikerült betölteni az ételeket.", "error");
+        });
     }
   }
 
@@ -299,7 +247,7 @@ const MenuManager = (() => {
     resetFoodModal(modal);
     modal.dataset.mode = 'add';
     document.getElementById('foodModalTitle').textContent = 'Új étel hozzáadása';
-    const category = categories.find(c => c.id === activeCategoryId);
+    const category = categories.find((c) => sameId(c.id, activeCategoryId));
     document.getElementById('modal-cat-name').textContent = category?.name || '';
     modal.classList.remove('hidden');
     requestAnimationFrame(() => modal.classList.add('open'));
@@ -307,11 +255,11 @@ const MenuManager = (() => {
 
   function openEditFoodModal(foodId) {
     const modal = document.getElementById('modal-overlay');
-    const item = foods.find(f => f.id === foodId);
+    const item = foods.find((f) => sameId(f.id, foodId));
     if (!item) return;
 
     document.getElementById('foodModalTitle').textContent = 'Étel szerkesztése';
-    const category = categories.find(c => c.id === item.categoryId);
+    const category = categories.find((c) => sameId(c.id, item.categoryId));
     document.getElementById('modal-cat-name').textContent = category?.name || '';
     document.getElementById('food-name').value = item.nev;
     document.getElementById('food-desc').value = item.leiras;
@@ -333,40 +281,58 @@ const MenuManager = (() => {
     }, 150);
   }
 
-  function saveFoodModal() {
+  async function saveFoodModal() {
     const modal = document.getElementById('modal-overlay');
     const nameInput = document.getElementById('food-name');
     const priceInput = document.getElementById('food-price');
     const descInput = document.getElementById('food-desc');
     const availableInput = document.getElementById('food-available');
 
-    if (!nameInput.value.trim() || !priceInput.value.trim() || !descInput.value.trim()) {
-      window.showToast?.('Kérlek, minden mezőt tölts ki!', 'error');
+    if (!nameInput.value.trim() || !priceInput.value.trim()) {
+      window.showToast?.('Kérlek, töltsd ki a nevet és az árat!', 'error');
       return;
     }
 
     const mode = modal.dataset.mode;
     const foodFields = {
-      nev: nameInput.value,
-      ar: priceInput.value + ' Ft',
-      leiras: descInput.value,
+      nev: nameInput.value.trim(),
+      ar: priceInput.value.trim() + ' Ft',
+      leiras: descInput.value.trim(),
       available: availableInput.checked,
       allergens: getCheckedAllergens(),
     };
 
-    if (mode === 'edit') {
-      const existing = foods.find(f => f.id === modal.dataset.foodId);
-      if (!existing) return;
-      Object.assign(existing, foodFields);
-      activeCategoryId = existing.categoryId;
-    } else {
-      nextFoodId += 1;
-      foods.push({ id: `food-${String(nextFoodId).padStart(3, '0')}`, categoryId: activeCategoryId, ...foodFields });
-    }
+    try {
+      if (mode === 'edit') {
+        const existing = foods.find((f) => sameId(f.id, modal.dataset.foodId));
+        if (!existing) return;
 
-    refreshFoodTableArea();
-    closeFoodModal();
-    window.showToast?.(mode === 'edit' ? 'Étel mentve' : 'Étel hozzáadva', 'success');
+        const response = await menuApiRequest(`${MENU_API}${existing.id}/`, {
+          method: "PATCH",
+          body: JSON.stringify(foodToApiPayload(foodFields, existing.categoryId)),
+        });
+        if (!response.ok) {
+          throw new Error(await parseApiError(response, "Az étel mentése sikertelen."));
+        }
+        activeCategoryId = existing.categoryId;
+      } else {
+        const response = await menuApiRequest(`${MENU_API}create/`, {
+          method: "POST",
+          body: JSON.stringify(foodToApiPayload(foodFields, activeCategoryId)),
+        });
+        if (!response.ok) {
+          throw new Error(await parseApiError(response, "Az étel hozzáadása sikertelen."));
+        }
+      }
+
+      await loadFoodsFromApi();
+      refreshFoodTableArea();
+      closeFoodModal();
+      window.showToast?.(mode === 'edit' ? 'Étel mentve' : 'Étel hozzáadva', 'success');
+    } catch (err) {
+      console.error(err);
+      window.showToast?.(err.message || "Mentés sikertelen.", "error");
+    }
   }
 
   /* ================= ÉTEL TÖRLÉS MEGERŐSÍTŐ MODAL ================= */
@@ -384,15 +350,24 @@ const MenuManager = (() => {
     pendingDeleteId = null;
   }
 
-  function confirmMenuDelete() {
+  async function confirmMenuDelete() {
     if (!pendingDeleteId) return;
-    const idx = foods.findIndex(f => f.id === pendingDeleteId);
-    if (idx === -1) { closeMenuDeleteConfirm(); return; }
+    const food = foods.find((f) => sameId(f.id, pendingDeleteId));
+    if (!food) { closeMenuDeleteConfirm(); return; }
 
-    foods.splice(idx, 1);
-    refreshFoodTableArea();
-    closeMenuDeleteConfirm();
-    window.showToast?.('Étel törölve', 'deleted');
+    try {
+      const response = await menuApiRequest(`${MENU_API}${food.id}/`, { method: "DELETE" });
+      if (!response.ok) {
+        throw new Error(await parseApiError(response, "Az étel törlése sikertelen."));
+      }
+      await loadFoodsFromApi();
+      refreshFoodTableArea();
+      closeMenuDeleteConfirm();
+      window.showToast?.('Étel törölve', 'deleted');
+    } catch (err) {
+      console.error(err);
+      window.showToast?.(err.message || "Törlés sikertelen.", "error");
+    }
   }
 
   /* ================= KATEGÓRIA MODAL (hozzáadás/átnevezés) ================= */
@@ -407,7 +382,7 @@ const MenuManager = (() => {
   }
 
   function openRenameCategoryModal(catId) {
-    const category = categories.find(c => c.id === catId);
+    const category = categories.find((c) => sameId(c.id, catId));
     if (!category) return;
 
     const modal = document.getElementById('category-modal-overlay');
@@ -425,7 +400,7 @@ const MenuManager = (() => {
     setTimeout(() => modal.classList.add('hidden'), 150);
   }
 
-  function saveCategoryModal() {
+  async function saveCategoryModal() {
     const modal = document.getElementById('category-modal-overlay');
     const nameInput = document.getElementById('category-name');
     const name = nameInput.value.trim();
@@ -437,27 +412,48 @@ const MenuManager = (() => {
 
     const mode = modal.dataset.mode;
 
-    if (mode === 'rename') {
-      const category = categories.find(c => c.id === modal.dataset.catId);
-      if (!category) return;
-      category.name = name;
-      if (activeCategoryId === category.id) refreshFoodTableArea();
-    } else {
-      categoryCounter += 1;
-      const newCategory = { id: `cat-${categoryCounter}`, name };
-      categories.push(newCategory);
-      activeCategoryId = newCategory.id;
-      refreshFoodTableArea();
-    }
+    try {
+      if (mode === 'rename') {
+        const category = categories.find((c) => sameId(c.id, modal.dataset.catId));
+        if (!category) return;
 
-    renderCategorySidebar();
-    closeCategoryModal();
-    window.showToast?.(mode === 'rename' ? 'Kategória átnevezve' : 'Kategória hozzáadva', 'success');
+        const response = await menuApiRequest(`${CATEGORIES_API}${category.id}/`, {
+          method: "PATCH",
+          body: JSON.stringify({ name }),
+        });
+        if (!response.ok) {
+          throw new Error(await parseApiError(response, "A kategória mentése sikertelen."));
+        }
+      } else {
+        const response = await menuApiRequest(`${CATEGORIES_API}create/`, {
+          method: "POST",
+          body: JSON.stringify({ name }),
+        });
+        if (!response.ok) {
+          throw new Error(await parseApiError(response, "A kategória hozzáadása sikertelen."));
+        }
+        const created = await response.json();
+        activeCategoryId = created.id;
+      }
+
+      await loadCategoriesFromApi();
+      if (mode === 'rename' && sameId(activeCategoryId, modal.dataset.catId)) {
+        refreshFoodTableArea();
+      } else if (mode !== 'rename') {
+        refreshFoodTableArea();
+      }
+      renderCategorySidebar();
+      closeCategoryModal();
+      window.showToast?.(mode === 'rename' ? 'Kategória átnevezve' : 'Kategória hozzáadva', 'success');
+    } catch (err) {
+      console.error(err);
+      window.showToast?.(err.message || "Mentés sikertelen.", "error");
+    }
   }
 
   /* ================= KATEGÓRIA TÖRLÉS MEGERŐSÍTŐ MODAL ================= */
   function openCategoryDeleteConfirm(catId) {
-    const category = categories.find(c => c.id === catId);
+    const category = categories.find((c) => sameId(c.id, catId));
     if (!category) return;
     pendingCategoryDeleteId = catId;
 
@@ -481,152 +477,299 @@ const MenuManager = (() => {
     pendingCategoryDeleteId = null;
   }
 
-  function confirmCategoryDelete() {
+  async function confirmCategoryDelete() {
     if (!pendingCategoryDeleteId) return;
     const catId = pendingCategoryDeleteId;
+    const category = categories.find((c) => sameId(c.id, catId));
+    if (!category) { closeCategoryDeleteConfirm(); return; }
 
-    for (let i = foods.length - 1; i >= 0; i--) {
-      if (foods[i].categoryId === catId) foods.splice(i, 1);
-    }
-
-    const idx = categories.findIndex(c => c.id === catId);
-    if (idx !== -1) categories.splice(idx, 1);
-
-    if (activeCategoryId === catId) {
-      activeCategoryId = categories[0]?.id || null;
-    }
-
-    renderCategorySidebar();
-    refreshFoodTableArea();
-    closeCategoryDeleteConfirm();
-    window.showToast?.('Kategória törölve', 'deleted');
-  }
-
-  /* ================= HETI MENÜ MENTÉS ================= */
-  // ======================== API alapú betöltés (API-hoz kell - aktiváld ha API készen van) ========================
-  // function loadWeeklyMenu() {
-  //   fetch(WEEKLY_MENU_API_URL)
-  //     .then(res => {
-  //       if (!res.ok) throw new Error('Nem sikerült betölteni a heti menüt');
-  //       return res.json();
-  //     })
-  //     .then(data => {
-  //       weeklyMenu = {};
-  //       const dayNames = { hetfo: 'Hétfő', kedd: 'Kedd', szerda: 'Szerda', csutortok: 'Csütörtök', pentek: 'Péntek' };
-  //       data.forEach(item => {
-  //         const dayName = dayNames[item.day] || item.day;
-  //         if (!weeklyMenu[dayName]) weeklyMenu[dayName] = {};
-  //         weeklyMenu[dayName][item.menu_type] = {
-  //           id: item.id,
-  //           leves: item.soup?.name || '',
-  //           foetel: item.main_course?.name || '',
-  //           desszert: item.dessert?.name || '',
-  //           ar: item.price + ' Ft'
-  //         };
-  //       });
-  //       renderWeeklyMenuTable();
-  //     })
-  //     .catch(err => {
-  //       console.error('Hiba a heti menü betöltésekor:', err);
-  //     });
-  // }
-  // ======================== VÉGE ========================
-
-  // ======================== localStorage alapú betöltés (JSON alapú - töröld ha API-ra vált) ========================
-  function loadWeeklyMenu() {
     try {
-      weeklyMenu = JSON.parse(localStorage.getItem(WEEKLY_MENU_STORAGE_KEY) || '{}');
-    } catch {
-      weeklyMenu = {};
+      const response = await menuApiRequest(`${CATEGORIES_API}${category.id}/`, {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        throw new Error(await parseApiError(response, "A kategória törlése sikertelen."));
+      }
+
+      await Promise.all([loadCategoriesFromApi(), loadFoodsFromApi()]);
+
+      if (sameId(activeCategoryId, catId)) {
+        activeCategoryId = categories[0]?.id ?? null;
+      }
+
+      renderCategorySidebar();
+      refreshFoodTableArea();
+      closeCategoryDeleteConfirm();
+      window.showToast?.('Kategória törölve', 'deleted');
+    } catch (err) {
+      console.error(err);
+      window.showToast?.(err.message || "Törlés sikertelen.", "error");
     }
   }
-  // ======================== VÉGE ========================
 
-  // ======================== API alapú mentés (API-hoz kell - aktiváld ha API készen van) ========================
-  // function saveWeeklyMenuToStorage(day, menuData) {
-  //   const id = menuData?.id;
-  //   const method = id ? 'PUT' : 'POST';
-  //   const url = id ? WEEKLY_MENU_API_URL + id + '/' : WEEKLY_MENU_API_URL + 'create/';
-  //   fetch(url, {
-  //     method: method,
-  //     headers: {
-  //       'Content-Type': 'application/json',
-  //       'X-CSRFToken': getCookie('csrftoken')
-  //     },
-  //     body: JSON.stringify(menuData)
-  //   })
-  //     .then(res => {
-  //       if (!res.ok) throw new Error('Mentés sikertelen');
-  //       return res.json();
-  //     })
-  //     .then(() => {
-  //       loadWeeklyMenu();
-  //       window.showToast?.('Heti menü mentve', 'success');
-  //     })
-  //     .catch(err => {
-  //       console.error('Hiba a mentéskor:', err);
-  //       window.showToast?.('Mentés sikertelen!', 'error');
-  //     });
-  // }
-  // ======================== VÉGE ========================
+  /*
+   * ================= HETI MENÜ — API hívások (adatbázis ↔ böngésző) =================
+   */
 
-  // ======================== localStorage alapú mentés (JSON alapú - töröld ha API-ra vált) ========================
-  function saveWeeklyMenuToStorage() {
-    localStorage.setItem(WEEKLY_MENU_STORAGE_KEY, JSON.stringify(weeklyMenu));
-  }
-  // ======================== VÉGE ========================
-
-  // ======================== CSRF token helper (API-hoz kell - aktiváld ha API készen van) ========================
-  window.getCookie= function(name) {
+  /** CSRF token a POST/PATCH/DELETE kérésekhez (Django session). */
+  function getCookie(name) {
     const value = `; ${document.cookie}`;
     const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return '';
+    if (parts.length === 2) return parts.pop().split(";").shift();
+    return "";
   }
-  // ======================== VÉGE ========================
 
-  // ======================== API alapú törlés (API-hoz kell - aktiváld ha API készen van) ========================
-  // function deleteWeeklyMenu(day) {
-  //   const entry = weeklyMenu[day];
-  //   if (!entry) return;
-  //   const deleteRequests = Object.values(entry)
-  //     .filter(m => m.id)
-  //     .map(m => fetch(WEEKLY_MENU_API_URL + m.id + '/', {
-  //       method: 'DELETE',
-  //       headers: { 'X-CSRFToken': getCookie('csrftoken') }
-  //     }));
-  //   Promise.all(deleteRequests)
-  //     .then(() => {
-  //       loadWeeklyMenu();
-  //       window.showToast?.('Napi menü törölve', 'deleted');
-  //     })
-  //     .catch(err => {
-  //       console.error('Hiba a törléskor:', err);
-  //       window.showToast?.('Törlés sikertelen!', 'error');
-  //     });
-  // }
-  // ======================== VÉGE ========================
+  /** Közös fetch wrapper: JSON + session cookie + CSRF. */
+  async function menuApiRequest(url, options = {}) {
+    const headers = {
+      "Content-Type": "application/json",
+      ...(options.headers || {}),
+    };
+    const csrfToken = getCookie("csrftoken");
+    if (csrfToken) {
+      headers["X-CSRFToken"] = csrfToken;
+    }
+    return fetch(url, {
+      credentials: "include",
+      ...options,
+      headers,
+    });
+  }
 
-  /* ================= NAPI MENÜ MODAL (hozzáadás/szerkesztés) ================= */
-  function openDayMenuModal(day) {
-    const modal = document.getElementById('day-menu-modal-overlay');
+  /** API válasz → dashboard táblázat sor */
+  function foodFromApi(item) {
+    return {
+      id: item.id,
+      categoryId: item.category.id,
+      nev: item.name,
+      ar: `${Math.round(parseFloat(item.price))} Ft`,
+      leiras: item.description || "",
+      available: item.is_available,
+      allergens: (item.allergens || []).map((a) => a.key),
+    };
+  }
+
+  /** Űrlap → API mentés */
+  function foodToApiPayload(foodFields, categoryId) {
+    const price = parseInt(String(foodFields.ar).replace(/\D/g, ""), 10);
+    return {
+      name: foodFields.nev,
+      description: foodFields.leiras,
+      price,
+      category: categoryId,
+      is_available: foodFields.available,
+      allergen_keys: foodFields.allergens || [],
+    };
+  }
+
+  async function loadAllergensFromApi() {
+    const response = await menuApiRequest(ALLERGENS_API);
+    if (!response.ok) throw new Error("Nem sikerült betölteni az allergéneket.");
+    ALLERGENS = await response.json();
+  }
+
+  async function loadCategoriesFromApi() {
+    const response = await menuApiRequest(CATEGORIES_API);
+    if (!response.ok) throw new Error("Nem sikerült betölteni a kategóriákat.");
+    categories = await response.json();
+  }
+
+  async function loadFoodsFromApi() {
+    const response = await menuApiRequest(MENU_API);
+    if (!response.ok) throw new Error("Nem sikerült betölteni az ételeket.");
+    foods = (await response.json()).map(foodFromApi);
+  }
+
+  async function loadMenuTabData(force = false) {
+    if (menuDataLoaded && !force) return;
+    await Promise.all([loadAllergensFromApi(), loadCategoriesFromApi(), loadFoodsFromApi()]);
+    menuDataLoaded = true;
+  }
+
+  async function parseApiError(response, fallback) {
+    try {
+      const data = await response.json();
+      return data.detail || fallback;
+    } catch (_err) {
+      return fallback;
+    }
+  }
+
+  /** Aktuális hét hétfőjének dátuma (YYYY-MM-DD). Ezt küldjük week_start paraméterként. */
+  function getCurrentWeekMonday() {
+    const now = new Date();
+    const day = now.getDay();
+    const monday = new Date(now);
+    monday.setHours(12, 0, 0, 0);
+    monday.setDate(now.getDate() - ((day + 6) % 7));
+    return monday.toISOString().slice(0, 10);
+  }
+
+  /** Magyar napnév → konkrét dátum az aktuális héten (mentéskor a backend day mezője). */
+  function getDateForDayName(dayName) {
+    const offsets = { Hétfő: 0, Kedd: 1, Szerda: 2, Csütörtök: 3, Péntek: 4 };
+    const monday = new Date(`${getCurrentWeekMonday()}T12:00:00`);
+    const target = new Date(monday);
+    target.setDate(monday.getDate() + (offsets[dayName] ?? 0));
+    return target.toISOString().slice(0, 10);
+  }
+
+  /** API-ból jövő ISO dátum → „Hétfő” … „Péntek” (csak munkanapok). */
+  function dayNameFromIsoDate(isoDate) {
+    const date = new Date(`${isoDate}T12:00:00`);
+    const names = ["Vasárnap", "Hétfő", "Kedd", "Szerda", "Csütörtök", "Péntek", "Szombat"];
+    const name = names[date.getDay()];
+    return days.includes(name) ? name : null;
+  }
+
+  /**
+   * KATALÓGUS BETÖLTÉSE (WeeklyMenuItem tábla → böngésző memória).
+   * GET /api/weekly-menu-items/
+   * Az eredmény a WeeklyMenuCombobox modulba kerül (legördülő listák).
+   */
+  async function loadWeeklyMenuItems(force = false) {
+    if (weeklyMenuItemsLoaded && !force) return;
+
+    const response = await menuApiRequest(WEEKLY_MENU_ITEMS_API);
+    if (!response.ok) {
+      throw new Error("Nem sikerült betölteni a heti menü tételeket.");
+    }
+
+    const items = await response.json();
+    window.WeeklyMenuCombobox?.setItems(items);
+    weeklyMenuItemsLoaded = true;
+  }
+
+  /**
+   * HETI MENÜ BETÖLTÉSE (WeeklyMenu tábla → weeklyMenu objektum).
+   * GET /api/weekly-menu/?week_start=<hétfő>
+   * A válasz tömb: minden sor egy A vagy B menü egy napra, beágyazott soup/main/dessert objektumokkal.
+   */
+  async function loadWeeklyMenuFromApi() {
+    const weekStart = getCurrentWeekMonday();
+    const response = await menuApiRequest(`${WEEKLY_MENU_API}?week_start=${weekStart}`);
+    if (!response.ok) {
+      throw new Error("Nem sikerült betölteni a heti menüt.");
+    }
+
+    const data = await response.json();
+    weeklyMenu = {};
+
+    data.forEach((item) => {
+      const dayName = dayNameFromIsoDate(item.day);
+      if (!dayName) return;
+
+      if (!weeklyMenu[dayName]) weeklyMenu[dayName] = {};
+      // item.id = WeeklyMenu sor azonosítója (PATCH/DELETE-hez kell)
+      // soupId / mainCourseId / dessertId = WeeklyMenuItem FK-k (legördülő visszatöltéshez)
+      weeklyMenu[dayName][item.menu_type] = {
+        id: item.id,
+        soupId: item.soup?.id ?? null,
+        mainCourseId: item.main_course?.id ?? null,
+        dessertId: item.dessert?.id ?? null,
+        leves: item.soup?.name || "",
+        foetel: item.main_course?.name || "",
+        desszert: item.dessert?.name || "",
+        ar: `${Math.round(parseFloat(item.price))} Ft`,
+        price: item.price,
+      };
+    });
+  }
+
+  /**
+   * EGY A VAGY B MENÜ MENTÉSE az adatbázisba.
+   * - Ha existingId van → PATCH (UPDATE a WeeklyMenu táblában)
+   * - Ha nincs id → POST create/ (INSERT új WeeklyMenu sor)
+   * A soup/main_course/dessert mezőkben a WeeklyMenuItem id-k mennek (nem a név!).
+   */
+  async function saveWeeklyMenuSlot(dayName, menuType, prefix, existingId) {
+    const soupId = window.WeeklyMenuCombobox?.getValue(`${prefix}-leves`);
+    const mainCourseId = window.WeeklyMenuCombobox?.getValue(`${prefix}-foetel`);
+    const dessertId = window.WeeklyMenuCombobox?.getValue(`${prefix}-desszert`);
+    const priceValue = document.getElementById(`${prefix}-ar`)?.value?.trim();
+
+    if (!soupId || !mainCourseId || !dessertId || !priceValue) {
+      throw new Error("missing_fields");
+    }
+
+    const payload = {
+      day: getDateForDayName(dayName),  // pl. "2026-07-07"
+      menu_type: menuType,              // "A" vagy "B"
+      soup: soupId,                     // WeeklyMenuItem.id
+      main_course: mainCourseId,
+      dessert: dessertId,
+      price: priceValue,
+      is_available: true,
+    };
+
+    const url = existingId ? `${WEEKLY_MENU_API}${existingId}/` : `${WEEKLY_MENU_API}create/`;
+    const method = existingId ? "PATCH" : "POST";
+    const response = await menuApiRequest(url, {
+      method,
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw err;
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Egy nap teljes törlése: A + B WeeklyMenu sor DELETE az adatbázisból.
+   * (A WeeklyMenuItem katalógus tételek megmaradnak.)
+   */
+  async function deleteWeeklyMenuDay(dayName) {
+    const entry = weeklyMenu[dayName];
+    if (!entry) return;
+
+    const requests = ["A", "B"]
+      .filter((menuType) => entry[menuType]?.id)
+      .map((menuType) =>
+        menuApiRequest(`${WEEKLY_MENU_API}${entry[menuType].id}/`, { method: "DELETE" }),
+      );
+
+    await Promise.all(requests);
+    await loadWeeklyMenuFromApi();
+    renderWeeklyMenuTable();
+  }
+
+  /* ================= NAPI MENÜ MODAL — szerkesztő űrlap ================= */
+  async function openDayMenuModal(day) {
+    try {
+      // Katalógus betöltése, ha még nincs (legördülőhöz)
+      await loadWeeklyMenuItems();
+    } catch (err) {
+      console.error(err);
+      window.showToast?.("Nem sikerült betölteni a menü tételeket.", "error");
+      return;
+    }
+
+    const modal = document.getElementById("day-menu-modal-overlay");
     const entry = weeklyMenu[day] || {};
     const a = entry.A || {};
     const b = entry.B || {};
 
-    document.getElementById('dayMenuModalTitle').textContent = `${day} menüje`;
-    document.getElementById('day-a-leves').value = a.leves || '';
-    document.getElementById('day-a-foetel').value = a.foetel || '';
-    document.getElementById('day-a-desszert').value = a.desszert || '';
-    document.getElementById('day-a-ar').value = a.ar ? parseInt(a.ar) : '';
-    document.getElementById('day-b-leves').value = b.leves || '';
-    document.getElementById('day-b-foetel').value = b.foetel || '';
-    document.getElementById('day-b-desszert').value = b.desszert || '';
-    document.getElementById('day-b-ar').value = b.ar ? parseInt(b.ar) : '';
+    document.getElementById("dayMenuModalTitle").textContent = `${day} menüje`;
+    // Megjelenített név a szövegmezőben, id a rejtett mezőben (mentéskor az id megy a backendnek)
+    window.WeeklyMenuCombobox?.setValue("day-a-leves", a.soupId, a.leves);
+    window.WeeklyMenuCombobox?.setValue("day-a-foetel", a.mainCourseId, a.foetel);
+    window.WeeklyMenuCombobox?.setValue("day-a-desszert", a.dessertId, a.desszert);
+    document.getElementById("day-a-ar").value = a.price ? Math.round(parseFloat(a.price)) : "";
+    window.WeeklyMenuCombobox?.setValue("day-b-leves", b.soupId, b.leves);
+    window.WeeklyMenuCombobox?.setValue("day-b-foetel", b.mainCourseId, b.foetel);
+    window.WeeklyMenuCombobox?.setValue("day-b-desszert", b.dessertId, b.desszert);
+    document.getElementById("day-b-ar").value = b.price ? Math.round(parseFloat(b.price)) : "";
+
+    // Szerkesztés/Törlés gombok frissítése minden comboboxnál
+    ["day-a-leves", "day-a-foetel", "day-a-desszert", "day-b-leves", "day-b-foetel", "day-b-desszert"]
+      .forEach((id) => window.WeeklyMenuCombobox?.updateItemActions(id));
 
     modal.dataset.day = day;
-    modal.classList.remove('hidden');
-    requestAnimationFrame(() => modal.classList.add('open'));
+    modal.classList.remove("hidden");
+    requestAnimationFrame(() => modal.classList.add("open"));
   }
 
   function closeDayMenuModal() {
@@ -635,46 +778,32 @@ const MenuManager = (() => {
     setTimeout(() => modal.classList.add('hidden'), 150);
   }
 
-  function saveDayMenuModal() {
-    const modal = document.getElementById('day-menu-modal-overlay');
+  /** Mentés: A és B menü külön API hívás, majd újraolvasás az adatbázisból. */
+  async function saveDayMenuModal() {
+    const modal = document.getElementById("day-menu-modal-overlay");
     const day = modal.dataset.day;
     if (!day) return;
 
-    const fieldIds = [
-      'day-a-leves', 'day-a-foetel', 'day-a-desszert', 'day-a-ar',
-      'day-b-leves', 'day-b-foetel', 'day-b-desszert', 'day-b-ar',
-    ];
-    const values = {};
-    let hasEmpty = false;
-    fieldIds.forEach(id => {
-      const value = document.getElementById(id).value.trim();
-      values[id] = value;
-      if (!value) hasEmpty = true;
-    });
+    const entry = weeklyMenu[day] || {};
 
-    if (hasEmpty) {
-      window.showToast?.('Kérlek, minden mezőt tölts ki!', 'error');
-      return;
+    try {
+      await saveWeeklyMenuSlot(day, "A", "day-a", entry.A?.id ?? null);
+      await saveWeeklyMenuSlot(day, "B", "day-b", entry.B?.id ?? null);
+      await loadWeeklyMenuFromApi();
+      renderWeeklyMenuTable();
+      window.showToast?.("Heti menü mentve", "success");
+      closeDayMenuModal();
+    } catch (err) {
+      if (err?.message === "missing_fields") {
+        window.showToast?.("Kérlek, minden mezőt tölts ki!", "error");
+        return;
+      }
+      console.error("Heti menü mentése sikertelen:", err);
+      const message = typeof parseApiError === "function"
+        ? parseApiError(err, "Mentés sikertelen!")
+        : "Mentés sikertelen!";
+      window.showToast?.(message, "error");
     }
-
-    // ======================== API alapú mentés (API-hoz kell - aktiváld ha API készen van) ========================
-    // const entry = weeklyMenu[day] || {};
-    // const dayKeys = { 'Hétfő': 'hetfo', 'Kedd': 'kedd', 'Szerda': 'szerda', 'Csütörtök': 'csutortok', 'Péntek': 'pentek' };
-    // saveWeeklyMenuToStorage(day, { id: entry.A?.id || null, day: dayKeys[day], menu_type: 'A', soup: values['day-a-leves'], main_course: values['day-a-foetel'], dessert: values['day-a-desszert'], price: parseInt(values['day-a-ar']) });
-    // saveWeeklyMenuToStorage(day, { id: entry.B?.id || null, day: dayKeys[day], menu_type: 'B', soup: values['day-b-leves'], main_course: values['day-b-foetel'], dessert: values['day-b-desszert'], price: parseInt(values['day-b-ar']) });
-    // ======================== VÉGE ========================
-
-    // ======================== localStorage alapú mentés (JSON alapú - töröld ha API-ra vált) ========================
-    weeklyMenu[day] = {
-      A: { leves: values['day-a-leves'], foetel: values['day-a-foetel'], desszert: values['day-a-desszert'], ar: values['day-a-ar'] + ' Ft' },
-      B: { leves: values['day-b-leves'], foetel: values['day-b-foetel'], desszert: values['day-b-desszert'], ar: values['day-b-ar'] + ' Ft' },
-    };
-    saveWeeklyMenuToStorage();
-    renderWeeklyMenuTable();
-    window.showToast?.('Heti menü mentve', 'success');
-    // ======================== VÉGE ========================
-
-    closeDayMenuModal();
   }
 
   /* ================= NAPI MENÜ TÖRLÉS MEGERŐSÍTŐ MODAL ================= */
@@ -695,21 +824,163 @@ const MenuManager = (() => {
     pendingDayMenuDelete = null;
   }
 
-  function confirmDayMenuDelete() {
+  async function confirmDayMenuDelete() {
     if (!pendingDayMenuDelete) return;
 
-    // ======================== API alapú törlés (API-hoz kell - aktiváld ha API készen van) ========================
-    // deleteWeeklyMenu(pendingDayMenuDelete);
-    // ======================== VÉGE ========================
+    try {
+      await deleteWeeklyMenuDay(pendingDayMenuDelete);
+      window.showToast?.("Napi menü törölve", "deleted");
+      closeDayMenuDeleteConfirm();
+    } catch (err) {
+      console.error("Heti menü törlése sikertelen:", err);
+      window.showToast?.("Törlés sikertelen!", "error");
+    }
+  }
 
-    // ======================== localStorage alapú törlés (JSON alapú - töröld ha API-ra vált) ========================
-    delete weeklyMenu[pendingDayMenuDelete];
-    saveWeeklyMenuToStorage();
-    renderWeeklyMenuTable();
-    window.showToast?.('Napi menü törölve', 'deleted');
-    // ======================== VÉGE ========================
+  /**
+   * Katalógus-tétel modal — új felvétel (POST) vagy átnevezés (PATCH).
+   * editItem: { id, name } ha „Szerkesztés” gombból jöttünk.
+   */
+  function openWeeklyItemModal(category, baseId, editItem = null) {
+    const modal = document.getElementById("weekly-item-modal-overlay");
+    const categoryInput = document.getElementById("weekly-item-category");
+    const nameInput = document.getElementById("weekly-item-name");
+    const title = document.getElementById("weeklyItemModalTitle");
 
-    closeDayMenuDeleteConfirm();
+    pendingWeeklyItemTarget = { category, baseId };
+    if (categoryInput) {
+      categoryInput.value = window.WeeklyMenuCombobox?.CATEGORY_LABELS?.[category] || category;
+      categoryInput.dataset.category = category;
+    }
+
+    if (editItem?.id) {
+      modal.dataset.editItemId = String(editItem.id);
+      if (title) title.textContent = "Tétel szerkesztése";
+      if (nameInput) nameInput.value = editItem.name || "";
+    } else {
+      delete modal.dataset.editItemId;
+      if (title) title.textContent = "Új heti menü tétel";
+      if (nameInput) nameInput.value = "";
+    }
+
+    modal.classList.remove("hidden");
+    requestAnimationFrame(() => modal.classList.add("open"));
+    nameInput?.focus();
+  }
+
+  function closeWeeklyItemModal() {
+    const modal = document.getElementById("weekly-item-modal-overlay");
+    modal.classList.remove("open");
+    setTimeout(() => modal.classList.add("hidden"), 150);
+    delete modal.dataset.editItemId;
+    pendingWeeklyItemTarget = null;
+  }
+
+  /**
+   * Új tétel: POST /api/weekly-menu-items/create/  → INSERT
+   * Szerkesztés: PATCH /api/weekly-menu-items/<id>/  → UPDATE (név javítása)
+   */
+  async function saveWeeklyItemModal() {
+    const modal = document.getElementById("weekly-item-modal-overlay");
+    const editItemId = modal?.dataset.editItemId;
+    const category = document.getElementById("weekly-item-category")?.dataset.category;
+    const name = document.getElementById("weekly-item-name")?.value?.trim();
+    const target = pendingWeeklyItemTarget;
+
+    if (!category || !name || !target) {
+      window.showToast?.("Add meg a tétel nevét!", "error");
+      return;
+    }
+
+    try {
+      const url = editItemId
+        ? `${WEEKLY_MENU_ITEMS_API}${editItemId}/`
+        : `${WEEKLY_MENU_ITEMS_API}create/`;
+      const method = editItemId ? "PATCH" : "POST";
+
+      const response = await menuApiRequest(url, {
+        method,
+        body: JSON.stringify({
+          name,
+          ...(editItemId ? {} : { category, is_available: true }),
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw err;
+      }
+
+      const saved = await response.json();
+      await loadWeeklyMenuItems(true);
+      window.WeeklyMenuCombobox?.setValue(target.baseId, saved.id, saved.name);
+
+      // Átnevezés esetén a táblázatban is frissüljenek a nevek
+      if (editItemId) {
+        await loadWeeklyMenuFromApi();
+        renderWeeklyMenuTable();
+      }
+
+      closeWeeklyItemModal();
+      window.showToast?.(editItemId ? "Tétel átnevezve" : "Új tétel felvéve", "success");
+    } catch (err) {
+      console.error("Heti menü tétel mentése sikertelen:", err);
+      const message = typeof parseApiError === "function"
+        ? parseApiError(err, "Mentés sikertelen!")
+        : "Mentés sikertelen!";
+      window.showToast?.(message, "error");
+    }
+  }
+
+  /** Törlés megerősítő — csak árva tételeknél sikerül (backend ellenőrzi). */
+  function openWeeklyItemDeleteConfirm({ baseId, itemId, name }) {
+    pendingWeeklyItemDelete = { baseId, itemId, name };
+    const body = document.getElementById("weeklyItemDeleteConfirmBody");
+    if (body) {
+      body.textContent = `Biztosan törlöd a „${name}” tételt? Ez csak akkor lehetséges, ha nincs heti menüben használva.`;
+    }
+    const modal = document.getElementById("weeklyItemDeleteConfirmModal");
+    modal.classList.remove("hidden");
+    requestAnimationFrame(() => modal.classList.add("open"));
+  }
+
+  function closeWeeklyItemDeleteConfirm() {
+    const modal = document.getElementById("weeklyItemDeleteConfirmModal");
+    modal.classList.remove("open");
+    setTimeout(() => modal.classList.add("hidden"), 150);
+    pendingWeeklyItemDelete = null;
+  }
+
+  /**
+   * Katalógus-tétel törlése az adatbázisból.
+   * DELETE /api/weekly-menu-items/<id>/
+   * Ha WeeklyMenu hivatkozik rá → 400 (toast üzenettel).
+   */
+  async function confirmWeeklyItemDelete() {
+    if (!pendingWeeklyItemDelete) return;
+    const { baseId, itemId } = pendingWeeklyItemDelete;
+
+    try {
+      const response = await menuApiRequest(`${WEEKLY_MENU_ITEMS_API}${itemId}/`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw err;
+      }
+
+      await loadWeeklyMenuItems(true);
+      window.WeeklyMenuCombobox?.clearValue(baseId);
+      closeWeeklyItemDeleteConfirm();
+      window.showToast?.("Tétel törölve", "deleted");
+    } catch (err) {
+      console.error("Heti menü tétel törlése sikertelen:", err);
+      const message = typeof parseApiError === "function"
+        ? parseApiError(err, "Törlés sikertelen!")
+        : "Törlés sikertelen!";
+      window.showToast?.(message, "error");
+    }
   }
 
   /* ================= KATTINTÁS-KEZELŐ (delegált) ================= */
@@ -726,7 +997,7 @@ const MenuManager = (() => {
     // Napi menü szerkesztése
     const dayEditBtn = e.target.closest('.day-menu-edit-btn');
     if (dayEditBtn) {
-      openDayMenuModal(dayEditBtn.dataset.day);
+      void openDayMenuModal(dayEditBtn.dataset.day);
       return;
     }
 
@@ -738,12 +1009,20 @@ const MenuManager = (() => {
     }
 
     // Napi menü modal mentés/bezárás
-    if (e.target.closest('#save-day-menu')) { saveDayMenuModal(); return; }
+    if (e.target.closest('#save-day-menu')) { void saveDayMenuModal(); return; }
     if (e.target.closest('#close-day-menu-modal')) { closeDayMenuModal(); return; }
     if (e.target.id === 'day-menu-modal-overlay') { closeDayMenuModal(); return; }
 
+    if (e.target.closest('#save-weekly-item')) { void saveWeeklyItemModal(); return; }
+    if (e.target.closest('#close-weekly-item-modal')) { closeWeeklyItemModal(); return; }
+    if (e.target.id === 'weekly-item-modal-overlay') { closeWeeklyItemModal(); return; }
+
+    if (e.target.closest('#weeklyItemDeleteConfirmOk')) { void confirmWeeklyItemDelete(); return; }
+    if (e.target.closest('#weeklyItemDeleteConfirmCancel')) { closeWeeklyItemDeleteConfirm(); return; }
+    if (e.target.id === 'weeklyItemDeleteConfirmModal') { closeWeeklyItemDeleteConfirm(); return; }
+
     // Napi menü törlés megerősítő modal
-    if (e.target.closest('#dayMenuDeleteConfirmOk')) { confirmDayMenuDelete(); return; }
+    if (e.target.closest('#dayMenuDeleteConfirmOk')) { void confirmDayMenuDelete(); return; }
     if (e.target.closest('#dayMenuDeleteConfirmCancel')) { closeDayMenuDeleteConfirm(); return; }
     if (e.target.id === 'dayMenuDeleteConfirmModal') { closeDayMenuDeleteConfirm(); return; }
 
@@ -785,10 +1064,24 @@ const MenuManager = (() => {
     // Étel visszaállítása elérhetőre ("Kifutott" badge)
     const availabilityBadge = e.target.closest('.food-availability-badge');
     if (availabilityBadge) {
-      const food = foods.find(f => f.id === availabilityBadge.dataset.foodId);
+      const food = foods.find((f) => sameId(f.id, availabilityBadge.dataset.foodId));
       if (food) {
-        food.available = true;
-        refreshFoodTableArea();
+        void (async () => {
+          try {
+            const response = await menuApiRequest(`${MENU_API}${food.id}/`, {
+              method: "PATCH",
+              body: JSON.stringify({ is_available: true }),
+            });
+            if (!response.ok) {
+              throw new Error(await parseApiError(response, "Visszaállítás sikertelen."));
+            }
+            await loadFoodsFromApi();
+            refreshFoodTableArea();
+          } catch (err) {
+            console.error(err);
+            window.showToast?.(err.message || "Visszaállítás sikertelen.", "error");
+          }
+        })();
       }
       return;
     }
@@ -808,22 +1101,22 @@ const MenuManager = (() => {
     }
 
     // Étel-modal mentés/bezárás
-    if (e.target.closest('#save-food')) { saveFoodModal(); return; }
+    if (e.target.closest('#save-food')) { void saveFoodModal(); return; }
     if (e.target.closest('#close-modal')) { closeFoodModal(); return; }
     if (e.target.id === 'modal-overlay') { closeFoodModal(); return; }
 
     // Étel törlés megerősítő modal
-    if (e.target.closest('#menuDeleteConfirmOk')) { confirmMenuDelete(); return; }
+    if (e.target.closest('#menuDeleteConfirmOk')) { void confirmMenuDelete(); return; }
     if (e.target.closest('#menuDeleteConfirmCancel')) { closeMenuDeleteConfirm(); return; }
     if (e.target.id === 'menuDeleteConfirmModal') { closeMenuDeleteConfirm(); return; }
 
     // Kategória törlés megerősítő modal
-    if (e.target.closest('#categoryDeleteConfirmOk')) { confirmCategoryDelete(); return; }
+    if (e.target.closest('#categoryDeleteConfirmOk')) { void confirmCategoryDelete(); return; }
     if (e.target.closest('#categoryDeleteConfirmCancel')) { closeCategoryDeleteConfirm(); return; }
     if (e.target.id === 'categoryDeleteConfirmModal') { closeCategoryDeleteConfirm(); return; }
 
     // Kategória modal mentés/bezárás
-    if (e.target.closest('#save-category')) { saveCategoryModal(); return; }
+    if (e.target.closest('#save-category')) { void saveCategoryModal(); return; }
     if (e.target.closest('#close-category-modal')) { closeCategoryModal(); return; }
     if (e.target.id === 'category-modal-overlay') { closeCategoryModal(); return; }
   }
@@ -834,6 +1127,29 @@ const MenuManager = (() => {
     menuEventsBound = true;
 
     document.addEventListener('click', handleMenuClick);
+
+    document.addEventListener("weekly-menu:add-item", (e) => {
+      const { category, baseId } = e.detail || {};
+      if (category && baseId) {
+        openWeeklyItemModal(category, baseId);
+      }
+    });
+
+    // Katalógus-tétel átnevezése (PATCH)
+    document.addEventListener("weekly-menu:edit-item", (e) => {
+      const { category, baseId, itemId, name } = e.detail || {};
+      if (category && baseId && itemId) {
+        openWeeklyItemModal(category, baseId, { id: itemId, name });
+      }
+    });
+
+    // Katalógus-tétel törlése (DELETE, ha árva)
+    document.addEventListener("weekly-menu:delete-item", (e) => {
+      const { baseId, itemId, name } = e.detail || {};
+      if (baseId && itemId) {
+        openWeeklyItemDeleteConfirm({ baseId, itemId, name });
+      }
+    });
 
     document.addEventListener('input', e => {
       if (e.target.id === 'foodSearchInput') {
@@ -849,17 +1165,39 @@ const MenuManager = (() => {
     loadContent('heti-menu');
   }
 
+  /**
+   * Menük fül frissítése — hívók:
+   *   live-sync.js → onRevisionChanged()  (másik ablak mentése után, ~2 mp)
+   *   index.js refresh gomb                (kézi frissítés)
+   *
+   * Aktív fül szerint: loadMenuTabData() (Ételek) vagy loadWeeklyMenuFromApi() (Heti menü)
+   */
   function refresh() {
     const activeTab = document.querySelector('.tab-btn.active')?.getAttribute('data-target');
 
     if (activeTab === 'etelek') {
-      const tbody = document.querySelector('.food-table tbody');
-      if (tbody && typeof fadeRender === 'function') fadeRender(tbody, refreshFoodTableArea);
-      else refreshFoodTableArea();
+      loadMenuTabData(true)
+        .then(() => {
+          const tbody = document.querySelector('.food-table tbody');
+          if (tbody && typeof fadeRender === 'function') {
+            fadeRender(tbody, () => {
+              renderCategorySidebar();
+              refreshFoodTableArea();
+            });
+          } else {
+            renderCategorySidebar();
+            refreshFoodTableArea();
+          }
+        })
+        .catch((err) => console.error("Ételek frissítése sikertelen:", err));
     } else if (activeTab === 'heti-menu') {
-      const tbody = document.getElementById('weeklyMenuBody');
-      if (tbody && typeof fadeRender === 'function') fadeRender(tbody, renderWeeklyMenuTable);
-      else renderWeeklyMenuTable();
+      loadWeeklyMenuFromApi()
+        .then(() => {
+          const tbody = document.getElementById('weeklyMenuBody');
+          if (tbody && typeof fadeRender === 'function') fadeRender(tbody, renderWeeklyMenuTable);
+          else renderWeeklyMenuTable();
+        })
+        .catch((err) => console.error("Heti menü frissítése sikertelen:", err));
     }
   }
 

@@ -3,11 +3,15 @@ from django.db import models
 
 class AppRevision(models.Model):
     """
-    Globális „verziószám” az alkalmazásban — mindig egyetlen sor (pk=1).
+    Globális verziószám (revision) — mindig egyetlen sor az adatbázisban (pk=1).
 
-    Ha bármi fontos változik (rendelés, foglalás, nyitvatartás, SLA),
-    a revision mező nő. A böngészők 2 mp-enként lekérdezik GET /api/revision/
-    és csak akkor töltik újra az adatokat, ha a szám változott.
+    Lánc (röviden):
+      1) Valami mentés/törlés → bump_revision()  (sync/services.py)
+      2) revision mező nő (pl. 42 → 43)
+      3) Böngésző: live-sync.js → poll() → fetchRevision() → GET /api/revision/
+      4) Ha a szám változott → onRevisionChanged() újratölti az adatokat
+
+    Nem magát az adatot tárolja, csak „valami változott” jelzést.
     """
 
     revision = models.PositiveIntegerField(default=0)

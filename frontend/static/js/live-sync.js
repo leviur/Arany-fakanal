@@ -1,17 +1,35 @@
 /**********************
- * live-sync.js — élő szinkron (revision poll, 2 mp)
+ * live-sync.js — élő szinkron (revision poll, 2 másodpercenként)
  *
- * Backend: valami változik → bump_revision() → GET /api/revision/ szám nő.
- * Frontend: 2 mp-enként lekérdezzük a számot; ha változott, alább felsorolt
- * részek frissülnek (csak ami az adott oldalon elérhető).
+ * ═══ Hogyan működik a verziókezelés? ═══
  *
+ * BACKEND (adatbázis):
+ *   sync/models.py       → AppRevision.revision (egyetlen szám, pl. 42)
+ *   sync/services.py     → bump_revision() növeli, get_revision() olvassa
+ *   sync/signals.py      → on_dashboard_data_change() → bump_revision() mentés/törléskor
+ *   sync/views.py        → GET /api/revision/ → { "revision": 42 }
+ *
+ * FRONTEND (ez a fájl):
+ *   start() → setInterval(poll, 2000)
+ *   poll() → fetchRevision() → ha a szám változott → onRevisionChanged()
+ *
+ * onRevisionChanged() meghívja (ami az adott oldalon létezik):
+ *   OpeningHours.fetchOpeningHours() + refreshOpeningHoursDisplays()  → opening-hours.js
+ *   window.refreshWeeklyMenu()   → weekly-menu.js (főoldal heti menü)
+ *   window.refreshEtlap()        → etlap.js (publikus étlap)
+ *   refreshDashboardData()     → orders.js, bookings.js, messages.js, dashboard.js
+ *   refreshSettingsPanel()     → settings.js → refreshSettingsFromApi()
+ *   MenuManager.refresh()      → menu-manager.js (dashboard Ételek / Heti menü fül)
+ *
+ * Kézi frissítés (revision nélkül): index.js refresh gomb → loadOrdersFromApi() stb.
  **********************/
 
 const LiveSync = (() => {
   const POLL_MS = 2000;
-  let revision = null;
+  let revision = null; // utoljára ismert revision (összehasonlításhoz)
   let timer = null;
 
+  /** GET /api/revision/ — backend: get_revision() → RevisionAPIView */
   async function fetchRevision() {
     const response = await fetch("/api/revision/");
     if (!response.ok) {
@@ -21,7 +39,7 @@ const LiveSync = (() => {
     return data.revision;
   }
 
-  /** Homepage lábléc + foglalás oldal nyitvatartás blokk + időpont-választó */
+  /** Nyitvatartás megjelenítés — adat már OpeningHours.fetchOpeningHours()-ban frissült */
   function refreshOpeningHoursDisplays() {
     if (typeof OpeningHours === "undefined") return;
 
@@ -52,7 +70,7 @@ const LiveSync = (() => {
     }
   }
 
-  /** Dashboard: rendelések, foglalások, KPI-k (csak admin oldalon van loadOrdersFromApi) */
+  /** Dashboard: rendelések, foglalások, üzenetek, KPI — lásd orders.js, bookings.js, messages.js */
   async function refreshDashboardData() {
     if (typeof loadOrdersFromApi === "function") {
       try {
@@ -84,7 +102,7 @@ const LiveSync = (() => {
     window.refreshDashboard?.();
   }
 
-  /** Dashboard beállítások fül — settings.js exportálja (elmentetlen módosításnál kihagyja) */
+  /** Beállítások fül — settings.js → refreshSettingsFromApi() */
   async function refreshSettingsPanel() {
     if (typeof window.refreshSettingsFromApi !== "function") return;
     try {
@@ -94,22 +112,50 @@ const LiveSync = (() => {
     }
   }
 
-  /** Revision nőtt → minden releváns adat újratöltése */
+  /**
+   * Revision nőtt (bump_revision a backenden) → minden releváns adat újratöltése.
+   * Csak azok a függvények futnak, amelyek az adott oldalon betöltődtek.
+   */
   async function onRevisionChanged() {
     if (typeof OpeningHours !== "undefined") {
       await OpeningHours.fetchOpeningHours({ force: true });
       refreshOpeningHoursDisplays();
     }
 
+    if (typeof window.refreshWeeklyMenu === "function") {
+      try {
+        await window.refreshWeeklyMenu();
+      } catch (error) {
+        console.error("Heti menü szinkron sikertelen:", error);
+      }
+    }
+
+    if (typeof window.refreshEtlap === "function") {
+      try {
+        await window.refreshEtlap();
+      } catch (error) {
+        console.error("Étlap szinkron sikertelen:", error);
+      }
+    }
+
     await refreshDashboardData();
+
+    if (typeof MenuManager !== "undefined") {
+      MenuManager.refresh();
+    }
+
     await refreshSettingsPanel();
   }
 
+  /**
+   * 2 mp-enként: összehasonlítja a fetchRevision() eredményét az előzővel.
+   * Első poll: csak eltárolja (nem frissít — már betöltött az oldal).
+   */
   async function poll() {
     if (document.hidden) return;
 
     try {
-      const current = await fetchRevision(); /* kiolvasom a revision számot (értsd verziószámot) */
+      const current = await fetchRevision();
       if (revision === null) {
         revision = current;
         return;

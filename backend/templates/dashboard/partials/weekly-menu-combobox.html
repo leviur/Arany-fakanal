@@ -1,0 +1,36 @@
+{# Heti menü legördülő — category: soup | main | dessert (WeeklyMenuItem.category) #}
+{# Rejtett *-id = WeeklyMenuItem.id (FK mentéskor). Szerkesztés/Törlés csak kiválasztott tételnél. #}
+<div class="form-group">
+  <label for="{{ base_id }}-input">{{ label }}</label>
+  <div class="wm-combobox" data-category="{{ category }}">
+    <div class="wm-combobox-control">
+      <input
+        type="text"
+        id="{{ base_id }}-input"
+        class="wm-combobox-input"
+        placeholder="Keresés vagy válassz…"
+        autocomplete="off"
+      />
+      <input type="hidden" id="{{ base_id }}-id" />
+    </div>
+    <ul id="{{ base_id }}-dropdown" class="wm-combobox-dropdown hidden" role="listbox"></ul>
+    <div class="wm-combobox-footer">
+      <button
+        type="button"
+        class="wm-combobox-footer-btn wm-combobox-new-btn"
+        data-category="{{ category }}"
+        data-base-id="{{ base_id }}"
+      >
+        + Új tétel
+      </button>
+      <div class="wm-combobox-item-actions hidden" id="{{ base_id }}-actions">
+        <button type="button" class="wm-combobox-footer-btn wm-combobox-edit-btn" data-base-id="{{ base_id }}">
+          Szerkesztés
+        </button>
+        <button type="button" class="wm-combobox-footer-btn wm-combobox-delete-btn" data-base-id="{{ base_id }}">
+          Törlés
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -26,8 +26,6 @@ const MenuManager = (() => {
   const WEEKLY_MENU_API = "/api/weekly-menu/";
   const WEEKLY_MENU_ITEMS_API = "/api/weekly-menu-items/";
   let weeklyMenuItemsLoaded = false;
-  let pendingWeeklyItemTarget = null;
-  let pendingWeeklyItemDelete = null;
   let weeklyMenu = {};
 
   /*
@@ -597,11 +595,27 @@ const MenuManager = (() => {
 
   /** Aktuális hét hétfőjének dátuma (YYYY-MM-DD). Ezt küldjük week_start paraméterként. */
   function getCurrentWeekMonday() {
+    /**
+     * A dashboard heti menü szerkesztése és a publikus rendelési oldal "szezonja"
+     * (amire a vendég a napokat látja) nem mindig ugyanarra a hétre mutat.
+     *
+     * A rendelési oldalon a hét eltolódik, ha vasárnap / péntek / szombat van.
+     * A dashboardon is ezt a logikát kell követni, különben "csütörtököt"
+     * máshol törlünk, mint amit a vendég lát.
+     */
     const now = new Date();
-    const day = now.getDay();
+    now.setHours(12, 0, 0, 0);
+    const dow = now.getDay(); // 0=vasárnap ... 6=szombat
+
+    // aktuális hétfő
     const monday = new Date(now);
-    monday.setHours(12, 0, 0, 0);
-    monday.setDate(now.getDate() - ((day + 6) % 7));
+    monday.setDate(now.getDate() - ((dow + 6) % 7));
+
+    // rendelések oldala: ha péntek/szombat/vasárnap van, akkor a következő hétre vált
+    if (dow === 5 || dow === 6 || dow === 0) {
+      monday.setDate(monday.getDate() + 7);
+    }
+
     return monday.toISOString().slice(0, 10);
   }
 
@@ -656,6 +670,9 @@ const MenuManager = (() => {
     weeklyMenu = {};
 
     data.forEach((item) => {
+      // Soft delete után (is_available=false) admin is kapja a rekordot,
+      // de a heti táblában ezt "nincs beállítva" állapotként kezeljük.
+      if (item.is_available === false) return;
       const dayName = dayNameFromIsoDate(item.day);
       if (!dayName) return;
 
@@ -682,11 +699,10 @@ const MenuManager = (() => {
    * - Ha nincs id → POST create/ (INSERT új WeeklyMenu sor)
    * A soup/main_course/dessert mezőkben a WeeklyMenuItem id-k mennek (nem a név!).
    */
-  async function saveWeeklyMenuSlot(dayName, menuType, prefix, existingId) {
+  async function saveWeeklyMenuSlot(dayName, menuType, prefix, existingId, priceValue) {
     const soupId = window.WeeklyMenuCombobox?.getValue(`${prefix}-leves`);
     const mainCourseId = window.WeeklyMenuCombobox?.getValue(`${prefix}-foetel`);
     const dessertId = window.WeeklyMenuCombobox?.getValue(`${prefix}-desszert`);
-    const priceValue = document.getElementById(`${prefix}-ar`)?.value?.trim();
 
     if (!soupId || !mainCourseId || !dessertId || !priceValue) {
       throw new Error("missing_fields");
@@ -731,7 +747,25 @@ const MenuManager = (() => {
         menuApiRequest(`${WEEKLY_MENU_API}${entry[menuType].id}/`, { method: "DELETE" }),
       );
 
-    await Promise.all(requests);
+    const responses = await Promise.all(requests);
+    const payloads = await Promise.all(
+      responses.map(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        return { response, data };
+      }),
+    );
+
+    const failed = payloads.find(({ response }) => !response.ok);
+    if (failed) {
+      throw new Error(failed.data?.detail || "A napi menü törlése sikertelen.");
+    }
+
+    return {
+      softDeletedCount: payloads.filter(({ data }) => data?.soft_deleted).length,
+    };
+  }
+
+  async function refreshWeeklyMenuTable() {
     await loadWeeklyMenuFromApi();
     renderWeeklyMenuTable();
   }
@@ -757,11 +791,11 @@ const MenuManager = (() => {
     window.WeeklyMenuCombobox?.setValue("day-a-leves", a.soupId, a.leves);
     window.WeeklyMenuCombobox?.setValue("day-a-foetel", a.mainCourseId, a.foetel);
     window.WeeklyMenuCombobox?.setValue("day-a-desszert", a.dessertId, a.desszert);
-    document.getElementById("day-a-ar").value = a.price ? Math.round(parseFloat(a.price)) : "";
     window.WeeklyMenuCombobox?.setValue("day-b-leves", b.soupId, b.leves);
     window.WeeklyMenuCombobox?.setValue("day-b-foetel", b.mainCourseId, b.foetel);
     window.WeeklyMenuCombobox?.setValue("day-b-desszert", b.dessertId, b.desszert);
-    document.getElementById("day-b-ar").value = b.price ? Math.round(parseFloat(b.price)) : "";
+    const sharedPrice = a.price ?? b.price ?? "";
+    document.getElementById("day-menu-ar").value = sharedPrice ? Math.round(parseFloat(sharedPrice)) : "";
 
     // Szerkesztés/Törlés gombok frissítése minden comboboxnál
     ["day-a-leves", "day-a-foetel", "day-a-desszert", "day-b-leves", "day-b-foetel", "day-b-desszert"]
@@ -783,12 +817,13 @@ const MenuManager = (() => {
     const modal = document.getElementById("day-menu-modal-overlay");
     const day = modal.dataset.day;
     if (!day) return;
+    const sharedPrice = document.getElementById("day-menu-ar")?.value?.trim();
 
     const entry = weeklyMenu[day] || {};
 
     try {
-      await saveWeeklyMenuSlot(day, "A", "day-a", entry.A?.id ?? null);
-      await saveWeeklyMenuSlot(day, "B", "day-b", entry.B?.id ?? null);
+      await saveWeeklyMenuSlot(day, "A", "day-a", entry.A?.id ?? null, sharedPrice);
+      await saveWeeklyMenuSlot(day, "B", "day-b", entry.B?.id ?? null, sharedPrice);
       await loadWeeklyMenuFromApi();
       renderWeeklyMenuTable();
       window.showToast?.("Heti menü mentve", "success");
@@ -828,82 +863,33 @@ const MenuManager = (() => {
     if (!pendingDayMenuDelete) return;
 
     try {
-      await deleteWeeklyMenuDay(pendingDayMenuDelete);
-      window.showToast?.("Napi menü törölve", "deleted");
+      const result = await deleteWeeklyMenuDay(pendingDayMenuDelete);
+      await refreshWeeklyMenuTable();
+      const softDeletedCount = result?.softDeletedCount ?? 0;
+      if (softDeletedCount > 0) {
+        window.showToast?.("A menü rendelés miatt csak kivételre került a kínálatból.", "success");
+      } else {
+        window.showToast?.("Napi menü törölve", "deleted");
+      }
       closeDayMenuDeleteConfirm();
     } catch (err) {
       console.error("Heti menü törlése sikertelen:", err);
-      window.showToast?.("Törlés sikertelen!", "error");
+      window.showToast?.(err?.message || "Törlés sikertelen!", "error");
     }
   }
 
-  /**
-   * Katalógus-tétel modal — új felvétel (POST) vagy átnevezés (PATCH).
-   * editItem: { id, name } ha „Szerkesztés” gombból jöttünk.
-   */
-  function openWeeklyItemModal(category, baseId, editItem = null) {
-    const modal = document.getElementById("weekly-item-modal-overlay");
-    const categoryInput = document.getElementById("weekly-item-category");
-    const nameInput = document.getElementById("weekly-item-name");
-    const title = document.getElementById("weeklyItemModalTitle");
-
-    pendingWeeklyItemTarget = { category, baseId };
-    if (categoryInput) {
-      categoryInput.value = window.WeeklyMenuCombobox?.CATEGORY_LABELS?.[category] || category;
-      categoryInput.dataset.category = category;
-    }
-
-    if (editItem?.id) {
-      modal.dataset.editItemId = String(editItem.id);
-      if (title) title.textContent = "Tétel szerkesztése";
-      if (nameInput) nameInput.value = editItem.name || "";
-    } else {
-      delete modal.dataset.editItemId;
-      if (title) title.textContent = "Új heti menü tétel";
-      if (nameInput) nameInput.value = "";
-    }
-
-    modal.classList.remove("hidden");
-    requestAnimationFrame(() => modal.classList.add("open"));
-    nameInput?.focus();
-  }
-
-  function closeWeeklyItemModal() {
-    const modal = document.getElementById("weekly-item-modal-overlay");
-    modal.classList.remove("open");
-    setTimeout(() => modal.classList.add("hidden"), 150);
-    delete modal.dataset.editItemId;
-    pendingWeeklyItemTarget = null;
-  }
-
-  /**
-   * Új tétel: POST /api/weekly-menu-items/create/  → INSERT
-   * Szerkesztés: PATCH /api/weekly-menu-items/<id>/  → UPDATE (név javítása)
-   */
-  async function saveWeeklyItemModal() {
-    const modal = document.getElementById("weekly-item-modal-overlay");
-    const editItemId = modal?.dataset.editItemId;
-    const category = document.getElementById("weekly-item-category")?.dataset.category;
-    const name = document.getElementById("weekly-item-name")?.value?.trim();
-    const target = pendingWeeklyItemTarget;
-
-    if (!category || !name || !target) {
-      window.showToast?.("Add meg a tétel nevét!", "error");
+  /** Dropdown „+ Új: … hozzáadása” — közvetlen POST, modal nélkül. */
+  async function createWeeklyItemInline({ category, baseId, name }) {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      window.showToast?.("Adj meg nevet az új tételhez!", "error");
       return;
     }
 
     try {
-      const url = editItemId
-        ? `${WEEKLY_MENU_ITEMS_API}${editItemId}/`
-        : `${WEEKLY_MENU_ITEMS_API}create/`;
-      const method = editItemId ? "PATCH" : "POST";
-
-      const response = await menuApiRequest(url, {
-        method,
-        body: JSON.stringify({
-          name,
-          ...(editItemId ? {} : { category, is_available: true }),
-        }),
+      const response = await menuApiRequest(`${WEEKLY_MENU_ITEMS_API}create/`, {
+        method: "POST",
+        body: JSON.stringify({ name: trimmed, category, is_available: true }),
       });
 
       if (!response.ok) {
@@ -913,56 +899,29 @@ const MenuManager = (() => {
 
       const saved = await response.json();
       await loadWeeklyMenuItems(true);
-      window.WeeklyMenuCombobox?.setValue(target.baseId, saved.id, saved.name);
-
-      // Átnevezés esetén a táblázatban is frissüljenek a nevek
-      if (editItemId) {
-        await loadWeeklyMenuFromApi();
-        renderWeeklyMenuTable();
-      }
-
-      closeWeeklyItemModal();
-      window.showToast?.(editItemId ? "Tétel átnevezve" : "Új tétel felvéve", "success");
+      window.WeeklyMenuCombobox?.setValue(baseId, saved.id, saved.name);
+      window.showToast?.("Új tétel felvéve", "success");
     } catch (err) {
-      console.error("Heti menü tétel mentése sikertelen:", err);
+      console.error("Heti menü tétel létrehozása sikertelen:", err);
       const message = typeof parseApiError === "function"
-        ? parseApiError(err, "Mentés sikertelen!")
-        : "Mentés sikertelen!";
+        ? parseApiError(err, "Felvétel sikertelen!")
+        : "Felvétel sikertelen!";
       window.showToast?.(message, "error");
     }
   }
 
-  /** Törlés megerősítő — csak árva tételeknél sikerül (backend ellenőrzi). */
-  function openWeeklyItemDeleteConfirm({ baseId, itemId, name }) {
-    pendingWeeklyItemDelete = { baseId, itemId, name };
-    const body = document.getElementById("weeklyItemDeleteConfirmBody");
-    if (body) {
-      body.textContent = `Biztosan törlöd a „${name}” tételt? Ez csak akkor lehetséges, ha nincs heti menüben használva.`;
+  /** Dropdown „Kijelölt átnevezése” — közvetlen PATCH, modal nélkül. */
+  async function renameWeeklyItemInline({ baseId, itemId, name }) {
+    const trimmed = name.trim();
+    if (!trimmed) {
+      window.showToast?.("Adj meg nevet az átnevezéshez!", "error");
+      return;
     }
-    const modal = document.getElementById("weeklyItemDeleteConfirmModal");
-    modal.classList.remove("hidden");
-    requestAnimationFrame(() => modal.classList.add("open"));
-  }
-
-  function closeWeeklyItemDeleteConfirm() {
-    const modal = document.getElementById("weeklyItemDeleteConfirmModal");
-    modal.classList.remove("open");
-    setTimeout(() => modal.classList.add("hidden"), 150);
-    pendingWeeklyItemDelete = null;
-  }
-
-  /**
-   * Katalógus-tétel törlése az adatbázisból.
-   * DELETE /api/weekly-menu-items/<id>/
-   * Ha WeeklyMenu hivatkozik rá → 400 (toast üzenettel).
-   */
-  async function confirmWeeklyItemDelete() {
-    if (!pendingWeeklyItemDelete) return;
-    const { baseId, itemId } = pendingWeeklyItemDelete;
 
     try {
       const response = await menuApiRequest(`${WEEKLY_MENU_ITEMS_API}${itemId}/`, {
-        method: "DELETE",
+        method: "PATCH",
+        body: JSON.stringify({ name: trimmed }),
       });
 
       if (!response.ok) {
@@ -970,15 +929,51 @@ const MenuManager = (() => {
         throw err;
       }
 
+      const saved = await response.json();
       await loadWeeklyMenuItems(true);
-      window.WeeklyMenuCombobox?.clearValue(baseId);
-      closeWeeklyItemDeleteConfirm();
-      window.showToast?.("Tétel törölve", "deleted");
+      window.WeeklyMenuCombobox?.setValue(baseId, saved.id, saved.name);
+      await loadWeeklyMenuFromApi();
+      renderWeeklyMenuTable();
+      window.showToast?.("Tétel átnevezve", "success");
     } catch (err) {
-      console.error("Heti menü tétel törlése sikertelen:", err);
+      console.error("Heti menü tétel átnevezése sikertelen:", err);
       const message = typeof parseApiError === "function"
-        ? parseApiError(err, "Törlés sikertelen!")
-        : "Törlés sikertelen!";
+        ? parseApiError(err, "Átnevezés sikertelen!")
+        : "Átnevezés sikertelen!";
+      window.showToast?.(message, "error");
+    }
+  }
+
+  /**
+   * Legördülő „elrejtés” gomb — soft hide a katalógusból (is_available=false).
+   * A mentett heti menükben megmarad; csak a választható listából tűnik el.
+   */
+  async function hideWeeklyItemInline({ baseId, itemId, itemName }) {
+    const label = String(itemName || "").trim() || "Tétel";
+
+    try {
+      const response = await menuApiRequest(`${WEEKLY_MENU_ITEMS_API}${itemId}/`, {
+        method: "PATCH",
+        body: JSON.stringify({ is_available: false }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw err;
+      }
+
+      if (window.WeeklyMenuCombobox?.getValue(baseId) === itemId) {
+        window.WeeklyMenuCombobox?.clearValue(baseId);
+      }
+
+      await loadWeeklyMenuItems(true);
+      window.WeeklyMenuCombobox?.refreshOpenDropdown();
+      window.showToast?.(`„${label}” elrejtve a listából`, "success");
+    } catch (err) {
+      console.error("Heti menü tétel elrejtése sikertelen:", err);
+      const message = typeof parseApiError === "function"
+        ? parseApiError(err, "Elrejtés sikertelen!")
+        : "Elrejtés sikertelen!";
       window.showToast?.(message, "error");
     }
   }
@@ -1012,14 +1007,6 @@ const MenuManager = (() => {
     if (e.target.closest('#save-day-menu')) { void saveDayMenuModal(); return; }
     if (e.target.closest('#close-day-menu-modal')) { closeDayMenuModal(); return; }
     if (e.target.id === 'day-menu-modal-overlay') { closeDayMenuModal(); return; }
-
-    if (e.target.closest('#save-weekly-item')) { void saveWeeklyItemModal(); return; }
-    if (e.target.closest('#close-weekly-item-modal')) { closeWeeklyItemModal(); return; }
-    if (e.target.id === 'weekly-item-modal-overlay') { closeWeeklyItemModal(); return; }
-
-    if (e.target.closest('#weeklyItemDeleteConfirmOk')) { void confirmWeeklyItemDelete(); return; }
-    if (e.target.closest('#weeklyItemDeleteConfirmCancel')) { closeWeeklyItemDeleteConfirm(); return; }
-    if (e.target.id === 'weeklyItemDeleteConfirmModal') { closeWeeklyItemDeleteConfirm(); return; }
 
     // Napi menü törlés megerősítő modal
     if (e.target.closest('#dayMenuDeleteConfirmOk')) { void confirmDayMenuDelete(); return; }
@@ -1129,25 +1116,23 @@ const MenuManager = (() => {
     document.addEventListener('click', handleMenuClick);
 
     document.addEventListener("weekly-menu:add-item", (e) => {
-      const { category, baseId } = e.detail || {};
-      if (category && baseId) {
-        openWeeklyItemModal(category, baseId);
+      const { category, baseId, suggestedName } = e.detail || {};
+      if (category && baseId && suggestedName) {
+        void createWeeklyItemInline({ category, baseId, name: suggestedName });
       }
     });
 
-    // Katalógus-tétel átnevezése (PATCH)
-    document.addEventListener("weekly-menu:edit-item", (e) => {
-      const { category, baseId, itemId, name } = e.detail || {};
-      if (category && baseId && itemId) {
-        openWeeklyItemModal(category, baseId, { id: itemId, name });
+    document.addEventListener("weekly-menu:rename-selected", (e) => {
+      const { baseId, itemId, suggestedName } = e.detail || {};
+      if (baseId && itemId && suggestedName) {
+        void renameWeeklyItemInline({ baseId, itemId, name: suggestedName });
       }
     });
 
-    // Katalógus-tétel törlése (DELETE, ha árva)
-    document.addEventListener("weekly-menu:delete-item", (e) => {
-      const { baseId, itemId, name } = e.detail || {};
+    document.addEventListener("weekly-menu:hide-item", (e) => {
+      const { baseId, itemId, itemName } = e.detail || {};
       if (baseId && itemId) {
-        openWeeklyItemDeleteConfirm({ baseId, itemId, name });
+        void hideWeeklyItemInline({ baseId, itemId, itemName });
       }
     });
 

@@ -54,9 +54,17 @@ function formatMenuDesc(menuItem) {
   return parts.join(", ") || "Nem elérhető";
 }
 
+function isOrderableWeeklyMenu(menuItem) {
+  return menuItem && menuItem.is_available !== false;
+}
+
 function updateMenuDisplay(dayValue) {
-  const menuA = window.weeklyMenuData.find((m) => m.day === dayValue && m.menu_type === "A");
-  const menuB = window.weeklyMenuData.find((m) => m.day === dayValue && m.menu_type === "B");
+  const menuA = window.weeklyMenuData.find(
+    (m) => m.day === dayValue && m.menu_type === "A" && isOrderableWeeklyMenu(m),
+  );
+  const menuB = window.weeklyMenuData.find(
+    (m) => m.day === dayValue && m.menu_type === "B" && isOrderableWeeklyMenu(m),
+  );
 
   const descA = document.getElementById("menuA-desc");
   const descB = document.getElementById("menuB-desc");
@@ -102,7 +110,11 @@ async function loadWeeklyMenuFromApi() {
 
   const data = await response.json();
 
-  window.weeklyMenuData = data /** weeklyMenuData-ban van a heti menü, így globálisan deklaráltam, így látni fogja a kosár is*/
+  // Vendég oldal: csak rendelhető menük (is_available=true).
+  // Admin bejelentkezve is ugyanígy — a backend adminnak mindent ad vissza,
+  // de a rendelés űrlap vendéglogikát követ.
+  window.weeklyMenuData = data
+    .filter((item) => item.is_available !== false)
     .map((item) => {
       // item.day itt még dátum (pl. "2026-07-08") — átírjuk napnévre (pl. "kedd")
       const day = dateToDayName(item.day, weekStart);

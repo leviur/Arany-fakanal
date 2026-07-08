@@ -200,6 +200,61 @@ const UI = (() => {
 /**********************
  * 🚀 APP
  **********************/
+const ModalScrollLock = (() => {
+  let locked = false;
+
+  function hasOpenModal() {
+    return !!document.querySelector(
+      ".dashboard .modal.open:not(.hidden):not(.modal-hidden)",
+    );
+  }
+
+  function sync() {
+    const shouldLock = hasOpenModal();
+    if (shouldLock === locked) return;
+    locked = shouldLock;
+    document.documentElement.classList.toggle("modal-scroll-locked", locked);
+  }
+
+  /** Egér görgetés: csak a modal belsejében engedélyezett */
+  function onWheel(e) {
+    if (!locked) return;
+
+    if (e.target.closest(".modal.open .modal-box, .modal.open .login-box, .modal.open .confirm-box")) {
+      return;
+    }
+
+    if (e.target.closest(".modal.open")) {
+      e.preventDefault();
+      return;
+    }
+
+    e.preventDefault();
+  }
+
+  function onTouchMove(e) {
+    if (!locked) return;
+    if (!e.target.closest(".modal.open")) {
+      e.preventDefault();
+    }
+  }
+
+  function init() {
+    const modals = document.querySelectorAll(".dashboard .modal");
+    const observer = new MutationObserver(sync);
+
+    modals.forEach((modal) => {
+      observer.observe(modal, { attributes: true, attributeFilter: ["class"] });
+    });
+
+    document.addEventListener("wheel", onWheel, { passive: false });
+    document.addEventListener("touchmove", onTouchMove, { passive: false });
+    sync();
+  }
+
+  return { init, sync };
+})();
+
 const App = (() => {
   let closeMobileSidebar = () => {};
 
@@ -423,6 +478,7 @@ const App = (() => {
 
     bindEvents();
     bindSidebar();
+    ModalScrollLock.init();
 
     MenuManager.render();
     await Bookings.render();

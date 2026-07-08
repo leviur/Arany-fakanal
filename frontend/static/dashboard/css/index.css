@@ -1204,6 +1204,23 @@ h1, h2, h3 {
   display: none !important;
 }
 
+/* Nyitott modal mellett a háttér ne görgethető legyen */
+html.modal-scroll-locked,
+html.modal-scroll-locked body {
+  overflow: hidden;
+}
+
+html.modal-scroll-locked .dashboard .main {
+  overflow: hidden !important;
+}
+
+html.modal-scroll-locked .dashboard .main .scroll-table,
+html.modal-scroll-locked .dashboard .main .table-wrapper,
+html.modal-scroll-locked .dashboard .main .msg-split,
+html.modal-scroll-locked .dashboard .main .content {
+  overflow: hidden !important;
+}
+
 /* ================= ORDERS FIXED LAYOUT ================= */
 /* Rendelések / Foglalások / Üzenetek oldalakon csak a belső panel görget */
 .main.orders-layout,

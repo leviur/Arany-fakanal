@@ -22,10 +22,10 @@
     <link rel="icon" href="{% static 'images/favicon.ico' %}">
     
     <link rel="stylesheet" href="{% static 'css/toast.css' %}">
-    <link rel="stylesheet" href="{% static 'dashboard/css/index.css' %}?v=39">
+    <link rel="stylesheet" href="{% static 'dashboard/css/index.css' %}?v=40">
     <link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}?v=39">
     <link rel="stylesheet" href="{% static 'dashboard/css/orders.css' %}?v=43">
-    <link rel="stylesheet" href="{% static 'dashboard/css/menu-manager.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/css/menu-manager.css' %}?v=3">
     <link rel="stylesheet" href="{% static 'dashboard/css/bookings.css' %}">
     <link rel="stylesheet" href="{% static 'dashboard/css/settings.css' %}">
     <link rel="stylesheet" href="{% static 'dashboard/css/messages.css' %}">
@@ -33,12 +33,12 @@
     <script src="{% static 'js/opening-hours.js' %}?v=3" defer></script>
     <script src="{% static 'dashboard/js/sla-rules.js' %}?v=1" defer></script>
     <script src="{% static 'js/toast.js' %}" defer></script>
-    <script src="{% static 'dashboard/js/index.js' %}?v=45" defer></script>
+    <script src="{% static 'dashboard/js/index.js' %}?v=46" defer></script>
     <script src="{% static 'dashboard/js/dashboard.js' %}?v=41" defer></script>
     <script src="{% static 'dashboard/js/api-errors.js' %}?v=1" defer></script>
-    <script src="{% static 'dashboard/js/weekly-menu-combobox.js' %}?v=3" defer></script>
+    <script src="{% static 'dashboard/js/weekly-menu-combobox.js' %}?v=6" defer></script>
     <script src="{% static 'dashboard/js/orders.js' %}?v=49" defer></script>
-    <script src="{% static 'dashboard/js/menu-manager.js' %}?v=43" defer></script>
+    <script src="{% static 'dashboard/js/menu-manager.js' %}?v=45" defer></script>
     <script src="{% static 'dashboard/js/bookings.js' %}?v=53" defer></script>
     <script src="{% static 'dashboard/js/settings.js' %}?v=42" defer></script>
     <script src="{% static 'js/live-sync.js' %}?v=2" defer></script>
@@ -631,94 +631,28 @@
             <h3 class="modal-title" id="dayMenuModalTitle">Hétfő menüje</h3>
 
             <div class="modal-grid">
+              <div class="form-group modal-full-col day-menu-shared-price">
+                <label for="day-menu-ar">Napi menü ár (A és B)</label>
+                <input type="number" id="day-menu-ar" placeholder="pl. 2890" />
+                <small class="field-hint">Ez az ár mindkét menüre érvényes.</small>
+              </div>
+
               <div class="form-group modal-full-col modal-section-label">A Menü</div>
 
               {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-a-leves" label="Leves" category="soup" %}
               {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-a-foetel" label="Főétel" category="main" %}
               {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-a-desszert" label="Desszert" category="dessert" %}
-              <div class="form-group">
-                <label for="day-a-ar">Ár (Ft)</label>
-                <input type="number" id="day-a-ar" placeholder="pl. 2890" />
-              </div>
 
               <div class="form-group modal-full-col modal-section-label">B Menü</div>
 
               {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-b-leves" label="Leves" category="soup" %}
               {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-b-foetel" label="Főétel" category="main" %}
               {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-b-desszert" label="Desszert" category="dessert" %}
-              <div class="form-group">
-                <label for="day-b-ar">Ár (Ft)</label>
-                <input type="number" id="day-b-ar" placeholder="pl. 2690" />
-              </div>
             </div>
 
             <div class="modal-actions">
               <button type="button" id="save-day-menu" class="save-btn">Mentés</button>
               <button type="button" id="close-day-menu-modal" class="cancel-btn">Mégse</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ================= HETI MENÜ TÉTEL MODAL (új WeeklyMenuItem) ================= -->
-        <div
-          id="weekly-item-modal-overlay"
-          class="modal hidden"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="weeklyItemModalTitle"
-        >
-          <div class="modal-box">
-            <h3 class="modal-title" id="weeklyItemModalTitle">Új heti menü tétel</h3>
-            <div class="modal-grid">
-              <div class="form-group modal-full-col">
-                <label for="weekly-item-category">Típus</label>
-                <input type="text" id="weekly-item-category" readonly />
-              </div>
-              <div class="form-group modal-full-col">
-                <label for="weekly-item-name">Név</label>
-                <input type="text" id="weekly-item-name" placeholder="Pl. Gulyásleves" />
-              </div>
-            </div>
-            <div class="modal-actions">
-              <button type="button" id="save-weekly-item" class="save-btn">Mentés</button>
-              <button type="button" id="close-weekly-item-modal" class="cancel-btn">Mégse</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- ================= KATALÓGUS-TÉTEL TÖRLÉS MEGERŐSÍTÉS ================= -->
-        <div
-          id="weeklyItemDeleteConfirmModal"
-          class="modal hidden"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="weeklyItemDeleteConfirmTitle"
-        >
-          <div class="confirm-box">
-            <div class="confirm-icon">
-              <i class="fa-solid fa-triangle-exclamation"></i>
-            </div>
-            <div class="confirm-text">
-              <p class="confirm-title" id="weeklyItemDeleteConfirmTitle">Tétel törlése</p>
-              <p class="confirm-body" id="weeklyItemDeleteConfirmBody">
-                Biztosan törlöd ezt a tételt?
-              </p>
-            </div>
-            <div class="confirm-actions">
-              <button
-                type="button"
-                class="cancel-btn"
-                id="weeklyItemDeleteConfirmCancel"
-              >
-                Mégsem
-              </button>
-              <button
-                type="button"
-                class="btn-danger"
-                id="weeklyItemDeleteConfirmOk"
-              >
-                Törlés
-              </button>
             </div>
           </div>
         </div>

@@ -17,6 +17,7 @@ from rest_framework import generics, status
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
+from orders.models import OrderItem
 from orders.permissions import IsAppAdmin
 from users.permissions import is_app_admin
 
@@ -165,6 +166,25 @@ class WeeklyMenuCreateAPIView(generics.CreateAPIView):
     serializer_class = WeeklyMenuWriteSerializer
     permission_classes = [IsAppAdmin]
 
+    def create(self, request, *args, **kwargs):
+        """
+        Soft delete miatt előfordulhat, hogy (day, menu_type) pár már létezik
+        is_available=False állapotban. Ilyenkor ne új sort próbáljunk INSERT-elni
+        (unique_together hiba), hanem a meglévőt frissítsük és aktiváljuk vissza.
+        """
+        day = request.data.get("day")
+        menu_type = request.data.get("menu_type")
+
+        if day and menu_type:
+            existing = WeeklyMenu.objects.filter(day=day, menu_type=menu_type).first()
+            if existing:
+                serializer = self.get_serializer(existing, data=request.data, partial=False)
+                serializer.is_valid(raise_exception=True)
+                serializer.save(is_available=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return super().create(request, *args, **kwargs)
+
 
 class WeeklyMenuDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     """
@@ -185,6 +205,30 @@ class WeeklyMenuDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         if self.request.method in ("PUT", "PATCH"):
             return WeeklyMenuWriteSerializer
         return WeeklyMenuSerializer
+
+    def destroy(self, request, *args, **kwargs):
+        """
+        Heti menü törlése:
+        - ha nincs rendelés rá, marad a fizikai DELETE
+        - ha már van OrderItem hivatkozás, soft delete (is_available=False)
+        """
+        menu = self.get_object()
+        has_orders = OrderItem.objects.filter(weekly_menu=menu).exists()
+
+        if has_orders:
+            # Rendelési előzmény miatt a rekordot megtartjuk, csak kivonjuk a kínálatból.
+            if menu.is_available:
+                menu.is_available = False
+                menu.save(update_fields=["is_available"])
+            return Response(
+                {
+                    "detail": "A menüre már érkezett rendelés, ezért kivettük a kínálatból.",
+                    "soft_deleted": True,
+                },
+                status=status.HTTP_200_OK,
+            )
+
+        return super().destroy(request, *args, **kwargs)
 
 
 class WeeklyMenuItemListAPIView(generics.ListAPIView):

@@ -1,9 +1,32 @@
 {# Heti menü legördülő — category: soup | main | dessert (WeeklyMenuItem.category) #}
-{# Rejtett *-id = WeeklyMenuItem.id (FK mentéskor). Szerkesztés/Törlés csak kiválasztott tételnél. #}
+{# Rejtett *-id = WeeklyMenuItem.id (FK mentéskor). Kiválasztáskor chip, gépeléskor kereső. #}
 <div class="form-group">
   <label for="{{ base_id }}-input">{{ label }}</label>
   <div class="wm-combobox" data-category="{{ category }}">
     <div class="wm-combobox-control">
+      {# Chip: kiválasztott tétel — átnevezés (✎) és leválasztás (×), nem katalógus-törlés #}
+{# Legördülő sor mellett: elrejtés (👁‍🗨) → is_available=false, a listából kikerül #}
+      <div class="wm-combobox-chip hidden" id="{{ base_id }}-chip" aria-live="polite">
+        <span class="wm-combobox-chip-label" id="{{ base_id }}-chip-label"></span>
+        <button
+          type="button"
+          class="wm-combobox-chip-btn wm-combobox-chip-rename"
+          data-base-id="{{ base_id }}"
+          aria-label="Átnevezés"
+          title="Átnevezés"
+        >
+          <i class="fa-solid fa-pen" aria-hidden="true"></i>
+        </button>
+        <button
+          type="button"
+          class="wm-combobox-chip-btn wm-combobox-chip-clear"
+          data-base-id="{{ base_id }}"
+          aria-label="Leválasztás"
+          title="Leválasztás"
+        >
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </div>
       <input
         type="text"
         id="{{ base_id }}-input"
@@ -14,23 +37,5 @@
       <input type="hidden" id="{{ base_id }}-id" />
     </div>
     <ul id="{{ base_id }}-dropdown" class="wm-combobox-dropdown hidden" role="listbox"></ul>
-    <div class="wm-combobox-footer">
-      <button
-        type="button"
-        class="wm-combobox-footer-btn wm-combobox-new-btn"
-        data-category="{{ category }}"
-        data-base-id="{{ base_id }}"
-      >
-        + Új tétel
-      </button>
-      <div class="wm-combobox-item-actions hidden" id="{{ base_id }}-actions">
-        <button type="button" class="wm-combobox-footer-btn wm-combobox-edit-btn" data-base-id="{{ base_id }}">
-          Szerkesztés
-        </button>
-        <button type="button" class="wm-combobox-footer-btn wm-combobox-delete-btn" data-base-id="{{ base_id }}">
-          Törlés
-        </button>
-      </div>
-    </div>
   </div>
 </div>

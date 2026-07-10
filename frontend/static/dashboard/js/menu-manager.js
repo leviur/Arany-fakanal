@@ -27,6 +27,8 @@ const MenuManager = (() => {
   const WEEKLY_MENU_ITEMS_API = "/api/weekly-menu-items/";
   let weeklyMenuItemsLoaded = false;
   let weeklyMenu = {};
+  /** YYYY-MM-DD — a szerkesztett hét hétfője; alapból a rendelési hét. */
+  let selectedWeekMonday = null;
 
   /*
    * ======================== ÉTELEK FÜL — API állapot ========================
@@ -73,6 +75,20 @@ const MenuManager = (() => {
 
   function weeklyMenuRowHtml(day) {
     const entry = weeklyMenu[day];
+    const readOnly = isLockedSelectedWeek();
+
+    if (readOnly) {
+      return `
+    <tr class="weekly-menu-row-readonly">
+        <td data-label="Nap">${escapeHtml(day)}</td>
+        <td data-label="A menü">${dayMenuSummaryHtml(entry?.A)}</td>
+        <td data-label="B menü">${dayMenuSummaryHtml(entry?.B)}</td>
+        <td class="actions weekly-menu-readonly-cell" data-label="Műveletek">
+            <span class="weekly-menu-readonly-label" aria-hidden="true">—</span>
+        </td>
+    </tr>`;
+    }
+
     const deleteBtn = entry
       ? `<button type="button" class="action-btn day-menu-delete-btn" data-day="${escapeHtml(day)}" aria-label="Törlés"><i class="fa-solid fa-trash"></i></button>`
       : '';
@@ -93,6 +109,60 @@ const MenuManager = (() => {
     const tbody = document.getElementById('weeklyMenuBody');
     if (!tbody) return;
     tbody.innerHTML = days.map(weeklyMenuRowHtml).join('');
+    renderWeeklyMenuWeekBar();
+  }
+
+  function countConfiguredWeeklyDays() {
+    return days.filter((day) => weeklyMenu[day]?.A || weeklyMenu[day]?.B).length;
+  }
+
+  function renderWeeklyMenuWeekBar() {
+    const rangeEl = document.getElementById('weeklyMenuWeekRange');
+    const noteEl = document.getElementById('weeklyMenuWeekNote');
+    const emptyEl = document.getElementById('weeklyMenuWeekEmpty');
+    const badgeEl = document.getElementById('weeklyMenuWeekBadge');
+    const orderWeekBtn = document.getElementById('weeklyMenuOrderWeek');
+    const cardEl = document.querySelector('.weekly-menu-card');
+    if (!rangeEl) return;
+
+    const mondayIso = getSelectedWeekMonday();
+    const formatDate = typeof formatHuDate === 'function' ? formatHuDate : (iso) => iso;
+    const onOrderWeek = isViewingOrderWeek();
+    const readOnly = isLockedSelectedWeek();
+
+    rangeEl.textContent = `${formatDate(mondayIso)} – ${formatDate(addDaysToIso(mondayIso, 4))}`;
+
+    if (cardEl) {
+      cardEl.classList.toggle('is-readonly-week', readOnly);
+    }
+
+    if (badgeEl) {
+      badgeEl.hidden = readOnly || !onOrderWeek;
+    }
+
+    if (noteEl) {
+      if (readOnly) {
+        noteEl.textContent = 'Ez a hét már lezárult — csak megtekintés.';
+        noteEl.classList.remove('is-order-week');
+      } else {
+        noteEl.textContent = onOrderWeek
+          ? 'A rendelési oldal is ezt a hetet mutatja.'
+          : 'A vendég oldal jelenleg más hetet mutat.';
+        noteEl.classList.toggle('is-order-week', onOrderWeek);
+      }
+    }
+
+    if (emptyEl) {
+      const isEmpty = countConfiguredWeeklyDays() === 0;
+      emptyEl.hidden = !isEmpty;
+      emptyEl.textContent = isEmpty
+        ? 'Még nincs menü beállítva erre a hétre.'
+        : '';
+    }
+
+    if (orderWeekBtn) {
+      orderWeekBtn.hidden = onOrderWeek;
+    }
   }
 
   function foodAllergenIconsHtml(allergenKeys) {
@@ -153,10 +223,34 @@ const MenuManager = (() => {
   const contentData = {
     'heti-menu': `
         <div class="weekly-menu-card">
-            <table class="weekly-menu-table">
-                <thead><tr><th>Nap</th><th>A menü</th><th>B menü</th><th>Műveletek</th></tr></thead>
-                <tbody id="weeklyMenuBody"></tbody>
-            </table>
+            <header class="weekly-menu-week-header">
+                <div class="weekly-menu-week-picker" role="group" aria-label="Hét választása">
+                    <button type="button" class="week-nav-icon" id="weeklyMenuPrevWeek" aria-label="Előző hét">
+                        <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                    </button>
+                    <div class="weekly-menu-week-center">
+                        <p class="weekly-menu-week-label">Szerkesztett hét</p>
+                        <p class="weekly-menu-week-range" id="weeklyMenuWeekRange"></p>
+                        <div class="weekly-menu-week-meta">
+                            <span class="week-status-badge" id="weeklyMenuWeekBadge" hidden>Rendelési hét</span>
+                            <p class="weekly-menu-week-note" id="weeklyMenuWeekNote"></p>
+                            <p class="weekly-menu-week-empty" id="weeklyMenuWeekEmpty" hidden></p>
+                        </div>
+                        <button type="button" class="week-jump-link" id="weeklyMenuOrderWeek" hidden>
+                            Ugrás a rendelési hétre
+                        </button>
+                    </div>
+                    <button type="button" class="week-nav-icon" id="weeklyMenuNextWeek" aria-label="Következő hét">
+                        <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                    </button>
+                </div>
+            </header>
+            <div class="weekly-menu-table-wrap">
+                <table class="weekly-menu-table">
+                    <thead><tr><th>Nap</th><th>A menü</th><th>B menü</th><th>Műveletek</th></tr></thead>
+                    <tbody id="weeklyMenuBody"></tbody>
+                </table>
+            </div>
         </div>`,
     'etelek': `
         <div class="content-card">
@@ -187,6 +281,9 @@ const MenuManager = (() => {
     container.innerHTML = contentData[target];
 
     if (target === 'heti-menu') {
+      if (!selectedWeekMonday) {
+        selectedWeekMonday = getOrderWeekMonday();
+      }
       // Heti menü fül: előbb katalógus + menük letöltése API-ból, aztán táblázat rajzolása
       Promise.all([loadWeeklyMenuItems(), loadWeeklyMenuFromApi()])
         .then(() => renderWeeklyMenuTable())
@@ -593,39 +690,60 @@ const MenuManager = (() => {
     }
   }
 
-  /** Aktuális hét hétfőjének dátuma (YYYY-MM-DD). Ezt küldjük week_start paraméterként. */
-  function getCurrentWeekMonday() {
-    /**
-     * A dashboard heti menü szerkesztése és a publikus rendelési oldal "szezonja"
-     * (amire a vendég a napokat látja) nem mindig ugyanarra a hétre mutat.
-     *
-     * A rendelési oldalon a hét eltolódik, ha vasárnap / péntek / szombat van.
-     * A dashboardon is ezt a logikát kell követni, különben "csütörtököt"
-     * máshol törlünk, mint amit a vendég lát.
-     */
-    const now = new Date();
-    now.setHours(12, 0, 0, 0);
-    const dow = now.getDay(); // 0=vasárnap ... 6=szombat
+  function formatLocalIsoDate(date) {
+    const pad = (value) => String(value).padStart(2, '0');
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  }
 
-    // aktuális hétfő
+  function parseIsoDate(iso) {
+    return new Date(`${iso}T12:00:00`);
+  }
+
+  function addDaysToIso(iso, days) {
+    const date = parseIsoDate(iso);
+    date.setDate(date.getDate() + days);
+    return formatLocalIsoDate(date);
+  }
+
+  /**
+   * Rendelési hét hétfője (YYYY-MM-DD) — ugyanaz a logika, mint a főoldali weekly-menu.js.
+   * Péntek–vasárnap: következő hét.
+   */
+  function getOrderWeekMonday(referenceDate = new Date()) {
+    const now = new Date(referenceDate);
+    now.setHours(12, 0, 0, 0);
+    const dow = now.getDay();
+
     const monday = new Date(now);
     monday.setDate(now.getDate() - ((dow + 6) % 7));
 
-    // rendelések oldala: ha péntek/szombat/vasárnap van, akkor a következő hétre vált
     if (dow === 5 || dow === 6 || dow === 0) {
       monday.setDate(monday.getDate() + 7);
     }
 
-    return monday.toISOString().slice(0, 10);
+    return formatLocalIsoDate(monday);
   }
 
-  /** Magyar napnév → konkrét dátum az aktuális héten (mentéskor a backend day mezője). */
+  function getSelectedWeekMonday() {
+    return selectedWeekMonday || getOrderWeekMonday();
+  }
+
+  function isViewingOrderWeek() {
+    return getSelectedWeekMonday() === getOrderWeekMonday();
+  }
+
+  /** A rendelési hétnél korábbi hetek zároltak (péntektől az aktuális hét is). */
+  function isLockedSelectedWeek() {
+    return getSelectedWeekMonday() < getOrderWeekMonday();
+  }
+
+  /** Magyar napnév → konkrét dátum a kiválasztott héten (mentéskor a backend day mezője). */
   function getDateForDayName(dayName) {
     const offsets = { Hétfő: 0, Kedd: 1, Szerda: 2, Csütörtök: 3, Péntek: 4 };
-    const monday = new Date(`${getCurrentWeekMonday()}T12:00:00`);
+    const monday = parseIsoDate(getSelectedWeekMonday());
     const target = new Date(monday);
     target.setDate(monday.getDate() + (offsets[dayName] ?? 0));
-    return target.toISOString().slice(0, 10);
+    return formatLocalIsoDate(target);
   }
 
   /** API-ból jövő ISO dátum → „Hétfő” … „Péntek” (csak munkanapok). */
@@ -660,7 +778,7 @@ const MenuManager = (() => {
    * A válasz tömb: minden sor egy A vagy B menü egy napra, beágyazott soup/main/dessert objektumokkal.
    */
   async function loadWeeklyMenuFromApi() {
-    const weekStart = getCurrentWeekMonday();
+    const weekStart = getSelectedWeekMonday();
     const response = await menuApiRequest(`${WEEKLY_MENU_API}?week_start=${weekStart}`);
     if (!response.ok) {
       throw new Error("Nem sikerült betölteni a heti menüt.");
@@ -770,8 +888,23 @@ const MenuManager = (() => {
     renderWeeklyMenuTable();
   }
 
+  async function shiftSelectedWeek(weekDelta) {
+    selectedWeekMonday = addDaysToIso(getSelectedWeekMonday(), weekDelta * 7);
+    await refreshWeeklyMenuTable();
+  }
+
+  async function goToOrderWeek() {
+    selectedWeekMonday = getOrderWeekMonday();
+    await refreshWeeklyMenuTable();
+  }
+
   /* ================= NAPI MENÜ MODAL — szerkesztő űrlap ================= */
   async function openDayMenuModal(day) {
+    if (isLockedSelectedWeek()) {
+      window.showToast?.('Ez a hét már nem szerkeszthető.', 'error');
+      return;
+    }
+
     try {
       // Katalógus betöltése, ha még nincs (legördülőhöz)
       await loadWeeklyMenuItems();
@@ -814,6 +947,11 @@ const MenuManager = (() => {
 
   /** Mentés: A és B menü külön API hívás, majd újraolvasás az adatbázisból. */
   async function saveDayMenuModal() {
+    if (isLockedSelectedWeek()) {
+      window.showToast?.('Ez a hét már nem szerkeszthető.', 'error');
+      return;
+    }
+
     const modal = document.getElementById("day-menu-modal-overlay");
     const day = modal.dataset.day;
     if (!day) return;
@@ -843,6 +981,11 @@ const MenuManager = (() => {
 
   /* ================= NAPI MENÜ TÖRLÉS MEGERŐSÍTŐ MODAL ================= */
   function openDayMenuDeleteConfirm(day) {
+    if (isLockedSelectedWeek()) {
+      window.showToast?.('Ez a hét már nem törölhető.', 'error');
+      return;
+    }
+
     pendingDayMenuDelete = day;
     const body = document.getElementById('dayMenuDeleteConfirmBody');
     if (body) body.textContent = `Biztosan törlöd "${day}" menüjét? Ez a művelet nem vonható vissza.`;
@@ -937,24 +1080,25 @@ const MenuManager = (() => {
       window.showToast?.("Tétel átnevezve", "success");
     } catch (err) {
       console.error("Heti menü tétel átnevezése sikertelen:", err);
-      const message = typeof parseApiError === "function"
-        ? parseApiError(err, "Átnevezés sikertelen!")
-        : "Átnevezés sikertelen!";
+      const message = err?.detail
+        || err?.name?.[0]
+        || (Array.isArray(err?.name) ? err.name[0] : null)
+        || "Átnevezés sikertelen!";
       window.showToast?.(message, "error");
     }
   }
 
   /**
-   * Legördülő „elrejtés” gomb — soft hide a katalógusból (is_available=false).
-   * A mentett heti menükben megmarad; csak a választható listából tűnik el.
+   * Katalógus tétel elrejtése / visszaállítása (is_available toggle).
+   * A mentett heti menükben megmarad; csak a választható listát változtatja.
    */
-  async function hideWeeklyItemInline({ baseId, itemId, itemName }) {
+  async function setWeeklyItemAvailability({ baseId, itemId, itemName, isAvailable }) {
     const label = String(itemName || "").trim() || "Tétel";
 
     try {
       const response = await menuApiRequest(`${WEEKLY_MENU_ITEMS_API}${itemId}/`, {
         method: "PATCH",
-        body: JSON.stringify({ is_available: false }),
+        body: JSON.stringify({ is_available: isAvailable }),
       });
 
       if (!response.ok) {
@@ -962,18 +1106,20 @@ const MenuManager = (() => {
         throw err;
       }
 
-      if (window.WeeklyMenuCombobox?.getValue(baseId) === itemId) {
+      if (!isAvailable && window.WeeklyMenuCombobox?.getValue(baseId) === itemId) {
         window.WeeklyMenuCombobox?.clearValue(baseId);
       }
 
       await loadWeeklyMenuItems(true);
       window.WeeklyMenuCombobox?.refreshOpenDropdown();
-      window.showToast?.(`„${label}” elrejtve a listából`, "success");
+      window.showToast?.(
+        isAvailable ? `„${label}” visszaállítva a listába` : `„${label}” elrejtve a listából`,
+        "success",
+      );
     } catch (err) {
-      console.error("Heti menü tétel elrejtése sikertelen:", err);
-      const message = typeof parseApiError === "function"
-        ? parseApiError(err, "Elrejtés sikertelen!")
-        : "Elrejtés sikertelen!";
+      console.error("Heti menü tétel láthatóságának módosítása sikertelen:", err);
+      const message = err?.detail
+        || (isAvailable ? "Visszaállítás sikertelen!" : "Elrejtés sikertelen!");
       window.showToast?.(message, "error");
     }
   }
@@ -986,6 +1132,19 @@ const MenuManager = (() => {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       tabBtn.classList.add('active');
       loadContent(tabBtn.getAttribute('data-target'));
+      return;
+    }
+
+    if (e.target.closest('#weeklyMenuPrevWeek')) {
+      void shiftSelectedWeek(-1);
+      return;
+    }
+    if (e.target.closest('#weeklyMenuNextWeek')) {
+      void shiftSelectedWeek(1);
+      return;
+    }
+    if (e.target.closest('#weeklyMenuOrderWeek')) {
+      void goToOrderWeek();
       return;
     }
 
@@ -1129,10 +1288,10 @@ const MenuManager = (() => {
       }
     });
 
-    document.addEventListener("weekly-menu:hide-item", (e) => {
-      const { baseId, itemId, itemName } = e.detail || {};
+    document.addEventListener("weekly-menu:toggle-item-availability", (e) => {
+      const { baseId, itemId, itemName, isAvailable } = e.detail || {};
       if (baseId && itemId) {
-        void hideWeeklyItemInline({ baseId, itemId, itemName });
+        void setWeeklyItemAvailability({ baseId, itemId, itemName, isAvailable: !!isAvailable });
       }
     });
 

@@ -302,30 +302,67 @@ window.addEventListener("beforeunload", (e) => {
 });
 
 // Foglalás sor SLA állapota — booking_limits az APP_STATE-ből (adatbázis)
+function parseBookingDateTime(value) {
+  if (!value) return null;
+  const normalized = String(value).trim().replace(/\./g, "-").replace(" ", "T");
+  const date = new Date(normalized);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function getBookingEventTime(booking) {
+  if (booking?.eventDateTime) {
+    return parseBookingDateTime(booking.eventDateTime);
+  }
+  if (booking?.dateIso && booking?.time) {
+    return parseBookingDateTime(`${booking.dateIso} ${booking.time}`);
+  }
+  if (booking?.date && booking?.time) {
+    const datePart = String(booking.date).replace(/\./g, "-");
+    return parseBookingDateTime(`${datePart} ${booking.time}`);
+  }
+  return null;
+}
+
 function getBookingStatus(booking) {
   const now = new Date();
   const status = booking.status || "Új";
-  const createdAt = new Date(booking.createdAt);
-  const diffMin = (now - createdAt) / 60000;
+  const createdAt = parseBookingDateTime(booking.createdAt);
+  const diffMin = createdAt ? (now - createdAt) / 60000 : NaN;
   const limits = window.APP_STATE?.bookingLimits || bookingLimits;
 
   if (!limits) return { state: "ok", label: "OK" };
 
+  if (!createdAt) {
+    return { state: "problem", label: "Nincs dátum" };
+  }
+
+  if (status === "Lemondva") {
+    return { state: "ok", label: "Lemondva" };
+  }
+
+  if (status === "Teljesítve") {
+    return { state: "ok", label: "Teljesítve" };
+  }
+
   if (status === "Új") {
     if (diffMin >= limits.problemNew) {
-      return { state: "problem", label: "Problémás" };
+      return { state: "problem", label: `Új > ${limits.problemNew} perc` };
     }
     if (diffMin >= limits.warnNew) {
-      return { state: "warning", label: "Figyelmeztetés" };
+      return { state: "warning", label: `Új > ${limits.warnNew} perc` };
     }
     return { state: "ok", label: "Új" };
   }
 
   if (status === "Visszaigazolt") {
-    const eventTime = new Date(booking.dateTime);
+    const eventTime = getBookingEventTime(booking);
+    if (!eventTime) {
+      return { state: "ok", label: "Visszaigazolt" };
+    }
+
     const diffHours = (eventTime - now) / 3600000;
 
-    if (diffHours <= limits.warnConfirmed) {
+    if (diffHours >= 0 && diffHours <= limits.warnConfirmed) {
       return { state: "warning", label: "Közelgő foglalás" };
     }
 

@@ -585,26 +585,34 @@ function renderCart() {
               </span>
 
               <div class="cart-controls">
-                  <button
-                      class="qty-btn"
-                      onclick="changeCartQty(${index}, -1)">
-                      −
-                  </button>
+                  <div class="cart-qty-stepper">
+                      <button
+                          type="button"
+                          class="qty-btn"
+                          aria-label="Mennyiség csökkentése"
+                          onclick="changeCartQty(${index}, -1)">
+                          −
+                      </button>
 
-                  <span class="cart-item-qty">
-                      ${item.quantity}
-                  </span>
+                      <span class="cart-item-qty">
+                          ${item.quantity}
+                      </span>
+
+                      <button
+                          type="button"
+                          class="qty-btn"
+                          aria-label="Mennyiség növelése"
+                          onclick="changeCartQty(${index}, 1)">
+                          +
+                      </button>
+                  </div>
 
                   <button
-                      class="qty-btn"
-                      onclick="changeCartQty(${index}, 1)">
-                      +
-                  </button>
-
-                  <button
+                      type="button"
                       class="remove-cart-btn"
+                      aria-label="Tétel törlése"
                       onclick="removeCartItem(${index})">
-                      🗑
+                      <i class="fa-solid fa-trash-can" aria-hidden="true"></i>
                   </button>
               </div>
           </div>

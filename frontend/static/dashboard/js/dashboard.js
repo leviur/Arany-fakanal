@@ -3,10 +3,14 @@
 // ======================================================
 function isProblemOrder(o) {
   const status = (o.status || "").trim();
+
+  if (status === "Kézbesítve" || status === "Sikertelen kézbesítés") {
+    return false;
+  }
+
   const minutesAgo = getMinutesFromOrderTime(o.createdAt);
   const limit = window.APP_STATE?.statusLimits?.[status];
 
-  if (status === "Sikertelen kézbesítés") return true;
   if (limit && minutesAgo > limit) return true;
 
   return false;
@@ -45,60 +49,20 @@ function getMinutesFromOrderTime(timeText) {
 }
 
 // ======================================================
-// BOOKING SLA ENGINE (TE SZABÁLYOD)
+// BOOKING SLA — getBookingStatus() a settings.js-ben (APP_STATE bookingLimits)
 // ======================================================
-function parseDate(str) {
-  if (!str) return null;
-  const [d, t] = str.split(" ");
-  if (!d || !t) return null;
+function getBookingTodoLevel(booking) {
+  const sla = typeof getBookingStatus === "function"
+    ? getBookingStatus(booking)
+    : { state: "ok", label: "OK" };
 
-  const [y, m, day] = d.split(".").map(Number);
-  const [hh, mm] = t.split(":").map(Number);
-
-  return new Date(y, m - 1, day, hh, mm, 0);
-}
-
-function getBookingSLA(b) {
-
-  const created = parseDate(b.createdAt);
-  if (!created) {
-    return { level: "problem", reason: "Nincs dátum" };
+  if (sla.state === "problem") {
+    return { level: "problem", reason: sla.label };
   }
-
-  const minutes = (Date.now() - created.getTime()) / 60000;
-
-  // 🔴 Lemondva
-  if (b.status === "Lemondva") {
-    return { level: "problem", reason: "Lemondva" };
+  if (sla.state === "warning") {
+    return { level: "warning", reason: sla.label };
   }
-
-  // 🆕 ÚJ
-  if (b.status === "Új") {
-
-    if (minutes >= 180) {
-      return { level: "problem", reason: "Új > 180 perc" };
-    }
-
-    if (minutes >= 60) {
-      return { level: "warning", reason: "Új > 60 perc" };
-    }
-
-    return { level: "ok", reason: "Új - friss" };
-  }
-
-  // ✅ VISSZAIGAZOLT
-  if (b.status === "Visszaigazolt") {
-
-    const hours = minutes / 60;
-
-    if (hours >= 24) {
-      return { level: "warning", reason: "Visszaigazolt > 24 óra" };
-    }
-
-    return { level: "ok", reason: "OK" };
-  }
-
-  return { level: "ok", reason: "OK" };
+  return null;
 }
 
 // ======================================================
@@ -167,7 +131,7 @@ function updateBookingDashboardStats() {
 
     guests += Number(b.guests || 0);
 
-    const sla = getBookingSLA(b);
+    const sla = getBookingTodoLevel(b);
 
     if (sla?.level === "problem") {
       problems++;
@@ -234,19 +198,16 @@ function renderOrderTodos() {
   const todos = [];
   const orders = window.appData?.orders || [];
 
-  orders.filter(o => isToday(o.createdAt)).forEach(o => {
+  orders.forEach(o => {
     if (!isProblemOrder(o)) return;
 
     const status = (o.status || "").trim();
     const minutesAgo = getMinutesFromOrderTime(o.createdAt);
-    const level = status === "Sikertelen kézbesítés" ? "problem" : "warning";
 
     todos.push({
-      level,
+      level: "warning",
       name: `#${o.id} – ${o.name}`,
-      reason: status === "Sikertelen kézbesítés"
-        ? "Sikertelen kézbesítés"
-        : `${status}: ${minutesAgo} perce`
+      reason: `${status}: ${minutesAgo} perce`,
     });
   });
 
@@ -262,18 +223,31 @@ function renderBookingTodos() {
   const bookings = Bookings.getBookings?.() || [];
 
   bookings.forEach(b => {
-    const sla = getBookingSLA(b);
-    if (sla.level === "ok") return;
+    const sla = getBookingTodoLevel(b);
+    if (!sla) return;
 
     todos.push({
       level: sla.level,
-      name: `${b.name} (${b.guests || 0} fő)`,
-      reason: sla.reason
+      name: `${b.name} (${Number(b.guests) || 0} fő)`,
+      reason: sla.reason,
     });
   });
 
   renderTodoList(container, todos);
   return todos.length;
+}
+
+function updateSidebarNavBadge(badgeId, count) {
+  const badge = document.getElementById(badgeId);
+  if (!badge) return;
+
+  if (count > 0) {
+    badge.textContent = count > 99 ? "99+" : String(count);
+    badge.classList.remove("hidden");
+  } else {
+    badge.textContent = "";
+    badge.classList.add("hidden");
+  }
 }
 
 function renderTodos() {
@@ -286,6 +260,9 @@ function renderTodos() {
 
   if (kpiEl) kpiEl.textContent = total;
   if (kpiCard) kpiCard.classList.toggle("has-todos", total > 0);
+
+  updateSidebarNavBadge("sidebar-orders-badge", orderCount);
+  updateSidebarNavBadge("sidebar-bookings-badge", bookingCount);
 }
 
 // ======================================================
@@ -298,10 +275,10 @@ function renderAgenda() {
   const bookings = Bookings.getBookings?.() || [];
 
   const now = new Date();
-  const todayStr = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, "0")}.${String(now.getDate()).padStart(2, "0")}`;
+  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 
   const todayBookings = bookings
-    .filter(b => b.date === todayStr)
+    .filter(b => b.dateIso === todayIso)
     .sort((a, b) => (a.time || "").localeCompare(b.time || ""));
 
   fadeRender(container, () => {

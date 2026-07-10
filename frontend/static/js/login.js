@@ -324,6 +324,9 @@ function initLogin() {
             if (typeof window.prefillBookingFormFromUser === "function") {
                 window.prefillBookingFormFromUser(loginData);
             }
+            if (typeof window.prefillContactFormFromUser === "function") {
+                window.prefillContactFormFromUser(loginData);
+            }
         } catch (error) {
             console.error("Bejelentkezés sikertelen:", error);
             window.showToast?.("Hiba történt a bejelentkezés során.", "error");
@@ -401,6 +404,9 @@ function initLogin() {
             }
             if (typeof window.prefillBookingFormFromUser === "function") {
                 window.prefillBookingFormFromUser(data);
+            }
+            if (typeof window.prefillContactFormFromUser === "function") {
+                window.prefillContactFormFromUser(data);
             }
         } catch (error) {
             console.error("Regisztráció sikertelen:", error);

@@ -11,9 +11,10 @@ A Django REST Framework generics.*APIView osztályok maguk végzik az adatbázis
   - RetrieveUpdateDestroyAPIView → SELECT egy rekord / UPDATE / DELETE
 """
 
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 from rest_framework import generics, status
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
@@ -31,6 +32,25 @@ from .serializers import (
     WeeklyMenuWriteSerializer,
     AllergenSerializer,
 )
+
+
+def get_order_week_monday(reference_date=None):
+    """Ugyanaz a logika, mint a frontend getOrderWeekMonday — péntektől következő hét."""
+    if reference_date is None:
+        reference_date = date.today()
+    dow = reference_date.weekday()  # hétfő=0 … vasárnap=6
+    monday = reference_date - timedelta(days=dow)
+    if dow >= 4:  # péntek, szombat, vasárnap
+        monday += timedelta(days=7)
+    return monday
+
+
+def is_locked_weekly_menu_week(menu_day):
+    """True, ha a menü hete már nem szerkeszthető (a rendelési hétnél korábbi)."""
+    if isinstance(menu_day, str):
+        menu_day = datetime.strptime(menu_day, "%Y-%m-%d").date()
+    week_monday = menu_day - timedelta(days=menu_day.weekday())
+    return week_monday < get_order_week_monday()
 
 
 class AllergenListAPIView(generics.ListAPIView):
@@ -175,6 +195,18 @@ class WeeklyMenuCreateAPIView(generics.CreateAPIView):
         day = request.data.get("day")
         menu_type = request.data.get("menu_type")
 
+        if day:
+            try:
+                day_date = datetime.strptime(day, "%Y-%m-%d").date()
+            except ValueError:
+                pass
+            else:
+                if is_locked_weekly_menu_week(day_date):
+                    return Response(
+                        {"detail": "Ez a hét már nem szerkeszthető."},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+
         if day and menu_type:
             existing = WeeklyMenu.objects.filter(day=day, menu_type=menu_type).first()
             if existing:
@@ -206,6 +238,13 @@ class WeeklyMenuDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
             return WeeklyMenuWriteSerializer
         return WeeklyMenuSerializer
 
+    def perform_update(self, serializer):
+        menu = self.get_object()
+        target_day = serializer.validated_data.get("day", menu.day)
+        if is_locked_weekly_menu_week(target_day):
+            raise PermissionDenied("Ez a hét már nem szerkeszthető.")
+        serializer.save()
+
     def destroy(self, request, *args, **kwargs):
         """
         Heti menü törlése:
@@ -213,6 +252,12 @@ class WeeklyMenuDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
         - ha már van OrderItem hivatkozás, soft delete (is_available=False)
         """
         menu = self.get_object()
+        if is_locked_weekly_menu_week(menu.day):
+            return Response(
+                {"detail": "Ez a hét már nem szerkeszthető."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         has_orders = OrderItem.objects.filter(weekly_menu=menu).exists()
 
         if has_orders:

@@ -1,0 +1,2476 @@
+[
+{
+  "model": "menu.category",
+  "pk": 3,
+  "fields": {
+    "name": "Előételek"
+  }
+},
+{
+  "model": "menu.category",
+  "pk": 4,
+  "fields": {
+    "name": "Levesek"
+  }
+},
+{
+  "model": "menu.category",
+  "pk": 5,
+  "fields": {
+    "name": "Halételek és szárnyasok"
+  }
+},
+{
+  "model": "menu.category",
+  "pk": 6,
+  "fields": {
+    "name": "Hagyományos rántott és töltött húsok"
+  }
+},
+{
+  "model": "menu.category",
+  "pk": 7,
+  "fields": {
+    "name": "Szaftos és kemencés sültek"
+  }
+},
+{
+  "model": "menu.category",
+  "pk": 8,
+  "fields": {
+    "name": "Egytálételek"
+  }
+},
+{
+  "model": "menu.category",
+  "pk": 9,
+  "fields": {
+    "name": "Desszertek"
+  }
+},
+{
+  "model": "menu.category",
+  "pk": 10,
+  "fields": {
+    "name": "Italok"
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 1,
+  "fields": {
+    "key": "abalone",
+    "name": "Tengeri fül",
+    "icon": "/static/icons/Abalone.svg",
+    "label": "Tengeri fül és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 2,
+  "fields": {
+    "key": "apple",
+    "name": "Alma",
+    "icon": "/static/icons/Apple.svg",
+    "label": "Alma és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 3,
+  "fields": {
+    "key": "banana",
+    "name": "Banán",
+    "icon": "/static/icons/Banana.svg",
+    "label": "Banán és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 4,
+  "fields": {
+    "key": "beef",
+    "name": "Marhahús",
+    "icon": "/static/icons/Beef.svg",
+    "label": "Marhahús és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 5,
+  "fields": {
+    "key": "cashew",
+    "name": "Kesudió",
+    "icon": "/static/icons/Cashew.svg",
+    "label": "Kesudió és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 6,
+  "fields": {
+    "key": "celery",
+    "name": "Zeller",
+    "icon": "/static/icons/Celery.svg",
+    "label": "Zeller és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 7,
+  "fields": {
+    "key": "chicken",
+    "name": "Csirke",
+    "icon": "/static/icons/Chicken.svg",
+    "label": "Csirke és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 8,
+  "fields": {
+    "key": "crab",
+    "name": "Rák",
+    "icon": "/static/icons/Crab.svg",
+    "label": "Rák és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 9,
+  "fields": {
+    "key": "eggs",
+    "name": "Tojás",
+    "icon": "/static/icons/Eggs.svg",
+    "label": "Tojás és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 10,
+  "fields": {
+    "key": "fish",
+    "name": "Hal",
+    "icon": "/static/icons/Fish.svg",
+    "label": "Hal és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 11,
+  "fields": {
+    "key": "gelatin",
+    "name": "Zselatin",
+    "icon": "/static/icons/Gelatin.svg",
+    "label": "Zselatin és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 12,
+  "fields": {
+    "key": "gluten",
+    "name": "Glutén",
+    "icon": "/static/icons/Gluten.svg",
+    "label": "Glutént tartalmazó gabonafélék."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 13,
+  "fields": {
+    "key": "kiwi",
+    "name": "Kiwi",
+    "icon": "/static/icons/Kiwi.svg",
+    "label": "Kiwi és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 14,
+  "fields": {
+    "key": "lupine",
+    "name": "Csillagfürt",
+    "icon": "/static/icons/Lupine.svg",
+    "label": "Csillagfürt és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 15,
+  "fields": {
+    "key": "matsutake",
+    "name": "Matsutake gomba",
+    "icon": "/static/icons/Matsutake.svg",
+    "label": "Matsutake gomba és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 16,
+  "fields": {
+    "key": "milk",
+    "name": "Tej",
+    "icon": "/static/icons/Milk.svg",
+    "label": "Tej és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 17,
+  "fields": {
+    "key": "mushroom",
+    "name": "Gomba",
+    "icon": "/static/icons/Mushroom.svg",
+    "label": "Gomba és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 18,
+  "fields": {
+    "key": "nuts",
+    "name": "Diófélék",
+    "icon": "/static/icons/Nuts.svg",
+    "label": "Diófélék, azaz mandula, mogyoró, kesudió, pekándió, brazil dió, pisztácia, makadámia és queenslandi dió és a belőlük készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 19,
+  "fields": {
+    "key": "orange",
+    "name": "Narancs",
+    "icon": "/static/icons/Orange.svg",
+    "label": "Narancs és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 20,
+  "fields": {
+    "key": "peach",
+    "name": "Őszibarack",
+    "icon": "/static/icons/Peach.svg",
+    "label": "Őszibarack és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 21,
+  "fields": {
+    "key": "pork",
+    "name": "Sertés",
+    "icon": "/static/icons/Pork.svg",
+    "label": "Sertés és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 22,
+  "fields": {
+    "key": "potato",
+    "name": "Burgonya",
+    "icon": "/static/icons/Potato.svg",
+    "label": "Burgonya és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 23,
+  "fields": {
+    "key": "sesame",
+    "name": "Szezámmag",
+    "icon": "/static/icons/Sesame.svg",
+    "label": "Szezámmag és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 24,
+  "fields": {
+    "key": "shrimp",
+    "name": "Garnéla",
+    "icon": "/static/icons/Shrimp.svg",
+    "label": "Garnéla és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 25,
+  "fields": {
+    "key": "soy",
+    "name": "Szója",
+    "icon": "/static/icons/Soy.svg",
+    "label": "Szója és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 26,
+  "fields": {
+    "key": "soya",
+    "name": "Szója (alternatív jelölés)",
+    "icon": "/static/icons/Soy.svg",
+    "label": "Szója és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 27,
+  "fields": {
+    "key": "squid",
+    "name": "Tintahal",
+    "icon": "/static/icons/Squid.svg",
+    "label": "Tintahal és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 28,
+  "fields": {
+    "key": "sulfur_dioxide",
+    "name": "Kén-dioxid",
+    "icon": "/static/icons/Sulfur_Dioxide.svg",
+    "label": "Kén-dioxid és az SO2-ben kifejezett szulfitok 10 mg/kg, illetve 10 mg/liter összkoncentrációt meghaladó mennyiségben."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 29,
+  "fields": {
+    "key": "sulfites",
+    "name": "Szulfitok",
+    "icon": "/static/icons/Sulfites.svg",
+    "label": "Szulfitok és a belőlük készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 30,
+  "fields": {
+    "key": "walnut",
+    "name": "Dió",
+    "icon": "/static/icons/Walnut.svg",
+    "label": "Dió és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.allergen",
+  "pk": 31,
+  "fields": {
+    "key": "wheat",
+    "name": "Búza",
+    "icon": "/static/icons/Wheat.svg",
+    "label": "Búza és a belőle készült termékek."
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 1,
+  "fields": {
+    "category": 4,
+    "name": "Marhahúsleves gazdagon",
+    "description": "Hosszú főzésű húsleves marhafartővel és házi tésztával.",
+    "price": "2790.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 2,
+  "fields": {
+    "category": 4,
+    "name": "Füstölt csülkös Jókai bableves",
+    "description": "Tartalmas bableves füstölt csülökkel és kolbásszal, tejföllel.",
+    "price": "3190.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 3,
+  "fields": {
+    "category": 6,
+    "name": "Klasszikus rántott szelet",
+    "description": "Aranybarna rántott szelet vajas burgonyával.",
+    "price": "5690.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 4,
+  "fields": {
+    "category": 9,
+    "name": "Pillekönnyű túrógombóc édes tejföllel",
+    "description": "Túrógombóc vaníliás tejföllel.",
+    "price": "2150.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 5,
+  "fields": {
+    "category": 6,
+    "name": "Pásztorok kedvence karaj rántva",
+    "description": "Töltött karaj kolbásszal és juhtúróval, burgonyapürével.",
+    "price": "5890.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 6,
+  "fields": {
+    "category": 9,
+    "name": "Rákóczi túrós",
+    "description": "Omlós tészta citromos túrókrémmel.",
+    "price": "2790.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 7,
+  "fields": {
+    "category": 3,
+    "name": "Kézműves krémvariációk friss kenyérrel",
+    "description": "Mangalica tepertőkrém, fűszeres körözött és padlizsánkrém házi kovászos kenyérrel és friss kerti zöldségekkel.",
+    "price": "2690.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 8,
+  "fields": {
+    "category": 3,
+    "name": "Érlelt bélszíntatár a kert legjavával",
+    "description": "Hagyományos recept alapján fűszerezett, selymes textúrájú marhabélszín, friss idényzöldségekkel, vajjal/kacsazsírral és ropogós házi kovászos kenyérrel.",
+    "price": "3990.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 9,
+  "fields": {
+    "category": 3,
+    "name": "Kemencés velős csont lilahagyma-lekvárral",
+    "description": "Fűszeres velős csont, házi lilahagyma-lekvárral és kovászos kenyérrel.",
+    "price": "3190.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 10,
+  "fields": {
+    "category": 3,
+    "name": "A kamra kincsei",
+    "description": "Füstölt kolbász, pikáns paprikás szalámi, omlós sonka, érlelt és füstölt sajtok, savanyúság és kovászos kenyér.",
+    "price": "4490.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 11,
+  "fields": {
+    "category": 4,
+    "name": "Gulyásleves",
+    "description": "Omlós marhahúsból, lassú tűzön főzött gazdag gulyásleves csipetkével.",
+    "price": "3490.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 12,
+  "fields": {
+    "category": 4,
+    "name": "Tavaszi zöldborsóleves vajas galuskával",
+    "description": "Könnyed zöldborsóleves vajas galuskával.",
+    "price": "2790.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 13,
+  "fields": {
+    "category": 4,
+    "name": "Szegedi halászlé szaftos pontyfilével",
+    "description": "Intenzív halászlé pontyfilével és friss kenyérrel.",
+    "price": "3490.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 14,
+  "fields": {
+    "category": 5,
+    "name": "Mandulás bundában sült fogasfilé",
+    "description": "Ropogós mandulás bundában sült fogasfilé majonézes burgonyasalátával.",
+    "price": "4890.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 15,
+  "fields": {
+    "category": 5,
+    "name": "Harcsapaprikás túrós csuszával",
+    "description": "Szaftos harcsapaprikás túrós csuszával.",
+    "price": "5890.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 16,
+  "fields": {
+    "category": 5,
+    "name": "Tanyasi paprikás csirke vajas galuskával",
+    "description": "Tejfölös paprikás csirke vajas galuskával.",
+    "price": "5490.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 17,
+  "fields": {
+    "category": 5,
+    "name": "Mátrai borzas csirkemell",
+    "description": "Ropogós csirkemell fokhagymás bundában, füstölt sajttal.",
+    "price": "5690.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 18,
+  "fields": {
+    "category": 7,
+    "name": "Marhapörkölt galuskával",
+    "description": "Omlós marhapörkölt tojásos galuskával.",
+    "price": "5890.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 19,
+  "fields": {
+    "category": 7,
+    "name": "Cigánypecsenye kakastaréjjal",
+    "description": "Fokhagymás sertéstarja szalonnával és rósejbnivel.",
+    "price": "5890.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 20,
+  "fields": {
+    "category": 7,
+    "name": "Kemencés csülök Pékné módra",
+    "description": "Omlós csülök kemencés burgonyával.",
+    "price": "6590.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 21,
+  "fields": {
+    "category": 8,
+    "name": "Kolozsvári töltött káposzta",
+    "description": "Savanyú káposztás, füstölt húsos töltött káposzta.",
+    "price": "5690.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 22,
+  "fields": {
+    "category": 8,
+    "name": "Házi töltött paprika és paradicsomos húsgombóc",
+    "description": "Töltött paprika és húsgombóc paradicsommártásban.",
+    "price": "5390.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 23,
+  "fields": {
+    "category": 9,
+    "name": "Somlói galuska",
+    "description": "Diós, vaníliás és kakaós piskóta csokoládéöntettel.",
+    "price": "2590.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 24,
+  "fields": {
+    "category": 9,
+    "name": "Aranygaluska selymes vaníliasodóval",
+    "description": "Diós kelt tészta vaníliasodóval.",
+    "price": "2790.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 25,
+  "fields": {
+    "category": 9,
+    "name": "Mákos guba vaníliaöntettel",
+    "description": "Kifli, mák, vaníliás öntet.",
+    "price": "2190.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 26,
+  "fields": {
+    "category": 10,
+    "name": "Meggypálinka",
+    "description": "",
+    "price": "2190.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 27,
+  "fields": {
+    "category": 10,
+    "name": "Szilvapálinka",
+    "description": "",
+    "price": "2490.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 28,
+  "fields": {
+    "category": 10,
+    "name": "Kajszibarack Pálinka",
+    "description": "",
+    "price": "3690.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 29,
+  "fields": {
+    "category": 10,
+    "name": "Villányi Portugieser",
+    "description": "",
+    "price": "6890.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 30,
+  "fields": {
+    "category": 10,
+    "name": "Tokaji Furmint",
+    "description": "",
+    "price": "9990.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 31,
+  "fields": {
+    "category": 10,
+    "name": "Tokaji Aszú 5 Puttonyos",
+    "description": "",
+    "price": "13890.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 32,
+  "fields": {
+    "category": 10,
+    "name": "Soproni",
+    "description": "",
+    "price": "1090.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 33,
+  "fields": {
+    "category": 10,
+    "name": "Pilsner Urquell",
+    "description": "",
+    "price": "1190.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 34,
+  "fields": {
+    "category": 10,
+    "name": "Dreher Bak (Barna sör)",
+    "description": "",
+    "price": "1390.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuitem",
+  "pk": 35,
+  "fields": {
+    "category": 10,
+    "name": "Házi Limonádé szódával",
+    "description": "",
+    "price": "1190.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 1,
+  "fields": {
+    "menu_item": 7,
+    "allergen": 16
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 2,
+  "fields": {
+    "menu_item": 7,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 3,
+  "fields": {
+    "menu_item": 7,
+    "allergen": 31
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 4,
+  "fields": {
+    "menu_item": 8,
+    "allergen": 16
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 5,
+  "fields": {
+    "menu_item": 8,
+    "allergen": 4
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 6,
+  "fields": {
+    "menu_item": 8,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 7,
+  "fields": {
+    "menu_item": 8,
+    "allergen": 31
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 8,
+  "fields": {
+    "menu_item": 9,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 9,
+  "fields": {
+    "menu_item": 9,
+    "allergen": 31
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 10,
+  "fields": {
+    "menu_item": 10,
+    "allergen": 16
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 11,
+  "fields": {
+    "menu_item": 10,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 12,
+  "fields": {
+    "menu_item": 10,
+    "allergen": 21
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 13,
+  "fields": {
+    "menu_item": 10,
+    "allergen": 31
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 14,
+  "fields": {
+    "menu_item": 11,
+    "allergen": 9
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 15,
+  "fields": {
+    "menu_item": 11,
+    "allergen": 4
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 16,
+  "fields": {
+    "menu_item": 11,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 17,
+  "fields": {
+    "menu_item": 2,
+    "allergen": 16
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 18,
+  "fields": {
+    "menu_item": 2,
+    "allergen": 21
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 19,
+  "fields": {
+    "menu_item": 1,
+    "allergen": 4
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 20,
+  "fields": {
+    "menu_item": 1,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 21,
+  "fields": {
+    "menu_item": 1,
+    "allergen": 31
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 22,
+  "fields": {
+    "menu_item": 12,
+    "allergen": 16
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 23,
+  "fields": {
+    "menu_item": 12,
+    "allergen": 9
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 24,
+  "fields": {
+    "menu_item": 12,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 25,
+  "fields": {
+    "menu_item": 13,
+    "allergen": 10
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 26,
+  "fields": {
+    "menu_item": 13,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 27,
+  "fields": {
+    "menu_item": 13,
+    "allergen": 31
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 28,
+  "fields": {
+    "menu_item": 14,
+    "allergen": 16
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 29,
+  "fields": {
+    "menu_item": 14,
+    "allergen": 18
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 30,
+  "fields": {
+    "menu_item": 14,
+    "allergen": 22
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 31,
+  "fields": {
+    "menu_item": 14,
+    "allergen": 9
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 32,
+  "fields": {
+    "menu_item": 14,
+    "allergen": 10
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 33,
+  "fields": {
+    "menu_item": 14,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 34,
+  "fields": {
+    "menu_item": 14,
+    "allergen": 31
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 35,
+  "fields": {
+    "menu_item": 15,
+    "allergen": 16
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 36,
+  "fields": {
+    "menu_item": 15,
+    "allergen": 10
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 37,
+  "fields": {
+    "menu_item": 15,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 38,
+  "fields": {
+    "menu_item": 15,
+    "allergen": 31
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 39,
+  "fields": {
+    "menu_item": 16,
+    "allergen": 16
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 40,
+  "fields": {
+    "menu_item": 16,
+    "allergen": 9
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 41,
+  "fields": {
+    "menu_item": 16,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 42,
+  "fields": {
+    "menu_item": 16,
+    "allergen": 7
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 43,
+  "fields": {
+    "menu_item": 17,
+    "allergen": 16
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 44,
+  "fields": {
+    "menu_item": 17,
+    "allergen": 22
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 45,
+  "fields": {
+    "menu_item": 17,
+    "allergen": 7
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 46,
+  "fields": {
+    "menu_item": 17,
+    "allergen": 9
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 47,
+  "fields": {
+    "menu_item": 17,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 48,
+  "fields": {
+    "menu_item": 17,
+    "allergen": 31
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 49,
+  "fields": {
+    "menu_item": 3,
+    "allergen": 16
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 50,
+  "fields": {
+    "menu_item": 3,
+    "allergen": 21
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 51,
+  "fields": {
+    "menu_item": 3,
+    "allergen": 22
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 52,
+  "fields": {
+    "menu_item": 3,
+    "allergen": 9
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 53,
+  "fields": {
+    "menu_item": 3,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 54,
+  "fields": {
+    "menu_item": 3,
+    "allergen": 31
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 55,
+  "fields": {
+    "menu_item": 5,
+    "allergen": 16
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 56,
+  "fields": {
+    "menu_item": 5,
+    "allergen": 21
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 57,
+  "fields": {
+    "menu_item": 5,
+    "allergen": 22
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 58,
+  "fields": {
+    "menu_item": 5,
+    "allergen": 9
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 59,
+  "fields": {
+    "menu_item": 5,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 60,
+  "fields": {
+    "menu_item": 5,
+    "allergen": 31
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 61,
+  "fields": {
+    "menu_item": 18,
+    "allergen": 9
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 62,
+  "fields": {
+    "menu_item": 18,
+    "allergen": 4
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 63,
+  "fields": {
+    "menu_item": 18,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 64,
+  "fields": {
+    "menu_item": 19,
+    "allergen": 21
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 65,
+  "fields": {
+    "menu_item": 19,
+    "allergen": 22
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 66,
+  "fields": {
+    "menu_item": 20,
+    "allergen": 21
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 67,
+  "fields": {
+    "menu_item": 20,
+    "allergen": 22
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 68,
+  "fields": {
+    "menu_item": 21,
+    "allergen": 21
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 69,
+  "fields": {
+    "menu_item": 22,
+    "allergen": 4
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 70,
+  "fields": {
+    "menu_item": 22,
+    "allergen": 21
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 71,
+  "fields": {
+    "menu_item": 23,
+    "allergen": 16
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 72,
+  "fields": {
+    "menu_item": 23,
+    "allergen": 18
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 73,
+  "fields": {
+    "menu_item": 23,
+    "allergen": 9
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 74,
+  "fields": {
+    "menu_item": 23,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 75,
+  "fields": {
+    "menu_item": 23,
+    "allergen": 30
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 76,
+  "fields": {
+    "menu_item": 23,
+    "allergen": 31
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 77,
+  "fields": {
+    "menu_item": 4,
+    "allergen": 16
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 78,
+  "fields": {
+    "menu_item": 4,
+    "allergen": 9
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 79,
+  "fields": {
+    "menu_item": 4,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 80,
+  "fields": {
+    "menu_item": 4,
+    "allergen": 31
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 81,
+  "fields": {
+    "menu_item": 6,
+    "allergen": 16
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 82,
+  "fields": {
+    "menu_item": 6,
+    "allergen": 9
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 83,
+  "fields": {
+    "menu_item": 6,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 84,
+  "fields": {
+    "menu_item": 6,
+    "allergen": 31
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 85,
+  "fields": {
+    "menu_item": 24,
+    "allergen": 16
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 86,
+  "fields": {
+    "menu_item": 24,
+    "allergen": 18
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 87,
+  "fields": {
+    "menu_item": 24,
+    "allergen": 9
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 88,
+  "fields": {
+    "menu_item": 24,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 89,
+  "fields": {
+    "menu_item": 24,
+    "allergen": 30
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 90,
+  "fields": {
+    "menu_item": 24,
+    "allergen": 31
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 91,
+  "fields": {
+    "menu_item": 25,
+    "allergen": 16
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 92,
+  "fields": {
+    "menu_item": 25,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 93,
+  "fields": {
+    "menu_item": 25,
+    "allergen": 31
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 94,
+  "fields": {
+    "menu_item": 28,
+    "allergen": 20
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 95,
+  "fields": {
+    "menu_item": 29,
+    "allergen": 29
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 96,
+  "fields": {
+    "menu_item": 30,
+    "allergen": 29
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 97,
+  "fields": {
+    "menu_item": 31,
+    "allergen": 29
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 98,
+  "fields": {
+    "menu_item": 32,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 99,
+  "fields": {
+    "menu_item": 33,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.menuallergen",
+  "pk": 100,
+  "fields": {
+    "menu_item": 34,
+    "allergen": 12
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 2,
+  "fields": {
+    "name": "Rántott hús rizi-bizivel",
+    "category": "main",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 3,
+  "fields": {
+    "name": "Túrós palacsinta",
+    "category": "dessert",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 4,
+  "fields": {
+    "name": "Jókai bableves",
+    "category": "soup",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 5,
+  "fields": {
+    "name": "Túrós tészta",
+    "category": "main",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 6,
+  "fields": {
+    "name": "Mákos guba",
+    "category": "dessert",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 7,
+  "fields": {
+    "name": "Gulyásleves csipetkével",
+    "category": "soup",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 8,
+  "fields": {
+    "name": "Tanyasi paprikás csirke galuskával",
+    "category": "main",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 9,
+  "fields": {
+    "name": "Somlói galuska",
+    "category": "dessert",
+    "is_available": false
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 10,
+  "fields": {
+    "name": "Tavaszi zöldborsó",
+    "category": "soup",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 11,
+  "fields": {
+    "name": "Marhapörkölt galuskával",
+    "category": "main",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 13,
+  "fields": {
+    "name": "Almaleves",
+    "category": "soup",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 14,
+  "fields": {
+    "name": "Harcsapaprikás túrós csuszával",
+    "category": "main",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 15,
+  "fields": {
+    "name": "Rákóczi túrós",
+    "category": "dessert",
+    "is_available": false
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 16,
+  "fields": {
+    "name": "Szegedi halászlé",
+    "category": "soup",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 17,
+  "fields": {
+    "name": "Kolozsvári töltött káposzta",
+    "category": "main",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 18,
+  "fields": {
+    "name": "Mákos guba vaníliaöntettel",
+    "category": "dessert",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 19,
+  "fields": {
+    "name": "Húsleves házi tésztával",
+    "category": "soup",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 20,
+  "fields": {
+    "name": "Kemencés csülök burgonyával",
+    "category": "main",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 21,
+  "fields": {
+    "name": "Túrógombóc tejföllel",
+    "category": "dessert",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 22,
+  "fields": {
+    "name": "Paradicsomleves",
+    "category": "soup",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 23,
+  "fields": {
+    "name": "Töltött paprika paradicsommártásban",
+    "category": "main",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 25,
+  "fields": {
+    "name": "Zöldbableves",
+    "category": "soup",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 26,
+  "fields": {
+    "name": "Mandulás bundában sült fogasfilé",
+    "category": "main",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 27,
+  "fields": {
+    "name": "Aranygaluska vaníliasodóval",
+    "category": "dessert",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 28,
+  "fields": {
+    "name": "Gombakrémleves",
+    "category": "soup",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 29,
+  "fields": {
+    "name": "Cigánypecsenye rósejbnivel",
+    "category": "main",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 30,
+  "fields": {
+    "name": "Almás-fahéjas piskóta",
+    "category": "dessert",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 31,
+  "fields": {
+    "name": "Karfiolleves",
+    "category": "soup",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 32,
+  "fields": {
+    "name": "Tojásleves",
+    "category": "soup",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 36,
+  "fields": {
+    "name": "Spárgakrémleves",
+    "category": "soup",
+    "is_available": false
+  }
+},
+{
+  "model": "menu.weeklymenuitem",
+  "pk": 38,
+  "fields": {
+    "name": "Salátaleves",
+    "category": "soup",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 1,
+  "fields": {
+    "day": "2026-07-06",
+    "menu_type": "A",
+    "soup": 13,
+    "main_course": 20,
+    "dessert": 21,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 2,
+  "fields": {
+    "day": "2026-07-06",
+    "menu_type": "B",
+    "soup": 28,
+    "main_course": 14,
+    "dessert": 27,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 3,
+  "fields": {
+    "day": "2026-07-07",
+    "menu_type": "A",
+    "soup": 28,
+    "main_course": 14,
+    "dessert": 6,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 4,
+  "fields": {
+    "day": "2026-07-07",
+    "menu_type": "B",
+    "soup": 7,
+    "main_course": 17,
+    "dessert": 27,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 5,
+  "fields": {
+    "day": "2026-07-08",
+    "menu_type": "A",
+    "soup": 32,
+    "main_course": 14,
+    "dessert": 15,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 6,
+  "fields": {
+    "day": "2026-07-08",
+    "menu_type": "B",
+    "soup": 32,
+    "main_course": 17,
+    "dessert": 18,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 7,
+  "fields": {
+    "day": "2026-07-09",
+    "menu_type": "A",
+    "soup": 4,
+    "main_course": 14,
+    "dessert": 18,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 9,
+  "fields": {
+    "day": "2026-07-10",
+    "menu_type": "A",
+    "soup": 4,
+    "main_course": 26,
+    "dessert": 27,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 10,
+  "fields": {
+    "day": "2026-07-10",
+    "menu_type": "B",
+    "soup": 16,
+    "main_course": 29,
+    "dessert": 30,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 12,
+  "fields": {
+    "day": "2026-07-09",
+    "menu_type": "B",
+    "soup": 19,
+    "main_course": 14,
+    "dessert": 6,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 13,
+  "fields": {
+    "day": "2026-07-13",
+    "menu_type": "A",
+    "soup": 38,
+    "main_course": 17,
+    "dessert": 3,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 14,
+  "fields": {
+    "day": "2026-07-13",
+    "menu_type": "B",
+    "soup": 28,
+    "main_course": 17,
+    "dessert": 21,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 15,
+  "fields": {
+    "day": "2026-07-14",
+    "menu_type": "A",
+    "soup": 19,
+    "main_course": 5,
+    "dessert": 3,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 16,
+  "fields": {
+    "day": "2026-07-14",
+    "menu_type": "B",
+    "soup": 19,
+    "main_course": 20,
+    "dessert": 6,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 17,
+  "fields": {
+    "day": "2026-07-15",
+    "menu_type": "A",
+    "soup": 28,
+    "main_course": 11,
+    "dessert": 6,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 18,
+  "fields": {
+    "day": "2026-07-15",
+    "menu_type": "B",
+    "soup": 31,
+    "main_course": 20,
+    "dessert": 27,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 19,
+  "fields": {
+    "day": "2026-07-16",
+    "menu_type": "A",
+    "soup": 7,
+    "main_course": 29,
+    "dessert": 6,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 20,
+  "fields": {
+    "day": "2026-07-16",
+    "menu_type": "B",
+    "soup": 4,
+    "main_course": 5,
+    "dessert": 30,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 21,
+  "fields": {
+    "day": "2026-07-17",
+    "menu_type": "A",
+    "soup": 19,
+    "main_course": 17,
+    "dessert": 30,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "menu.weeklymenu",
+  "pk": 22,
+  "fields": {
+    "day": "2026-07-17",
+    "menu_type": "B",
+    "soup": 19,
+    "main_course": 11,
+    "dessert": 21,
+    "price": "1500.00",
+    "is_available": true
+  }
+},
+{
+  "model": "opening_hours.weeklyopeninghour",
+  "pk": 1,
+  "fields": {
+    "day": "monday",
+    "closed": false,
+    "open_time": "15:00:00",
+    "close_time": "22:00:00"
+  }
+},
+{
+  "model": "opening_hours.weeklyopeninghour",
+  "pk": 2,
+  "fields": {
+    "day": "tuesday",
+    "closed": false,
+    "open_time": "11:00:00",
+    "close_time": "22:00:00"
+  }
+},
+{
+  "model": "opening_hours.weeklyopeninghour",
+  "pk": 3,
+  "fields": {
+    "day": "wednesday",
+    "closed": false,
+    "open_time": "11:00:00",
+    "close_time": "22:00:00"
+  }
+},
+{
+  "model": "opening_hours.weeklyopeninghour",
+  "pk": 4,
+  "fields": {
+    "day": "thursday",
+    "closed": false,
+    "open_time": "11:00:00",
+    "close_time": "22:00:00"
+  }
+},
+{
+  "model": "opening_hours.weeklyopeninghour",
+  "pk": 5,
+  "fields": {
+    "day": "friday",
+    "closed": false,
+    "open_time": "11:00:00",
+    "close_time": "23:00:00"
+  }
+},
+{
+  "model": "opening_hours.weeklyopeninghour",
+  "pk": 6,
+  "fields": {
+    "day": "saturday",
+    "closed": false,
+    "open_time": "11:00:00",
+    "close_time": "23:00:00"
+  }
+},
+{
+  "model": "opening_hours.weeklyopeninghour",
+  "pk": 7,
+  "fields": {
+    "day": "sunday",
+    "closed": false,
+    "open_time": "12:00:00",
+    "close_time": "22:00:00"
+  }
+},
+{
+  "model": "opening_hours.openinghoursexception",
+  "pk": 3,
+  "fields": {
+    "date": "2026-07-12",
+    "label": "",
+    "closed": true,
+    "open_time": null,
+    "close_time": null
+  }
+},
+{
+  "model": "opening_hours.slasettings",
+  "pk": 1,
+  "fields": {
+    "order_limit_new": 30,
+    "order_limit_confirmed": 45,
+    "order_limit_preparing": 60,
+    "order_limit_ready": 90,
+    "booking_warn_new_minutes": 60,
+    "booking_problem_new_minutes": 180,
+    "booking_warn_confirmed_hours": 24
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$mUpd7kd9f2MH4waRAGkdaw$Wv+MdFVkY45ezCwuaZXVOcGgs0kGAvvQOU9ISz6OPfM=",
+    "last_login": "2026-07-10T13:17:05.827Z",
+    "is_superuser": true,
+    "username": "admin",
+    "first_name": "",
+    "last_name": "",
+    "email": "admin@aranyfakanal.hu",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-06-16T08:58:25.618Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 2,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$ia7OhUTCsu82KkdxBpvNRh$W0se5K5qR/MAT+6ERklBMhTiUz7VSlcI5k8drhVv0pM=",
+    "last_login": "2026-07-03T22:15:56.744Z",
+    "is_superuser": true,
+    "username": "levi_ur@yahoo.com",
+    "first_name": "Kiss János",
+    "last_name": "",
+    "email": "levi_ur@yahoo.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-07-01T18:09:22.664Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 3,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$0pHYmZfNbZ5kaOsqssrAKp$qCaWggMA5CQPeLVPCJBIQRswuXWe7SADy/Ti0qZpMBE=",
+    "last_login": "2026-07-09T20:22:18.833Z",
+    "is_superuser": false,
+    "username": "kissanna@gmail.com",
+    "first_name": "Kiss Anna",
+    "last_name": "",
+    "email": "kissanna@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-07-04T17:02:21.129Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 4,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$Ku8VQhAMcCulCg76Utak0b$jcuH+KM9oB3m1ZKkUrjyYI5akhK6dEa3GbOoeCDVUvY=",
+    "last_login": "2026-07-04T17:04:07.957Z",
+    "is_superuser": false,
+    "username": "nagyervin@freemail.hu",
+    "first_name": "Nagy Ervin",
+    "last_name": "",
+    "email": "nagyervin@freemail.hu",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-07-04T17:04:06.769Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 5,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$WbuNkygzcOdISNmC30rda4$+DXpkMLjaZzDMAObRp/aGKrUndIG0PlIVv9CebcclqU=",
+    "last_login": "2026-07-04T17:06:08.239Z",
+    "is_superuser": false,
+    "username": "vadmarton06@gmail.com",
+    "first_name": "Vad Márton",
+    "last_name": "",
+    "email": "vadmarton06@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-07-04T17:06:07.025Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 6,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$MJCwzrZdL8S00iERiEdnf1$hfOjxuoN7SgAf48i1sz6NQfWLRZvnX1FCSd+GwXGsl8=",
+    "last_login": "2026-07-05T14:28:00.549Z",
+    "is_superuser": false,
+    "username": "nagyanna@gmail.com",
+    "first_name": "Nagy Anna",
+    "last_name": "",
+    "email": "nagyanna@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-07-05T11:28:01.971Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 7,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$krbw1juUymSFI2mxjAR7HA$ASUQjCC4uZWi1uPnM2llJa/V3luivNhiCvk4kPial34=",
+    "last_login": "2026-07-05T13:41:28.193Z",
+    "is_superuser": false,
+    "username": "tesztelekne@gmail.com",
+    "first_name": "Teszt Elekné",
+    "last_name": "",
+    "email": "tesztelekne@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-07-05T13:41:26.985Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 8,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$gQ8EbAoLHbx3ojdjB4ZNQs$CTm2Lv+ColzFiUdeZtYk1j+ESCp3PKTOq7IKUcTInhE=",
+    "last_login": "2026-07-05T18:04:27.253Z",
+    "is_superuser": false,
+    "username": "nagyistvan@gmail.com",
+    "first_name": "Nagy István",
+    "last_name": "",
+    "email": "nagyistvan@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-07-05T18:04:26.052Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 9,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$OV2rxE3Bc3hIwrVK0gZ38y$3Wc9W9LRYA/oiHdB4CISaE/mxDIppJ1CdlXwZr2xb2A=",
+    "last_login": "2026-07-07T20:28:24.997Z",
+    "is_superuser": false,
+    "username": "szecsiattila@gmail.com",
+    "first_name": "Szécsi Attila",
+    "last_name": "",
+    "email": "szecsiattila@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-07-07T20:28:23.790Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 10,
+  "fields": {
+    "password": "pbkdf2_sha256$1200000$acYOZHUbR8Ogy0o0spT2xw$D0bWldfH1ZoqP08GWM/eA+EV7LSlg0eUh4/TMLsL+Qw=",
+    "last_login": "2026-07-08T15:48:38.063Z",
+    "is_superuser": false,
+    "username": "nagyaron@gmail.com",
+    "first_name": "Nagy Áron",
+    "last_name": "",
+    "email": "nagyaron@gmail.com",
+    "is_staff": false,
+    "is_active": true,
+    "date_joined": "2026-07-08T15:48:36.905Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 1,
+  "fields": {
+    "user": 2,
+    "phone_number": "0612345678",
+    "address": "4000 Tesztfalva, Teszt utca 2",
+    "role": "customer",
+    "created_at": "2026-07-01T18:09:23.626Z"
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 2,
+  "fields": {
+    "user": 1,
+    "phone_number": "0000000000",
+    "address": "N/A",
+    "role": "admin",
+    "created_at": "2026-07-01T18:18:13.947Z"
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 3,
+  "fields": {
+    "user": 3,
+    "phone_number": "12345678",
+    "address": "4024 Debrecen, Thomas Mann utca23",
+    "role": "customer",
+    "created_at": "2026-07-04T17:02:22.085Z"
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 4,
+  "fields": {
+    "user": 4,
+    "phone_number": "12345678",
+    "address": "2541 Kismarja, Bethlen Gábor utca 3",
+    "role": "customer",
+    "created_at": "2026-07-04T17:04:07.713Z"
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 5,
+  "fields": {
+    "user": 5,
+    "phone_number": "+36706541893",
+    "address": "4212 Hajdúszovát, Rózsáskert utca 2",
+    "role": "customer",
+    "created_at": "2026-07-04T17:06:07.972Z"
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 6,
+  "fields": {
+    "user": 6,
+    "phone_number": "0620456123",
+    "address": "2103 Bozsok, Kosuuth utca 10",
+    "role": "customer",
+    "created_at": "2026-07-05T11:28:02.928Z"
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 7,
+  "fields": {
+    "user": 7,
+    "phone_number": "0620123456",
+    "address": "1234 Tesztfalva, Teszt utca 2",
+    "role": "customer",
+    "created_at": "2026-07-05T13:41:27.933Z"
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 8,
+  "fields": {
+    "user": 8,
+    "phone_number": "0620123564",
+    "address": "4024 Debrecen, Péterfia utca 24",
+    "role": "customer",
+    "created_at": "2026-07-05T18:04:27.012Z"
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 9,
+  "fields": {
+    "user": 9,
+    "phone_number": "0620123546",
+    "address": "4564 Kunszenmiklós, Apostol  pál 2",
+    "role": "customer",
+    "created_at": "2026-07-07T20:28:24.730Z"
+  }
+},
+{
+  "model": "users.userprofile",
+  "pk": 10,
+  "fields": {
+    "user": 10,
+    "phone_number": "0620123654",
+    "address": "4024 Debrecen,Kosuth utca 20",
+    "role": "customer",
+    "created_at": "2026-07-08T15:48:37.847Z"
+  }
+}
+]

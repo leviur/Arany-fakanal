@@ -7,7 +7,7 @@
  *       • „Új felvétele: …”  — katalógusba új név
  *       • „Átnevezés erre: …” — meglévő tétel átnevezése (PATCH)
  *   - „Leválasztás” (×) csak a mezőt üríti, nem törli a katalógust
- *   - Legördülő sor mellett „elrejtés” (👁‍🗨) → PATCH is_available=false
+ *   - Legördülő sor mellett: 👁‍🗨 elrejtés / 👁 visszaállítás (is_available toggle)
  *
  * Adatfolyam:
  *   menu-manager.js tölti a listát (GET /api/weekly-menu-items/) → setItems()
@@ -23,6 +23,8 @@ const WeeklyMenuCombobox = (() => {
 
   /** Utolsó listából választott tétel — átnevezéshez, ha a user gépel közben */
   const selectedSnapshotByBaseId = new Map();
+  /** Üres legördülőn: user kérte a rejtett tételek listáját (baseId-k) */
+  const hiddenBrowseActive = new Set();
 
   const CATEGORY_LABELS = {
     soup: "Leves",
@@ -59,6 +61,10 @@ const WeeklyMenuCombobox = (() => {
     return allItems.filter((item) => item.category === category && item.is_available !== false);
   }
 
+  function hiddenItemsForCategory(category) {
+    return allItems.filter((item) => item.category === category && item.is_available === false);
+  }
+
   function filterItems(category, term) {
     const normalized = term.trim().toLowerCase();
     const list = itemsForCategory(category);
@@ -66,8 +72,166 @@ const WeeklyMenuCombobox = (() => {
     return list.filter((item) => item.name.toLowerCase().includes(normalized));
   }
 
+  function filterHiddenItems(category, term) {
+    const normalized = term.trim().toLowerCase();
+    if (!normalized) return [];
+    const list = hiddenItemsForCategory(category);
+    return list.filter((item) => item.name.toLowerCase().includes(normalized));
+  }
+
+  function renderAvailableRow(item, baseId) {
+    return `
+      <li class="wm-combobox-option-row">
+        <button
+          type="button"
+          class="wm-combobox-option"
+          data-base-id="${baseId}"
+          data-item-id="${item.id}"
+        >
+          ${escapeHtml(item.name)}
+        </button>
+        <button
+          type="button"
+          class="wm-combobox-toggle-btn wm-combobox-hide-btn"
+          data-base-id="${baseId}"
+          data-item-id="${item.id}"
+          data-item-name="${escapeHtml(item.name)}"
+          data-is-available="false"
+          aria-label="Elrejtés a listából"
+          title="Elrejtés a listából"
+        >
+          <i class="fa-solid fa-eye-slash" aria-hidden="true"></i>
+        </button>
+      </li>
+    `;
+  }
+
+  function renderHiddenRow(item, baseId) {
+    return `
+      <li class="wm-combobox-option-row is-hidden-item">
+        <span class="wm-combobox-hidden-label" title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span>
+        <button
+          type="button"
+          class="wm-combobox-toggle-btn wm-combobox-restore-btn"
+          data-base-id="${baseId}"
+          data-item-id="${item.id}"
+          data-item-name="${escapeHtml(item.name)}"
+          data-is-available="true"
+          aria-label="Visszaállítás a listába"
+          title="Visszaállítás a listába"
+        >
+          <i class="fa-solid fa-eye" aria-hidden="true"></i>
+        </button>
+      </li>
+    `;
+  }
+
+  const DROPDOWN_GAP = 6;
+  const DROPDOWN_MIN_HEIGHT = 120;
+  const DROPDOWN_MAX_HEIGHT = 220;
+
+  const DROPDOWN_PORTAL_ID = "wm-combobox-portal-root";
+
+  function getDropdownPortal() {
+    let portal = document.getElementById(DROPDOWN_PORTAL_ID);
+    if (!portal) {
+      portal = document.createElement("div");
+      portal.id = DROPDOWN_PORTAL_ID;
+      portal.setAttribute("aria-hidden", "true");
+      document.body.appendChild(portal);
+    }
+    return portal;
+  }
+
+  function syncDayMenuModalScrollLock() {
+    const overlay = document.getElementById("day-menu-modal-overlay");
+    if (!overlay?.classList.contains("open")) return;
+    const hasOpen = !!overlay.querySelector(".wm-combobox.is-open");
+    overlay.classList.toggle("has-open-combobox", hasOpen);
+  }
+
+  function resetDropdownLayout(listEl) {
+    listEl.classList.remove("is-fixed", "is-flip-up");
+    ["position", "left", "right", "top", "bottom", "width", "max-height", "z-index"].forEach((prop) => {
+      listEl.style.removeProperty(prop);
+    });
+  }
+
+  function restoreDropdownToCombobox(listEl, baseId) {
+    const combobox = getComboboxEl(baseId);
+    if (combobox && listEl.parentElement !== combobox) {
+      combobox.appendChild(listEl);
+    }
+    resetDropdownLayout(listEl);
+  }
+
+  function positionDropdown(listEl, baseId) {
+    if (!listEl) return;
+
+    const combobox = getComboboxEl(baseId);
+    const control = combobox?.querySelector(".wm-combobox-control");
+    if (!control) return;
+
+    const overlay = document.getElementById("day-menu-modal-overlay");
+    const inDayMenuModal = !!control.closest("#day-menu-modal-overlay");
+
+    requestAnimationFrame(() => {
+      if (listEl.classList.contains("hidden")) return;
+
+      resetDropdownLayout(listEl);
+
+      const rect = control.getBoundingClientRect();
+      const modalBox = overlay?.querySelector(".modal-box");
+      const modalRect = modalBox?.getBoundingClientRect();
+      const padding = 12;
+
+      let boundTop = padding;
+      let boundBottom = window.innerHeight - padding;
+      if (modalRect) {
+        boundTop = Math.max(boundTop, modalRect.top + padding);
+        boundBottom = Math.min(boundBottom, modalRect.bottom - padding);
+      }
+
+      const spaceBelow = boundBottom - rect.bottom - DROPDOWN_GAP;
+      const spaceAbove = rect.top - boundTop - DROPDOWN_GAP;
+      const flipUp = spaceBelow < DROPDOWN_MAX_HEIGHT && spaceAbove > spaceBelow;
+
+      const available = Math.max(flipUp ? spaceAbove : spaceBelow, DROPDOWN_MIN_HEIGHT);
+      const maxHeight = Math.min(DROPDOWN_MAX_HEIGHT, Math.floor(available));
+
+      if (inDayMenuModal) {
+        const portal = getDropdownPortal();
+        if (listEl.parentElement !== portal) {
+          portal.appendChild(listEl);
+        }
+
+        listEl.classList.add("is-fixed");
+        listEl.style.position = "fixed";
+        listEl.style.left = `${Math.round(rect.left)}px`;
+        listEl.style.width = `${Math.round(rect.width)}px`;
+        listEl.style.zIndex = "1100";
+        listEl.style.maxHeight = `${maxHeight}px`;
+
+        if (flipUp) {
+          listEl.classList.add("is-flip-up");
+          listEl.style.top = "auto";
+          listEl.style.bottom = `${Math.round(window.innerHeight - rect.top + DROPDOWN_GAP)}px`;
+        } else {
+          listEl.style.top = `${Math.round(rect.bottom + DROPDOWN_GAP)}px`;
+          listEl.style.bottom = "auto";
+        }
+        return;
+      }
+
+      listEl.classList.toggle("is-flip-up", flipUp);
+      listEl.style.maxHeight = `${maxHeight}px`;
+    });
+  }
+
   function closeDropdown(dropdown) {
     if (!dropdown) return;
+    const baseId = dropdown.id?.replace(/-dropdown$/, "");
+    if (baseId) restoreDropdownToCombobox(dropdown, baseId);
     dropdown.classList.add("hidden");
     if (activeDropdown === dropdown) {
       activeDropdown = null;
@@ -75,11 +239,15 @@ const WeeklyMenuCombobox = (() => {
     }
   }
 
-  function closeCombobox(baseId) {
-    restoreSelectionIfPending(baseId);
+  function closeCombobox(baseId, { restorePending = true } = {}) {
+    if (restorePending) {
+      restoreSelectionIfPending(baseId);
+    }
+    hiddenBrowseActive.delete(baseId);
     getComboboxEl(baseId)?.classList.remove("is-open");
     const { dropdown } = getFieldIds(baseId);
     closeDropdown(document.getElementById(dropdown));
+    syncDayMenuModalScrollLock();
   }
 
   /**
@@ -138,6 +306,33 @@ const WeeklyMenuCombobox = (() => {
     }
   }
 
+  function dispatchRename(baseId, category, itemId, currentName, suggestedName) {
+    document.dispatchEvent(
+      new CustomEvent("weekly-menu:rename-selected", {
+        detail: {
+          category,
+          baseId,
+          itemId: Number(itemId),
+          currentName: currentName || "",
+          suggestedName: suggestedName || "",
+        },
+      }),
+    );
+  }
+
+  function trySubmitRenameFromInput(baseId, category, inputEl) {
+    const term = inputEl.value.trim();
+    const snapshot = selectedSnapshotByBaseId.get(baseId);
+    if (!snapshot?.id || !term) return false;
+
+    const currentName = String(snapshot.name || "").trim();
+    if (currentName.toLowerCase() === term.toLowerCase()) return false;
+
+    closeCombobox(baseId, { restorePending: false });
+    dispatchRename(baseId, category, snapshot.id, currentName, term);
+    return true;
+  }
+
   /** Chip „átnevezés” (✎) → kereső mód, név előtöltve; snapshot megmarad az átnevezéshez */
   function enterSearchMode(baseId, prefill = "") {
     const { input, hidden, chip } = getFieldIds(baseId);
@@ -167,6 +362,19 @@ const WeeklyMenuCombobox = (() => {
     const matches = filterItems(category, term).slice(0, 50);
     const normalizedTerm = term.trim();
     const loweredTerm = normalizedTerm.toLowerCase();
+    const hiddenInCategory = hiddenItemsForCategory(category);
+    const hiddenCount = hiddenInCategory.length;
+    const showHiddenBrowse = !normalizedTerm && hiddenBrowseActive.has(baseId);
+
+    let hiddenMatches;
+    if (normalizedTerm) {
+      hiddenMatches = filterHiddenItems(category, term).slice(0, 20);
+    } else if (showHiddenBrowse) {
+      hiddenMatches = hiddenInCategory.slice(0, 50);
+    } else {
+      hiddenMatches = [];
+    }
+
     const hasExactMatch = !!(
       loweredTerm
       && itemsForCategory(category).some(
@@ -211,40 +419,41 @@ const WeeklyMenuCombobox = (() => {
       `
       : "";
 
-    if (!matches.length) {
-      listEl.innerHTML = `<li class="wm-combobox-empty">Nincs találat</li>${renameRow}${createRow}`;
-    } else {
-      listEl.innerHTML = matches.map((item) => `
-        <li class="wm-combobox-option-row">
+    const availableHtml = matches.map((item) => renderAvailableRow(item, baseId)).join("");
+    const hiddenHtml = hiddenMatches.length
+      ? `
+        <li class="wm-combobox-section-label">Rejtett tételek</li>
+        ${hiddenMatches.map((item) => renderHiddenRow(item, baseId)).join("")}
+      `
+      : "";
+
+    const showHiddenToggle = !normalizedTerm && hiddenCount > 0 && !showHiddenBrowse
+      ? `
+        <li>
           <button
             type="button"
-            class="wm-combobox-option"
+            class="wm-combobox-action-option wm-combobox-show-hidden-btn"
             data-base-id="${baseId}"
-            data-item-id="${item.id}"
           >
-            ${escapeHtml(item.name)}
-          </button>
-          <button
-            type="button"
-            class="wm-combobox-hide-btn"
-            data-base-id="${baseId}"
-            data-item-id="${item.id}"
-            data-item-name="${escapeHtml(item.name)}"
-            aria-label="Elrejtés a listából"
-            title="Elrejtés a listából"
-          >
-            <i class="fa-solid fa-eye-slash" aria-hidden="true"></i>
+            Rejtett tételek (${hiddenCount})
           </button>
         </li>
-      `).join("");
-      listEl.innerHTML += renameRow;
-      listEl.innerHTML += createRow;
+      `
+      : "";
+
+    const hasListContent = matches.length || hiddenMatches.length || showHiddenToggle;
+    if (!hasListContent) {
+      listEl.innerHTML = `<li class="wm-combobox-empty">Nincs találat</li>${renameRow}${createRow}`;
+    } else {
+      listEl.innerHTML = `${availableHtml}${hiddenHtml}${showHiddenToggle}${renameRow}${createRow}`;
     }
 
     lastDropdownContext = { baseId, category, term };
 
     listEl.classList.remove("hidden");
     activeDropdown = listEl;
+    positionDropdown(listEl, baseId);
+    syncDayMenuModalScrollLock();
   }
 
   function openCombobox(baseId, category) {
@@ -325,6 +534,8 @@ const WeeklyMenuCombobox = (() => {
       const category = input.closest(".wm-combobox")?.dataset.category;
       if (!category) return;
 
+      hiddenBrowseActive.delete(baseId);
+
       const hiddenEl = document.getElementById(`${baseId}-id`);
       // Gépelés közben nincs érvényes kiválasztás, amíg új opciót nem választ
       if (hiddenEl) hiddenEl.value = "";
@@ -338,8 +549,12 @@ const WeeklyMenuCombobox = (() => {
       const input = e.target.closest(".wm-combobox-input");
       if (!input || input.classList.contains("wm-combobox-input-hidden")) return;
 
+      const combobox = input.closest(".wm-combobox");
+      // enterSearchMode már megnyitotta — ne zárjuk be és ne állítsuk vissza a chipet
+      if (combobox?.classList.contains("is-open")) return;
+
       const baseId = input.id.replace(/-input$/, "");
-      const category = input.closest(".wm-combobox")?.dataset.category;
+      const category = combobox?.dataset.category;
       if (!category) return;
 
       closeAllComboboxes();
@@ -350,8 +565,11 @@ const WeeklyMenuCombobox = (() => {
       const input = e.target.closest(".wm-combobox-input");
       if (!input || input.classList.contains("wm-combobox-input-hidden")) return;
 
+      const combobox = input.closest(".wm-combobox");
+      if (combobox?.classList.contains("is-open")) return;
+
       const baseId = input.id.replace(/-input$/, "");
-      const category = input.closest(".wm-combobox")?.dataset.category;
+      const category = combobox?.dataset.category;
       if (!category) return;
 
       closeAllComboboxes();
@@ -359,16 +577,17 @@ const WeeklyMenuCombobox = (() => {
     });
 
     document.addEventListener("click", (e) => {
-      const hideBtn = e.target.closest(".wm-combobox-hide-btn");
-      if (hideBtn) {
+      const toggleBtn = e.target.closest(".wm-combobox-toggle-btn");
+      if (toggleBtn) {
         e.preventDefault();
         e.stopPropagation();
         document.dispatchEvent(
-          new CustomEvent("weekly-menu:hide-item", {
+          new CustomEvent("weekly-menu:toggle-item-availability", {
             detail: {
-              baseId: hideBtn.dataset.baseId,
-              itemId: Number(hideBtn.dataset.itemId),
-              itemName: hideBtn.dataset.itemName || "",
+              baseId: toggleBtn.dataset.baseId,
+              itemId: Number(toggleBtn.dataset.itemId),
+              itemName: toggleBtn.dataset.itemName || "",
+              isAvailable: toggleBtn.dataset.isAvailable === "true",
             },
           }),
         );
@@ -385,7 +604,7 @@ const WeeklyMenuCombobox = (() => {
 
       const createOption = e.target.closest(".wm-combobox-create-option");
       if (createOption) {
-        closeCombobox(createOption.dataset.baseId);
+        closeCombobox(createOption.dataset.baseId, { restorePending: false });
         document.dispatchEvent(
           new CustomEvent("weekly-menu:add-item", {
             detail: {
@@ -400,18 +619,26 @@ const WeeklyMenuCombobox = (() => {
 
       const renameOption = e.target.closest(".wm-combobox-rename-option");
       if (renameOption) {
-        closeCombobox(renameOption.dataset.baseId);
-        document.dispatchEvent(
-          new CustomEvent("weekly-menu:rename-selected", {
-            detail: {
-              category: renameOption.dataset.category,
-              baseId: renameOption.dataset.baseId,
-              itemId: Number(renameOption.dataset.itemId),
-              currentName: renameOption.dataset.currentName || "",
-              suggestedName: renameOption.dataset.name || "",
-            },
-          }),
+        closeCombobox(renameOption.dataset.baseId, { restorePending: false });
+        dispatchRename(
+          renameOption.dataset.baseId,
+          renameOption.dataset.category,
+          renameOption.dataset.itemId,
+          renameOption.dataset.currentName,
+          renameOption.dataset.name,
         );
+        return;
+      }
+
+      const showHiddenBtn = e.target.closest(".wm-combobox-show-hidden-btn");
+      if (showHiddenBtn) {
+        e.preventDefault();
+        const baseId = showHiddenBtn.dataset.baseId;
+        const category = getComboboxEl(baseId)?.dataset.category;
+        if (!baseId || !category) return;
+        hiddenBrowseActive.add(baseId);
+        const inputEl = document.getElementById(getFieldIds(baseId).input);
+        renderDropdown(baseId, category, inputEl?.value || "");
         return;
       }
 
@@ -429,7 +656,7 @@ const WeeklyMenuCombobox = (() => {
         return;
       }
 
-      if (!e.target.closest(".wm-combobox")) {
+      if (!e.target.closest(".wm-combobox") && !e.target.closest(".wm-combobox-dropdown")) {
         closeAllComboboxes();
       }
     });
@@ -443,13 +670,43 @@ const WeeklyMenuCombobox = (() => {
 
       // Tab vagy más mezőre kattintás: bezárás + chip visszaállítás
       setTimeout(() => {
-        if (combobox?.contains(document.activeElement)) return;
+        const active = document.activeElement;
+        if (combobox?.contains(active)) return;
+        const dropdown = document.getElementById(`${baseId}-dropdown`);
+        if (dropdown?.contains(active)) return;
         closeCombobox(baseId);
       }, 0);
     });
 
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape") closeAllComboboxes();
+      if (e.key === "Escape") {
+        closeAllComboboxes();
+        return;
+      }
+
+      if (e.key !== "Enter") return;
+
+      const input = e.target.closest(".wm-combobox-input");
+      if (!input || input.classList.contains("wm-combobox-input-hidden")) return;
+
+      const baseId = input.id.replace(/-input$/, "");
+      const category = input.closest(".wm-combobox")?.dataset.category;
+      if (!category) return;
+
+      if (trySubmitRenameFromInput(baseId, category, input)) {
+        e.preventDefault();
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      if (!lastDropdownContext || !activeDropdown) return;
+      positionDropdown(activeDropdown, lastDropdownContext.baseId);
+    });
+
+    const dayMenuModal = document.getElementById("day-menu-modal-overlay");
+    dayMenuModal?.querySelector(".modal-box")?.addEventListener("scroll", () => {
+      if (!lastDropdownContext || !activeDropdown) return;
+      positionDropdown(activeDropdown, lastDropdownContext.baseId);
     });
   }
 

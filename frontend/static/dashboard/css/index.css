@@ -1284,7 +1284,7 @@ html, body {
   grid-column: span 2;
 }
 
-/* ================= NAV BADGE (olvasatlan üzenet jelző) ================= */
+/* ================= NAV BADGE (sidebar értesítő jelzők) ================= */
 .nav-badge {
   display: inline-flex;
   align-items: center;

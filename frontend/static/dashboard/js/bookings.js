@@ -108,7 +108,8 @@ const Bookings = (() => {
       occasion: mapOccasion(r.occasion),
       occasionCode: r.occasion ?? "",
 
-      date: r.date?.replace(/-/g, ".") ?? "",
+      dateIso: r.date ?? "",
+      dateLabel: window.formatHuDate?.(r.date) ?? (r.date ?? ""),
       time: r.time?.slice(0, 5) ?? "",
 
       status: mapStatus(r.status),
@@ -116,10 +117,10 @@ const Bookings = (() => {
       note: r.notes ?? "",
 
       createdAt: r.created_at
-      ? r.created_at.slice(0, 16).replace("T", " ")
-      : "",
+        ? (window.formatHuDateTime?.(r.created_at) ?? "")
+        : "",
 
-      eventDateTime: `${r.date} ${r.time?.slice(0,5)}`
+      eventDateTime: `${r.date} ${r.time?.slice(0, 5) ?? ""}`,
 
     }));
   }
@@ -309,7 +310,9 @@ const Bookings = (() => {
         b.phone.toLowerCase().includes(search) ||
         b.occasion.toLowerCase().includes(search) ||
         (b.occasionCode || "").toLowerCase().includes(search) ||
-        b.date.includes(search)
+        (b.dateLabel || "").toLowerCase().includes(search) ||
+        (b.dateIso || "").includes(search) ||
+        (b.time || "").includes(search)
       );
     });
 
@@ -363,7 +366,7 @@ const Bookings = (() => {
         </td>
         <td data-label="Időpont">
           <div class="booking-cell-time">
-            <span class="booking-time-event">${b.date} ${b.time}</span>
+            <span class="booking-time-event">${b.dateLabel} ${b.time}</span>
             <span class="booking-time-created">Leadva: ${b.createdAt}</span>
           </div>
         </td>
@@ -521,7 +524,7 @@ const Bookings = (() => {
     document.getElementById("m-email").value   = booking.email;
     document.getElementById("m-phone").value   = booking.phone;
     document.getElementById("m-occasion").value = booking.occasionCode || "";
-    document.getElementById("m-date").value    = booking.date.replace(/\./g, "-");
+    document.getElementById("m-date").value    = booking.dateIso || "";
     document.getElementById("m-guests").value  = booking.guests;
     document.getElementById("m-note").value    = booking.note || "";
     initTimeStepper(booking.time, document.getElementById("m-date").value);

@@ -5,7 +5,7 @@
   <div class="wm-combobox" data-category="{{ category }}">
     <div class="wm-combobox-control">
       {# Chip: kiválasztott tétel — átnevezés (✎) és leválasztás (×), nem katalógus-törlés #}
-{# Legördülő sor mellett: elrejtés (👁‍🗨) → is_available=false, a listából kikerül #}
+{# Legördülő sor mellett: 👁‍🗨 elrejtés / 👁 visszaállítás (is_available toggle) #}
       <div class="wm-combobox-chip hidden" id="{{ base_id }}-chip" aria-live="polite">
         <span class="wm-combobox-chip-label" id="{{ base_id }}-chip-label"></span>
         <button

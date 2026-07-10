@@ -486,7 +486,9 @@ const App = (() => {
 
     updateDashboardStats();
 
-    loadStatusLimits();
+    if (typeof loadStatusLimits === "function") {
+      loadStatusLimits();
+    }
 
     if (typeof renderOrders === "function") {
       renderOrders();

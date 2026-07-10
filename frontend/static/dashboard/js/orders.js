@@ -44,22 +44,19 @@ function itemStatusLabel(apiStatus) {
   return STATUS_FROM_API[apiStatus] || apiStatus || "Új";
 }
 
-const MONTH_LABELS = [
-  "jan.", "feb.", "már.", "ápr.", "máj.", "jún.",
-  "júl.", "aug.", "szept.", "okt.", "nov.", "dec.",
-];
-
-function formatHuDateTime(isoString) {
-  if (!isoString) return "";
-  const date = new Date(isoString);
-  const pad = (value) => String(value).padStart(2, "0");
-  return `${date.getFullYear()}.${pad(date.getMonth() + 1)}.${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+function formatOrderDate(isoDate) {
+  return window.formatHuDate?.(isoDate) ?? isoDate ?? "";
 }
 
-function formatHuDate(isoDate) {
-  if (!isoDate) return "";
-  const [year, month, day] = isoDate.split("-").map(Number);
-  return `${year}. ${MONTH_LABELS[month - 1]} ${day}.`;
+function formatOrderDateTime(isoString) {
+  return window.formatHuDateTime?.(isoString) ?? "";
+}
+
+function getOrderStatusFromItems(items) {
+  if (!items?.length) return "Új";
+  const statuses = items.map((item) => item.status || "Új");
+  const first = statuses[0];
+  return statuses.every((s) => s === first) ? first : "Eltérő";
 }
 
 function mapApiOrderToDashboard(apiOrder) {
@@ -79,7 +76,8 @@ function mapApiOrderToDashboard(apiOrder) {
     phone: apiOrder.customer_phone || "",
     address: apiOrder.delivery_address || "",
     items,
-    createdAt: formatHuDateTime(apiOrder.created_at),
+    status: getOrderStatusFromItems(items),
+    createdAt: formatOrderDateTime(apiOrder.created_at),
   };
 }
 
@@ -339,7 +337,7 @@ function formatSingleDeliveryHtml(deliveryDate) {
   return `
     <div class="delivery-line">
       <i class="fa-regular fa-calendar"></i>
-      ${formatHuDate(deliveryDate)}
+      ${formatOrderDate(deliveryDate)}
     </div>`;
 }
 
@@ -606,6 +604,8 @@ function loadStatusLimits() {
   SlaRules.applyOrderLimitsToForm();
 }
 
+window.loadStatusLimits = loadStatusLimits;
+
 function saveStatusLimits() {
   saveStatusLimitsAsync();
 }
@@ -650,7 +650,7 @@ function renderEditOrderLines(deliveryDate, rowItems) {
   };
 
   if (label) {
-    label.textContent = formatHuDate(deliveryDate);
+    label.textContent = formatOrderDate(deliveryDate);
   }
 
   container.innerHTML = `
@@ -862,7 +862,7 @@ window.filterOrders = function () {
       rowStatus: getRowStatusFromItems(items),
     };
 
-    const haystack = `${order.name} ${order.phone} ${order.address} ${getOrderItemsText(items)} ${deliveryDate} ${formatHuDate(deliveryDate)}`.toLowerCase();
+    const haystack = `${order.name} ${order.phone} ${order.address} ${getOrderItemsText(items)} ${deliveryDate} ${formatOrderDate(deliveryDate)}`.toLowerCase();
     const matchesSearch = search === "" || haystack.includes(search);
     const matchesKpi = matchesOrdersKpiFilter(rowData);
 

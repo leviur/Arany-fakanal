@@ -61,6 +61,147 @@
     background: #fff;
     border: 1px solid #d4af37;
     border-radius: 12px;
+    overflow: hidden;
+}
+
+.weekly-menu-week-header {
+    padding: 20px 24px 18px;
+    background: linear-gradient(180deg, #faf7f2 0%, #f3ece1 100%);
+    border-bottom: 1px solid #e8dcc8;
+}
+
+.weekly-menu-week-picker {
+    display: grid;
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    align-items: center;
+    gap: 12px;
+    max-width: 720px;
+    margin: 0 auto;
+}
+
+.week-nav-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid #d9c9a8;
+    border-radius: 50%;
+    background: #fff;
+    color: #5c4a38;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.week-nav-icon:hover {
+    background: #fffaf0;
+    border-color: #c9a84c;
+    transform: translateY(-1px);
+}
+
+.week-nav-icon:active {
+    transform: translateY(0);
+}
+
+.weekly-menu-week-center {
+    text-align: center;
+    min-width: 0;
+}
+
+.weekly-menu-week-label {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #8a7760;
+}
+
+.weekly-menu-week-range {
+    margin: 6px 0 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    line-height: 1.35;
+    color: #2c241e;
+}
+
+.weekly-menu-week-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.week-status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(212, 175, 55, 0.18);
+    border: 1px solid rgba(184, 148, 45, 0.35);
+    color: #6b5520;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.weekly-menu-card.is-readonly-week .weekly-menu-week-header {
+    background: linear-gradient(180deg, #f6f3ee 0%, #ece7df 100%);
+}
+
+.weekly-menu-readonly-cell {
+    text-align: center;
+}
+
+.weekly-menu-readonly-label {
+    font-size: 0.82rem;
+    color: #8a7760;
+    font-style: italic;
+}
+
+.weekly-menu-row-readonly td {
+    color: #5c4f43;
+}
+
+.weekly-menu-week-note {
+    margin: 0;
+    color: #6b5d4f;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    max-width: 34rem;
+}
+
+.weekly-menu-week-note.is-order-week {
+    color: #4a6741;
+}
+
+.weekly-menu-week-empty {
+    margin: 0;
+    color: #9a8b7a;
+    font-style: italic;
+    font-size: 0.88rem;
+}
+
+.week-jump-link {
+    margin-top: 10px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: #8b6914;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+}
+
+.week-jump-link:hover {
+    color: #5c460d;
+}
+
+.weekly-menu-table-wrap {
     padding: 20px;
     overflow-x: auto;
 }
@@ -100,14 +241,9 @@
     z-index: 40;
 }
 
-#day-menu-modal-overlay .modal-box,
 #day-menu-modal-overlay .modal-grid,
 #day-menu-modal-overlay .form-group {
     overflow: visible;
-}
-
-#day-menu-modal-overlay .modal-box {
-    overflow-x: hidden;
 }
 
 .wm-combobox-control {
@@ -235,6 +371,31 @@
     border: 1.5px solid rgba(200, 155, 99, 0.2);
     border-radius: 10px;
     box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+}
+
+.wm-combobox-dropdown.is-flip-up:not(.is-fixed) {
+    top: auto;
+    bottom: calc(100% + 4px);
+}
+
+#wm-combobox-portal-root {
+    position: static;
+    z-index: 1100;
+}
+
+.wm-combobox-dropdown.is-fixed {
+    right: auto;
+    margin: 0;
+}
+
+#day-menu-modal-overlay.has-open-combobox {
+    overflow: hidden;
+}
+
+#day-menu-modal-overlay.has-open-combobox .modal-box {
+    overflow: hidden;
 }
 
 .wm-combobox-dropdown.hidden {
@@ -267,7 +428,7 @@
     white-space: nowrap;
 }
 
-.wm-combobox-hide-btn {
+.wm-combobox-toggle-btn {
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
@@ -286,6 +447,38 @@
 .wm-combobox-hide-btn:focus {
     background: rgba(154, 48, 40, 0.08);
     color: #9a3028;
+}
+
+.wm-combobox-restore-btn:hover,
+.wm-combobox-restore-btn:focus {
+    background: rgba(200, 155, 99, 0.14);
+    color: #8a6b2e;
+}
+
+.wm-combobox-section-label {
+    padding: 8px 12px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #8b5e3c;
+    border-top: 1px solid rgba(200, 155, 99, 0.15);
+    list-style: none;
+}
+
+.wm-combobox-option-row.is-hidden-item {
+    opacity: 0.78;
+}
+
+.wm-combobox-hidden-label {
+    flex: 1;
+    min-width: 0;
+    padding: 9px 12px;
+    font-size: 13px;
+    color: #6b5f52;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .wm-combobox-option-row:hover .wm-combobox-option,
@@ -312,8 +505,9 @@
 /* ================= NAPI MENÜ MODAL ================= */
 #day-menu-modal-overlay .modal-box {
     max-width: 640px;
+    max-height: min(90vh, 720px);
     overflow-x: hidden;
-    overflow-y: visible;
+    overflow-y: auto;
 }
 
 #day-menu-modal-overlay .modal-grid {
@@ -800,6 +994,27 @@
 
   #menu-section .food-search-row input {
     max-width: none;
+  }
+
+  .weekly-menu-week-header {
+    padding: 16px 14px 14px;
+  }
+
+  .weekly-menu-week-picker {
+    gap: 8px;
+  }
+
+  .week-nav-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .weekly-menu-week-range {
+    font-size: 1.05rem;
+  }
+
+  .weekly-menu-table-wrap {
+    padding: 14px;
   }
 
   /* --- Kártya-nézet: Étel-táblázat és Heti menü táblázat egyformán --- */

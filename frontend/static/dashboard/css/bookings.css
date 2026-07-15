@@ -33,17 +33,11 @@
    több flex-oszlop szintbe a táblázat-kártyán belül. */
 
 #bookings-section .bookings-kpi-row {
-  display: flex;
-  gap: 10px;
-  /* flex-grow:0 (alapérték) — a .table-card mellett a függőleges
-     hely 100%-át a táblázat kapja, a KPI-sor csak a saját, természetes
-     magasságát foglalja, mint az Üzeneteken/Dashboardon */
   flex-shrink: 0;
   margin-bottom: 16px;
 }
 
 #bookings-section .bookings-kpi {
-  flex: 1;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -690,56 +684,6 @@
   .booking-note-cell {
     max-width: none;
     white-space: normal;
-  }
-
-  /* 1 soros, horizontálisan görgethető chip-csík — ugyanaz a minta, mint
-     a Rendeléseken/Üzeneteken, mert a "Visszaigazolt" (13 karakter) a
-     "Új" (2 karakter) mellett 50%-os törésnél mindig egyedül sorba lökte
-     a testvér-chipet. */
-  #bookings-section .bookings-kpi-row {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    scroll-snap-type: x proximity;
-    gap: 8px;
-    /* flex-elemként alapból min-width:auto (= tartalom-alapú) lenne, ami
-       kitágítaná az egész sort/oldalt a sok chip miatt, helyben görgetés
-       helyett — ez korlátozza a sort a rendelkezésre álló helyre */
-    min-width: 0;
-  }
-
-  #bookings-section .bookings-kpi-row::-webkit-scrollbar {
-    display: none;
-  }
-
-  #bookings-section .bookings-kpi {
-    flex: 0 0 auto;
-    gap: 8px;
-    padding: 8px 14px;
-    scroll-snap-align: start;
-    white-space: nowrap;
-  }
-
-  #bookings-section .bookings-kpi-icon-wrap {
-    width: 26px;
-    height: 26px;
-    font-size: 11px;
-  }
-
-  #bookings-section .bookings-kpi-text {
-    flex-direction: row;
-    align-items: baseline;
-    gap: 5px;
-  }
-
-  #bookings-section .bookings-kpi-value {
-    font-size: 14px;
-  }
-
-  #bookings-section .bookings-kpi-label {
-    font-size: 11px;
-    white-space: nowrap;
   }
 
   .modal-grid {

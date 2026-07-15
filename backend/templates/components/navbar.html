@@ -16,14 +16,26 @@
     <span></span>
   </button>
   <div class="nav-icons">
-    <button class="icon-btn login-btn" title="Profil">
-      <i class="fa-regular fa-user"></i>
-    </button>
+    <div class="profile-menu" id="profileMenu">
+      <button
+        type="button"
+        class="icon-btn profile-menu-btn login-btn"
+        id="profileMenuBtn"
+        aria-label="Profil"
+        aria-haspopup="true"
+        aria-expanded="false"
+        aria-controls="profileDropdown"
+      >
+        <span class="profile-menu-btn-inner" id="profileMenuBtnInner">
+          <i class="fa-regular fa-user" aria-hidden="true"></i>
+        </span>
+        <i class="fa-solid fa-chevron-down profile-menu-chevron" id="profileMenuChevron" aria-hidden="true" hidden></i>
+      </button>
+    </div>
     <button
       type="button"
       class="icon-btn cart-icon-btn"
       onclick="openCart()"
-      title="Kosár"
       aria-label="Kosár"
     >
       <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>

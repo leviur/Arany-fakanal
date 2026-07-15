@@ -1,26 +1,8 @@
-/**********************
- * RENDELÉSEK — dashboard táblázat
- *
- * Adatmodell (két szint):
- *   Order (rendelés)     → window.appData.orders[] egy elem
- *   OrderRow (táblázat)  → expandOrdersToRows() egy sora
- *
- * OrderRow mezők:
- *   order         — a teljes rendelés (név, telefon, cím, items[])
- *   deliveryDate  — a sor kiszállítási napja (ISO dátum)
- *   items         — az adott nap OrderItem tételei
- *   itemIds       — ezeknek a tételeknek az adatbázis id-i (PATCH/DELETE body)
- *   rowStatus     — a sor státusz badge felirata (magyar)
- *
- * Egy rendelés több napra szólhat → több sor, név/kapcsolat ismétlődik.
- * Sor azonosító a DOM-ban: data-id (Order) + data-item-ids (OrderItem lista).
- * Státusz az adatbázisban: OrderItem.status — PATCH item_ids listával.
- **********************/
+/* Dashboard rendelések.
+   appData.orders[] = egy rendelés; a táblázat sor = egy kiszállítási nap (expandOrdersToRows).
+   Státusz az OrderItem-en van — módosításkor item_ids megy a PATCH/DELETE body-ban. */
 
-/**********************
- * API — státusz leképezés (DB → dashboard)
- **********************/
-
+// DB státusz → magyar felirat
 const STATUS_FROM_API = {
   new: "Új",
   confirmed: "Elfogadva",
@@ -30,7 +12,7 @@ const STATUS_FROM_API = {
   cancelled: "Sikertelen kézbesítés",
 };
 
-// Dashboard felirat → DB kulcs (PATCH body)
+// magyar felirat → DB kulcs
 const STATUS_TO_API = {
   "Új": "new",
   "Elfogadva": "confirmed",
@@ -52,6 +34,7 @@ function formatOrderDateTime(isoString) {
   return window.formatHuDateTime?.(isoString) ?? "";
 }
 
+// összes tétel státusza — ha nem egyforma, „Eltérő”
 function getOrderStatusFromItems(items) {
   if (!items?.length) return "Új";
   const statuses = items.map((item) => item.status || "Új");
@@ -59,6 +42,7 @@ function getOrderStatusFromItems(items) {
   return statuses.every((s) => s === first) ? first : "Eltérő";
 }
 
+// backend JSON → memória formátum
 function mapApiOrderToDashboard(apiOrder) {
   const items = (apiOrder.items || []).map((item) => ({
     id: item.id,
@@ -82,6 +66,7 @@ function mapApiOrderToDashboard(apiOrder) {
 }
 
 async function loadOrdersFromApi() {
+  // GET /api/orders/
   const response = await fetch("/api/orders/", {
     credentials: "include",
   });
@@ -99,36 +84,6 @@ async function loadOrdersFromApi() {
 }
 
 window.loadOrdersFromApi = loadOrdersFromApi;
-
-// Django session + CSRF — PATCH/POST kérésekhez (mint login.js authRequest)
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) {
-    return parts.pop().split(";").shift();
-  }
-  return null;
-}
-
-async function ordersApiRequest(url, options = {}) {
-  const headers = {
-    "Content-Type": "application/json",
-    ...(options.headers || {}),
-  };
-  const csrfToken = getCookie("csrftoken");
-  if (csrfToken) {
-    headers["X-CSRFToken"] = csrfToken;
-  }
-  return fetch(url, {
-    credentials: "include",
-    ...options,
-    headers,
-  });
-}
-
-/**********************
- * STATUS MAPS
- **********************/
 
 const STATUS_OPTIONS = [
   "Új",
@@ -148,22 +103,14 @@ const STATUS_BADGE_CLASS = {
   "Sikertelen kézbesítés": "status-failed"
 };
 
-/**********************
- * STATE
- **********************/
-
 let activeOrdersKpiFilter = null;
 let editingOrderId = null;
 let editingItemIds = null;
 let editingDeliveryDate = null;
 let editingLineQty = { A: 0, B: 0 };
 let sortColumn = null;
-let sortDir = 1; // 1 = növekvő, -1 = csökkenő
-let ordersInitialRendered = false; // az első render azonnali, utána animálható
-
-/**********************
- * HELPERS
- **********************/
+let sortDir = 1;
+let ordersInitialRendered = false;
 
 function getOrderItemsText(orderOrItems) {
   const items = Array.isArray(orderOrItems)
@@ -176,7 +123,7 @@ function getOrderItemsText(orderOrItems) {
 }
 
 function groupItemsByDeliveryDate(items = []) {
-  // Ugyanarra a napra eső tételek egy csoportba (egy táblázat-sor)
+  // ugyanaz a nap → egy táblázat-sor
   const groups = new Map();
 
   items.forEach((item) => {
@@ -189,14 +136,14 @@ function groupItemsByDeliveryDate(items = []) {
 }
 
 function getRowStatusFromItems(items) {
-  // Egy táblázat-sor = egy kiszállítási nap tételei; státuszváltáskor mind egyszerre frissül.
-  // Ha mégis eltérő lenne, jelezzük — ne mutassunk félrevezetően csak az elsőt.
+  // eltérő A/B státusz esetén ne hazudjunk egyetlen badge-dzsel
   if (!items?.length) return "Új";
   const statuses = items.map((item) => item.status || "Új");
   const first = statuses[0];
   return statuses.every((s) => s === first) ? first : "Eltérő";
 }
 
+// data-item-ids string → szám tömb
 function parseItemIds(value) {
   if (!value) return [];
   return String(value)
@@ -205,17 +152,7 @@ function parseItemIds(value) {
     .filter((id) => Number.isFinite(id) && id > 0);
 }
 
-/**********************
- * HELYI ÁLLAPOT SZINKRON (sikeres API után)
- *
- * A státuszváltás, szerkesztés és törlés különböző végpontot hív,
- * de mindegyik után ugyanaz kell: appData + táblázat + szűrő (+ opcionálisan dashboard).
- **********************/
-
-/**
- * Backend Order JSON → appData frissítés + újrarenderelés.
- * Használat: PATCH státusz, PATCH kapcsolat, részleges DELETE után (maradt tétel).
- */
+// PATCH/DELETE után: appData + táblázat (+ opcionálisan főoldal)
 function applyOrderUpdate(apiOrder, { refreshDashboard = false } = {}) {
   window.appData = window.appData || {};
   window.appData.orders = window.appData.orders || [];
@@ -238,10 +175,7 @@ function applyOrderUpdate(apiOrder, { refreshDashboard = false } = {}) {
   }
 }
 
-/**
- * Teljes rendelés eltávolítása a memóriából.
- * Használat: DELETE után, ha a backend 204-et ad (nem maradt OrderItem).
- */
+// utolsó tétel is kiment → 204, kiesik appData-ból
 function removeOrder(orderId, { refreshDashboard = false } = {}) {
   const id = String(orderId);
   const index = window.appData.orders.findIndex((o) => o.id === id);
@@ -258,13 +192,13 @@ function removeOrder(orderId, { refreshDashboard = false } = {}) {
   }
 }
 
-// PATCH /api/orders/<id>/items/status/ — OrderItem.status frissül az adatbázisban
 async function setRowStatus(order, itemIds, statusLabel) {
+  // PATCH .../items/status/
   const apiStatus = STATUS_TO_API[statusLabel];
   if (!apiStatus || !itemIds?.length) return;
 
   try {
-    const response = await ordersApiRequest(`/api/orders/${order.id}/items/status/`, {
+    const response = await apiRequest(`/api/orders/${order.id}/items/status/`, {
       method: "PATCH",
       body: JSON.stringify({
         item_ids: itemIds,
@@ -286,8 +220,8 @@ async function setRowStatus(order, itemIds, statusLabel) {
   }
 }
 
+// egy rendelés → annyi sor, ahány külön kiszállítási napja van
 function expandOrdersToRows(orders) {
-  // 1 Order → N OrderRow; minden sor egy delivery_date csoport (groupItemsByDeliveryDate).
   const rows = [];
 
   orders.forEach((order, groupIndex) => {
@@ -313,12 +247,28 @@ function expandOrdersToRows(orders) {
   return rows;
 }
 
+// kézbesítve / sikertelen = nem teendő
+const TERMINAL_ROW_STATUSES = new Set(["Kézbesítve", "Sikertelen kézbesítés"]);
+
+// főoldali teendőlista hívja
+function getUnhandledOrderRows() {
+  return expandOrdersToRows(window.appData?.orders || []).filter((row) => {
+    const status = (row.rowStatus || "").trim();
+    return status && !TERMINAL_ROW_STATUSES.has(status);
+  });
+}
+
+window.getUnhandledOrderRows = getUnhandledOrderRows;
+window.formatOrderDate = formatOrderDate;
+
 function isProblemRow(row) {
   return isProblemOrder({
     status: row.rowStatus,
     createdAt: row.order.createdAt,
   });
 }
+
+window.isProblemRow = isProblemRow;
 
 function formatOrderItemsHtml(items = []) {
   return items
@@ -341,22 +291,8 @@ function formatSingleDeliveryHtml(deliveryDate) {
     </div>`;
 }
 
-function relativeTime(dateStr) {
-  if (!dateStr) return "";
-  const mins = getMinutesFromOrderTime(dateStr);
-  if (mins < 1)  return "most";
-  if (mins < 60) return `${mins} perce`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24)  return `${hrs} órája`;
-  return `${Math.floor(hrs / 24)} napja`;
-}
-
-/**********************
- * KPI FRISSÍTÉS
- **********************/
-
 function updateOrdersKpis() {
-  // KPI-k nap-sorok alapján számolódnak, nem rendelés-szinten
+  // soronként számol, nem rendelésenként
   const rows = expandOrdersToRows(window.appData?.orders || []);
 
   let problem = 0, fresh = 0, preparing = 0, delivery = 0, done = 0;
@@ -382,6 +318,7 @@ function updateOrdersKpis() {
   setVal("kpi-orders-done",      done);
 }
 
+// felső chip szűrő
 function matchesOrdersKpiFilter(row) {
   if (!activeOrdersKpiFilter) return true;
   const status = (row.rowStatus || "").trim();
@@ -394,10 +331,6 @@ function matchesOrdersKpiFilter(row) {
     default:         return true;
   }
 }
-
-/**********************
- * RENDERELÉS
- **********************/
 
 function renderOrders(animate) {
   const tbody = document.getElementById("ordersTableBody");
@@ -448,10 +381,10 @@ function renderOrders(animate) {
     }
 
     tbody.innerHTML = ordersRowsHtml(rows);
-    filterOrders();
+    filterOrders(); // új tbody után kell, mert csak display-t állít
   };
 
-  // animálás csak kérésre (frissítés gomb) és csak a kezdeti render után
+  // frissítés gomb: fade; első betöltés: azonnal
   if (animate && ordersInitialRendered) {
     if (kpiRow) fadeRender(kpiRow, updateOrdersKpis);
     else updateOrdersKpis();
@@ -470,7 +403,7 @@ function ordersRowsHtml(rows) {
     const badgeCls = STATUS_BADGE_CLASS[row.rowStatus] || "";
     const itemIdsAttr = row.itemIds.join(",");
 
-    // Vizuális csoportosítás: ugyanahhoz a rendeléshez tartozó nap-sorok
+    // több napos rendelés: összetartozó sorok színe/formája
     const groupPosClass = row.isOnly
       ? "order-group-only"
       : row.isFirst
@@ -537,15 +470,12 @@ function ordersRowsHtml(rows) {
   }).join("");
 }
 
-/**********************
- * STÁTUSZ POPOVER
- **********************/
-
 function closeStatusPopover() {
   const el = document.getElementById("status-popover");
   if (el) el.remove();
 }
 
+// badge katt — ugyanarra megint katt → bezár
 function openStatusPopover(badge) {
   const orderId = badge.dataset.orderId;
   const itemIds = parseItemIds(badge.dataset.itemIds);
@@ -587,6 +517,7 @@ function openStatusPopover(badge) {
 
   requestAnimationFrame(() => {
     const pr = popover.getBoundingClientRect();
+    // ne lógjon ki a képernyőről
     if (pr.right > window.innerWidth - 8) {
       popover.style.left = `${window.innerWidth - pr.width - 8}px`;
     }
@@ -596,10 +527,7 @@ function openStatusPopover(badge) {
   });
 }
 
-/**********************
- * BEÁLLÍTÁSOK — rendelés SLA (adatbázis: PUT /api/sla-rules/)
- **********************/
-
+// beállítások fül: rendelési SLA űrlap
 function loadStatusLimits() {
   SlaRules.applyOrderLimitsToForm();
 }
@@ -625,10 +553,6 @@ async function saveStatusLimitsAsync() {
     window.showToast?.(message, "error");
   }
 }
-
-/**********************
- * SZERKESZTŐ MODAL
- **********************/
 
 function renderEditMenuQtyStepper(menuType, qty) {
   return `
@@ -672,7 +596,7 @@ function changeEditMenuQty(menuType, delta) {
 }
 
 function openEditModal(orderId, itemIds) {
-  // PATCH /api/orders/<id>/ — kapcsolat + az adott nap A/B menü darabszáma (nap fix).
+  // név/cím az egész rendelésre; A/B qty csak erre a napra
   editingOrderId = orderId;
   editingItemIds = itemIds;
   const order = window.appData?.orders.find(o => o.id === orderId);
@@ -719,7 +643,7 @@ async function saveEdit() {
   };
 
   try {
-    const response = await ordersApiRequest(`/api/orders/${editingOrderId}/`, {
+    const response = await apiRequest(`/api/orders/${editingOrderId}/`, {
       method: "PATCH",
       body: JSON.stringify(payload),
     });
@@ -755,10 +679,6 @@ function closeEditModal() {
 
 window.closeEditModal = closeEditModal;
 
-/**********************
- * TÖRLÉS MEGERŐSÍTŐ MODAL
- **********************/
-
 let pendingDeleteId = null;
 let pendingDeleteItemIds = null;
 
@@ -784,8 +704,7 @@ async function confirmDelete() {
   const orderId = pendingDeleteId;
 
   try {
-    // DELETE /api/orders/<id>/items/delete/ — OrderItem törlés; üres Order → 204
-    const response = await ordersApiRequest(
+    const response = await apiRequest(
       `/api/orders/${orderId}/items/delete/`,
       {
         method: "DELETE",
@@ -804,7 +723,7 @@ async function confirmDelete() {
     closeDeleteConfirm();
 
     if (response.status === 204) {
-      removeOrder(orderId, { refreshDashboard: true });
+      removeOrder(orderId, { refreshDashboard: true }); // nem maradt tétel
     } else {
       const updatedOrder = await response.json();
       applyOrderUpdate(updatedOrder, { refreshDashboard: true });
@@ -823,7 +742,7 @@ document.getElementById("deleteConfirmModal")?.addEventListener("click", (e) => 
   if (e.target.id === "deleteConfirmModal") closeDeleteConfirm();
 });
 
-// Szerkesztő modal: A/B menü darabszám stepper
+// +/- gombok a szerkesztő modalban
 document.getElementById("editModal")?.addEventListener("click", (e) => {
   const btn = e.target.closest(".order-edit-step-btn");
   if (!btn) return;
@@ -834,12 +753,7 @@ document.getElementById("editModal")?.addEventListener("click", (e) => {
   changeEditMenuQty(menuType, delta);
 });
 
-/**********************
- * SZŰRÉS
- **********************/
-
 window.filterOrders = function () {
-  // Keresés és KPI-szűrő soronként (data-item-ids alapján)
   const search = (document.getElementById("searchInput")?.value || "").toLowerCase().trim();
 
   document.querySelectorAll("#orders-section tbody tr").forEach(row => {
@@ -870,10 +784,6 @@ window.filterOrders = function () {
   });
 };
 
-/**********************
- * ESEMÉNYKEZELŐK
- **********************/
-
 document.addEventListener("input", (e) => {
   if (e.target.id === "searchInput") filterOrders();
 });
@@ -882,7 +792,6 @@ window.addEventListener("scroll", closeStatusPopover, { passive: true });
 
 document.addEventListener("click", (e) => {
 
-  // 1. Popover opció kattintás
   if (e.target.closest("#status-popover")) {
     const option = e.target.closest(".status-popover-option");
     if (option) {
@@ -900,14 +809,12 @@ document.addEventListener("click", (e) => {
 
   closeStatusPopover();
 
-  // 2. Státusz badge megnyitás
   const badge = e.target.closest(".status-badge");
   if (badge) {
     openStatusPopover(badge);
     return;
   }
 
-  // 3. Szerkesztés gomb
   const editBtn = e.target.closest(".edit-btn");
   if (editBtn) {
     const row = editBtn.closest("tr");
@@ -925,7 +832,6 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // 5. KPI chip szűrő
   const kpiBtn = e.target.closest("#orders-section .orders-kpi");
   if (kpiBtn) {
     const filter = kpiBtn.dataset.filter;
@@ -939,7 +845,6 @@ document.addEventListener("click", (e) => {
     return;
   }
 
-  // 6. Rendezés (th kattintás)
   const sortTh = e.target.closest("#orders-section th.sortable");
   if (sortTh) {
     const col = sortTh.dataset.sort;

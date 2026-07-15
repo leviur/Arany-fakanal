@@ -11,7 +11,7 @@ class AppRevision(models.Model):
       3) Böngésző: live-sync.js → poll() → fetchRevision() → GET /api/revision/
       4) Ha a szám változott → onRevisionChanged() újratölti az adatokat
 
-    Nem magát az adatot tárolja, csak „valami változott” jelzést.
+    Nem magát az adatot tárolja, csak „valami változott”  Pl. 42 jelzést.
     """
 
     revision = models.PositiveIntegerField(default=0)

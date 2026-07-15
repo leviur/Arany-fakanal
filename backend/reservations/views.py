@@ -15,7 +15,6 @@ from .serializers import (
     normalize_reservation_status,
 )
 
-
 class ReservationListAPIView(generics.ListAPIView):
     queryset = Reservation.objects.all().order_by("-date", "-time")
     serializer_class = ReservationSerializer
@@ -29,7 +28,6 @@ class ReservationCreateAPIView(generics.CreateAPIView):
 
     def get_serializer_context(self):
         return {"request": self.request}
-
 
 class ReservationStatusAPIView(APIView):
     """

@@ -1,0 +1,667 @@
+<!doctype html>
+{% load static %}
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arany Fakanál • Vendégközpont</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" />
+
+    {# Közös toast + Guest Portal saját stílusok #}
+    <link rel="stylesheet" href="{% static 'css/toast.css' %}?v=2" />
+    <link rel="stylesheet" href="{% static 'guest-portal/css/index.css' %}?v=6" />
+    <link rel="stylesheet" href="{% static 'guest-portal/css/sections.css' %}?v=6" />
+    <link rel="stylesheet" href="{% static 'guest-portal/css/orders.css' %}?v=13" />
+    <link rel="stylesheet" href="{% static 'guest-portal/css/bookings.css' %}?v=3" />
+
+    {# api.js előbb — a Guest Portal JS erre épül (session ellenőrzés) #}
+    <script src="{% static 'js/core/api.js' %}?v=3" defer></script>
+    <script src="{% static 'js/core/date-format.js' %}?v=1" defer></script>
+    <script src="{% static 'js/opening-hours.js' %}?v=1" defer></script>
+    <script src="{% static 'js/toast.js' %}" defer></script>
+    <script src="{% static 'guest-portal/js/index.js' %}?v=9" defer></script>
+    <script src="{% static 'guest-portal/js/account.js' %}?v=7" defer></script>
+    <script src="{% static 'guest-portal/js/orders.js' %}?v=15" defer></script>
+    <script src="{% static 'guest-portal/js/bookings.js' %}?v=5" defer></script>
+    {# Szekció hookok — account + orders + bookings után, live-sync előtt #}
+    <script src="{% static 'guest-portal/js/guest-portal-sync.js' %}?v=2" defer></script>
+    {# live-sync.js utoljára — refreshGuestPortal() hook #}
+    <script src="{% static 'js/live-sync.js' %}?v=4" defer></script>
+  </head>
+
+  <body>
+    <div id="guestPortalApp" class="guest-portal-app">
+      <!-- ========== OLDALSÁV ========== -->
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <button
+            class="sidebar-toggle"
+            id="sidebarToggle"
+            title="Menü összecsukása"
+            aria-label="Menü összecsukása"
+            aria-expanded="true"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+
+          <img
+            src="{% static 'images/logo2.png' %}"
+            alt="Arany Fakanál Étterem"
+            class="logo"
+          />
+
+          <nav class="menu" aria-label="Vendégközpont menü">
+            <span class="menu-group-label">Vendégközpont</span>
+
+            <a href="#" data-target="guest-portal-account-section" class="active" title="Adataim">
+              <i class="fa-solid fa-user-pen" aria-hidden="true"></i>
+              <span class="link-text">Adataim</span>
+            </a>
+
+            <a
+              href="#"
+              data-target="guest-portal-orders-section"
+              title="Rendeléseim"
+            >
+              <i class="fa-solid fa-bag-shopping" aria-hidden="true"></i>
+              <span class="link-text">Rendeléseim</span>
+            </a>
+
+            <a href="#" data-target="guest-portal-bookings-section" title="Foglalásaim">
+              <i class="fa-solid fa-calendar-check" aria-hidden="true"></i>
+              <span class="link-text">Foglalásaim</span>
+            </a>
+
+            <span class="menu-group-label">Navigáció</span>
+
+            <a href="/" class="menu-link-external" title="Vissza a főoldalra">
+              <i class="fa-solid fa-house" aria-hidden="true"></i>
+              <span class="link-text">Főoldal</span>
+            </a>
+          </nav>
+        </div>
+
+        <button type="button" class="admin-logout-btn" id="logoutBtn" title="Kijelentkezés">
+          <i class="fa-solid fa-right-from-bracket" aria-hidden="true"></i>
+          <span class="link-text">Kijelentkezés</span>
+        </button>
+      </aside>
+
+      <!-- Mobil: sötét háttér a kinyíló menü mögött -->
+      <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+      <!-- ========== KIJELENTKEZÉS MEGERŐSÍTÉS ========== -->
+      <div
+        class="modal modal-hidden"
+        id="logoutModal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="logoutTitle"
+      >
+        <div class="login-box">
+          <button class="close-modal" id="logoutCancel" aria-label="Bezárás">✕</button>
+          <div class="login-header">
+            <img src="{% static 'images/logo2.png' %}" alt="Arany Fakanál" class="login-logo" />
+            <h2 id="logoutTitle">Kijelentkezés</h2>
+            <div class="divider"></div>
+          </div>
+          <p class="logout-text">Biztosan ki szeretnél jelentkezni?</p>
+          <div class="logout-actions">
+            <button type="button" class="cancel-btn" id="logoutCancelBtn">Mégse</button>
+            <button type="button" class="btn-gold" id="logoutConfirmBtn">Kijelentkezés</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== FŐ TARTALOM ========== -->
+      <main class="main">
+        <div class="topbar">
+          <div class="topbar-left-group">
+            <button
+              class="mobile-sidebar-toggle"
+              id="mobileSidebarToggle"
+              title="Menü megnyitása"
+              aria-label="Menü megnyitása"
+              aria-expanded="false"
+            >
+              <i class="fa-solid fa-bars" aria-hidden="true"></i>
+            </button>
+            <div class="topbar-left">
+              <h1 id="pageTitle">Adataim</h1>
+              <p class="topbar-subtitle" id="pageSubtitle">Profilod és szállítási adataid kezelése.</p>
+            </div>
+          </div>
+
+          <div class="topbar-actions">
+            <div class="guest-portal-chip">
+              <div class="guest-portal-avatar" id="guestPortalAvatar">?</div>
+              <div class="guest-portal-info">
+                <span class="guest-portal-name" id="guestPortalName">Felhasználó</span>
+                <span class="guest-portal-role" id="guestPortalRole">Vendég</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Adataim — Account Hub elrendezés (PATCH /api/auth/me/) -->
+        <section id="guest-portal-account-section" class="section active">
+          <div class="gp-section-panel">
+            <div class="gp-section-scroll gp-section-scroll--form">
+              <div class="gp-account-hub">
+            {# ── Kontextus sáv: csak olyan infó, ami a topbarban nincs (reg. dátum) ── #}
+            <header class="gp-account-context" aria-label="Fiók információ">
+              <div class="gp-account-context-icon" aria-hidden="true">
+                <i class="fa-solid fa-user-check"></i>
+              </div>
+              <div class="gp-account-context-text">
+                <p id="accountProfileJoined">—</p>
+                <p class="gp-account-context-hint">
+                  Itt szerkesztheted a rendeléshez és kiszállításhoz használt adataidat.
+                </p>
+              </div>
+            </header>
+
+            <form id="accountForm" class="gp-account-form-hub" novalidate>
+              {# ── Két kártya: személyes adatok + szállítási cím ── #}
+              <div class="gp-account-cards">
+                <div class="settings-block">
+                  <h3>Személyes adatok</h3>
+                  <div class="settings-grid">
+                    <div class="setting-row">
+                      <div class="setting-row-main setting-row-main--stack">
+                        <label for="accountName"
+                          >Teljes név <span class="gp-required">*</span></label
+                        >
+                        <div class="input-wrapper input-wrapper--full">
+                          <input
+                            type="text"
+                            id="accountName"
+                            name="name"
+                            autocomplete="name"
+                            required
+                            maxlength="150"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="setting-row">
+                      <div class="setting-row-main setting-row-main--stack">
+                        <label for="accountPhone"
+                          >Telefonszám <span class="gp-required">*</span></label
+                        >
+                        <div class="input-wrapper input-wrapper--full">
+                          <input
+                            type="tel"
+                            id="accountPhone"
+                            name="phone_number"
+                            autocomplete="tel"
+                            required
+                            maxlength="20"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="settings-block">
+                  <h3>Szállítási cím</h3>
+                  <div class="settings-grid">
+                    <div class="setting-row">
+                      <div class="setting-row-main setting-row-main--stack">
+                        <label for="accountAddress"
+                          >Szállítási cím <span class="gp-required">*</span></label
+                        >
+                        <div class="input-wrapper input-wrapper--full">
+                          <textarea
+                            id="accountAddress"
+                            name="address"
+                            autocomplete="street-address"
+                            required
+                            rows="4"
+                          ></textarea>
+                        </div>
+                      </div>
+                      <small class="helper-text gp-address-info">
+                        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                        Rendelés leadásakor és kiszállításnál használjuk ezt a címet.
+                      </small>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {# ── Bejelentkezés: e-mail csak olvasható ── #}
+              <div class="settings-block gp-account-login-block">
+                <h3>Bejelentkezés</h3>
+                <div class="settings-grid">
+                  <div class="setting-row">
+                    <div class="setting-row-main setting-row-main--stack">
+                      <label for="accountEmail">
+                        E-mail cím
+                        <span class="gp-field-locked-hint">
+                          <i class="fa-solid fa-lock" aria-hidden="true"></i>
+                          nem módosítható
+                        </span>
+                      </label>
+                      <div class="input-wrapper input-wrapper--full">
+                        <input
+                          type="email"
+                          id="accountEmail"
+                          name="email"
+                          autocomplete="email"
+                          readonly
+                          disabled
+                        />
+                      </div>
+                    </div>
+                    <small class="helper-text">Az e-mail cím nem módosítható.</small>
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="save-menu-btn" id="accountSaveBtn">
+                Adataim mentése
+              </button>
+            </form>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Rendeléseim — GET /api/guest-portal/orders/ -->
+        <section id="guest-portal-orders-section" class="section">
+          <div class="gp-section-panel">
+            <div class="gp-section-header">
+              <div class="gp-orders-info-slot">
+                <aside
+                  id="ordersInfoActive"
+                  class="gp-orders-info"
+                  aria-label="Módosítási szabályok"
+                >
+                  <div class="gp-orders-info-icon" aria-hidden="true">
+                    <i class="fa-solid fa-circle-info"></i>
+                  </div>
+                  <div class="gp-orders-info-text">
+                    <p class="gp-orders-info-title">Módosítás és lemondás</p>
+                    <p>
+                      A rendelésedet <strong>addig tudod szerkeszteni vagy lemondani</strong>, amíg
+                      az adott kiszállítási nap státusza <span class="gp-status-badge status-new">Új</span>.
+                      Ha az admin már átvette (pl. Elfogadva, Készül), az a nap zárolva marad —
+                      ilyenkor a gombok inaktívak.
+                    </p>
+                  </div>
+                </aside>
+
+                <aside
+                  id="ordersInfoClosed"
+                  class="gp-orders-info gp-orders-info-inactive"
+                  aria-label="Lezárt rendelések tájékoztató"
+                  aria-hidden="true"
+                >
+                  <div class="gp-orders-info-icon" aria-hidden="true">
+                    <i class="fa-solid fa-box-archive"></i>
+                  </div>
+                  <div class="gp-orders-info-text">
+                    <p class="gp-orders-info-title">Lezárt rendelések</p>
+                    <p>
+                      Itt a korábbi rendeléseidet látod — ezek már
+                      <strong>nem módosíthatók</strong>. Kattints egy sorra a részletekért
+                      (kiszállítási napok, menük). További korábbi rendelések a
+                      „Több rendelés betöltése” gombbal érhetők el.
+                    </p>
+                  </div>
+                </aside>
+              </div>
+
+              <div id="ordersToolbar" class="gp-orders-toolbar gp-orders-hidden">
+                <div class="gp-orders-tabs" role="tablist" aria-label="Rendelés szűrő">
+                  <button
+                    type="button"
+                    class="gp-orders-tab active"
+                    role="tab"
+                    aria-selected="true"
+                    data-scope="active"
+                    id="ordersTabActive"
+                  >
+                    Aktív (<span id="ordersActiveCount">0</span>)
+                  </button>
+                  <button
+                    type="button"
+                    class="gp-orders-tab"
+                    role="tab"
+                    aria-selected="false"
+                    data-scope="closed"
+                    id="ordersTabClosed"
+                  >
+                    Lezárt (<span id="ordersClosedCount">0</span>)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="gp-section-scroll" id="ordersScrollArea">
+              <div id="ordersRoot" class="gp-orders">
+                <div id="ordersLoading" class="gp-orders-loading">
+                  <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+                  <p>Rendelések betöltése…</p>
+                </div>
+
+                <div id="ordersEmpty" class="gp-orders-empty gp-orders-hidden">
+                  <i class="fa-solid fa-bag-shopping gp-orders-empty-icon" aria-hidden="true"></i>
+                  <h2>Még nincs rendelésed</h2>
+                  <p>
+                    Amint leadsz egy rendelést a főoldalon, itt fogod látni —
+                    státusszal, módosítási és lemondási lehetőséggel.
+                  </p>
+                  <a href="/">
+                    <i class="fa-solid fa-utensils" aria-hidden="true"></i>
+                    Rendelés a főoldalon
+                  </a>
+                </div>
+
+                <div id="ordersList" class="gp-orders-list gp-orders-hidden"></div>
+
+                <button
+                  type="button"
+                  id="ordersLoadMoreBtn"
+                  class="gp-orders-load-more gp-orders-hidden"
+                >
+                  Több rendelés betöltése
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Foglalásaim — GET /api/guest-portal/reservations/ -->
+        <section id="guest-portal-bookings-section" class="section">
+          <div class="gp-section-panel">
+            <div class="gp-section-header">
+              <div class="gp-orders-info-slot">
+                <aside
+                  id="bookingsInfoActive"
+                  class="gp-orders-info"
+                  aria-label="Foglalás módosítási szabályok"
+                >
+                  <div class="gp-orders-info-icon" aria-hidden="true">
+                    <i class="fa-solid fa-circle-info"></i>
+                  </div>
+                  <div class="gp-orders-info-text">
+                    <p class="gp-orders-info-title">Módosítás és lemondás</p>
+                    <p>
+                      A foglalást <strong>addig tudod szerkeszteni vagy lemondani</strong>, amíg
+                      státusza <span class="gp-status-badge status-new">Új</span>. Ha már
+                      visszaigazoltuk, kérjük, telefonon vagy e-mailben jelezd a változást.
+                    </p>
+                  </div>
+                </aside>
+
+                <aside
+                  id="bookingsInfoClosed"
+                  class="gp-orders-info gp-orders-info-inactive"
+                  aria-label="Lezárt foglalások tájékoztató"
+                  aria-hidden="true"
+                >
+                  <div class="gp-orders-info-icon" aria-hidden="true">
+                    <i class="fa-solid fa-box-archive"></i>
+                  </div>
+                  <div class="gp-orders-info-text">
+                    <p class="gp-orders-info-title">Lezárt foglalások</p>
+                    <p>
+                      Itt a korábbi foglalásaidat látod — ezek már
+                      <strong>nem módosíthatók</strong>. Kattints egy sorra a részletekért.
+                    </p>
+                  </div>
+                </aside>
+              </div>
+
+              <div id="bookingsToolbar" class="gp-orders-toolbar gp-orders-hidden">
+                <div class="gp-orders-tabs gp-bookings-tabs" role="tablist" aria-label="Foglalás szűrő">
+                  <button
+                    type="button"
+                    class="gp-orders-tab gp-bookings-tab active"
+                    role="tab"
+                    aria-selected="true"
+                    data-scope="active"
+                  >
+                    Aktív (<span id="bookingsActiveCount">0</span>)
+                  </button>
+                  <button
+                    type="button"
+                    class="gp-orders-tab gp-bookings-tab"
+                    role="tab"
+                    aria-selected="false"
+                    data-scope="closed"
+                  >
+                    Lezárt (<span id="bookingsClosedCount">0</span>)
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="gp-section-scroll" id="bookingsScrollArea">
+              <div id="bookingsRoot" class="gp-bookings">
+                <div id="bookingsLoading" class="gp-orders-loading">
+                  <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+                  <p>Foglalások betöltése…</p>
+                </div>
+
+                <div id="bookingsEmpty" class="gp-orders-empty gp-orders-hidden">
+                  <i class="fa-solid fa-calendar-check gp-orders-empty-icon" aria-hidden="true"></i>
+                  <h2>Még nincs foglalásod</h2>
+                  <p>
+                    Asztalfoglalást a főoldalon adhatsz le — itt követheted a státuszt.
+                  </p>
+                  <a href="/asztalfoglalas/">
+                    <i class="fa-solid fa-calendar-plus" aria-hidden="true"></i>
+                    Asztalfoglalás
+                  </a>
+                </div>
+
+                <div id="bookingsList" class="gp-bookings-list gp-orders-hidden"></div>
+
+                <button
+                  type="button"
+                  id="bookingsLoadMoreBtn"
+                  class="gp-orders-load-more gp-orders-hidden"
+                >
+                  Több foglalás betöltése
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    {# ── Nap szerkesztése — ugyanaz a modal-box mint a dashboard rendelés szerkesztőnél ── #}
+    <div
+      class="modal modal-hidden"
+      id="orderDayEditModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="orderDayEditTitle"
+    >
+      <div class="modal-box">
+        <h2 id="orderDayEditTitle">Rendelés szerkesztése</h2>
+
+        <div class="gp-modal-delivery-date" id="orderDayEditDateBlock">
+          <span class="gp-modal-delivery-kicker">Kiszállítás</span>
+          <time id="orderDayEditDateTime">
+            <span class="gp-modal-delivery-weekday" id="orderDayEditWeekday">—</span>
+            <span class="gp-modal-delivery-full" id="orderDayEditDateLabel">—</span>
+          </time>
+        </div>
+
+        <p class="field-hint">
+          A kiszállítás napja nem módosítható. Az A és B menü darabszáma igen.
+        </p>
+        <div id="orderDayEditLines" class="order-edit-lines"></div>
+
+        <div class="modal-box-actions">
+          <button type="button" class="login-btn" id="orderDayEditConfirmBtn">Mentés</button>
+          <button type="button" class="cancel-btn" id="orderDayEditCancelBtn">Mégse</button>
+        </div>
+      </div>
+    </div>
+
+    {# ── Cím módosítása — dashboard editModal mintájára ── #}
+    <div
+      class="modal modal-hidden"
+      id="orderAddressEditModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="orderAddressEditTitle"
+    >
+      <div class="modal-box">
+        <h2 id="orderAddressEditTitle">Szállítási cím módosítása</h2>
+        <p class="field-hint" id="orderAddressEditHint"></p>
+
+        <textarea
+          id="orderAddressEditInput"
+          rows="3"
+          aria-label="Szállítási cím"
+        ></textarea>
+
+        <div class="modal-box-actions">
+          <button type="button" class="login-btn" id="orderAddressEditConfirmBtn">Mentés</button>
+          <button type="button" class="cancel-btn" id="orderAddressEditCancelBtn">Mégse</button>
+        </div>
+      </div>
+    </div>
+
+    {# ── Nap lemondása — dashboard törlés confirm-box ── #}
+    <div
+      class="modal modal-hidden"
+      id="orderCancelModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="orderCancelTitle"
+    >
+      <div class="confirm-box">
+        <div class="confirm-icon">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div class="confirm-text">
+          <p class="confirm-title" id="orderCancelTitle">Nap lemondása</p>
+          <p class="confirm-body" id="orderCancelText">
+            Biztosan lemondod ezt a napot? A művelet nem vonható vissza.
+          </p>
+        </div>
+        <div class="confirm-actions">
+          <button type="button" class="cancel-btn" id="orderCancelCancelBtn">Mégsem</button>
+          <button type="button" class="btn-danger" id="orderCancelConfirmBtn">Lemondom</button>
+        </div>
+      </div>
+    </div>
+    {# ── Foglalás szerkesztése — csak Új (pending) státusznál (bookings.js) ── #}
+    <div
+      class="modal modal-hidden"
+      id="bookingEditModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="bookingEditTitle"
+    >
+      <div class="modal-box gp-booking-edit-modal">
+        <h2 id="bookingEditTitle">Foglalás szerkesztése</h2>
+        <p class="field-hint" id="bookingEditHint">
+          Itt módosíthatod a dátumot, időpontot, létszámot, telefonszámot és megjegyzést.
+          Amíg a foglalás <strong>Új</strong> státuszú, mentés után is szerkesztheted vagy lemondhatod —
+          ha már <strong>Visszaigazolt</strong>, kérjük, telefonon vagy e-mailben jelezd a változást.
+        </p>
+
+        <form id="bookingEditForm" class="gp-booking-edit-form" novalidate>
+          <label for="bookingEditOccasion">Alkalom</label>
+          <select id="bookingEditOccasion" required>
+            <option value="">Válasszon alkalmat…</option>
+            <option value="csaladi">Családi összejövetel</option>
+            <option value="uzleti">Üzleti ebéd / vacsora</option>
+            <option value="szulinap">Születésnap</option>
+            <option value="evfordulo">Évforduló</option>
+            <option value="egyeb">Egyéb</option>
+          </select>
+
+          <div class="gp-booking-edit-row">
+            <div class="gp-booking-edit-field">
+              <label for="bookingEditDate">Dátum</label>
+              <input type="date" id="bookingEditDate" required />
+            </div>
+            <div class="gp-booking-edit-field">
+              <label for="bookingEditTime">Időpont</label>
+              <select id="bookingEditTime" required>
+                <option value="">Válasszon dátumot először…</option>
+              </select>
+            </div>
+          </div>
+
+          <label for="bookingEditGuestCount">Létszám</label>
+          <input
+            type="number"
+            id="bookingEditGuestCount"
+            min="1"
+            max="20"
+            step="1"
+            required
+          />
+
+          <label for="bookingEditPhone">Telefonszám</label>
+          <input
+            type="tel"
+            id="bookingEditPhone"
+            autocomplete="tel"
+            required
+          />
+
+          <label for="bookingEditNotes">Megjegyzés</label>
+          <textarea id="bookingEditNotes" rows="3" placeholder="Opcionális"></textarea>
+        </form>
+
+        <div class="modal-box-actions">
+          <button type="button" class="login-btn" id="bookingEditConfirmBtn">Mentés</button>
+          <button type="button" class="cancel-btn" id="bookingEditCancelBtn">Mégse</button>
+        </div>
+      </div>
+    </div>
+
+    {# Foglalás lemondása #}
+    <div
+      class="modal modal-hidden"
+      id="bookingCancelModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="bookingCancelTitle"
+    >
+      <div class="confirm-box">
+        <div class="confirm-icon">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div class="confirm-text">
+          <p class="confirm-title" id="bookingCancelTitle">Foglalás lemondása</p>
+          <p class="confirm-body" id="bookingCancelText">
+            Biztosan lemondod ezt a foglalást?
+          </p>
+        </div>
+        <div class="confirm-actions">
+          <button type="button" class="cancel-btn" id="bookingCancelCancelBtn">Mégsem</button>
+          <button type="button" class="btn-danger" id="bookingCancelConfirmBtn">Lemondom</button>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

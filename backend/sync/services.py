@@ -30,7 +30,7 @@ def get_revision():
 
 def bump_revision():
     """
-    Revision növelése eggyel (atomi UPDATE az adatbázisban).
+    Revision növelése eggyel.
 
     Automatikus hívók:
       sync/signals.py → on_dashboard_data_change()  (post_save / post_delete)

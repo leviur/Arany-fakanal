@@ -1,69 +1,25 @@
+/**
+ * login.js — főoldal (és publikus oldalak) bejelentkezés + profil menü
+ *
+ * HTML: components/login.html (auth modál), components/profile-panel.html (navbar menü)
+ * Függőség: core/api.js (apiRequest, checkAuthSession) -  A tényleges API hívások az core/api.js-ben vannak.
+ *
+ * Fő részek:
+ *  1. Auth modál — bejelentkezés / regisztráció (POST /api/auth/login|register/)
+ *  2. Profil menü — bejelentkezett user: link a vendégközpontra (/guest-portal/) vagy dashboardra
+ *  3. Session — oldal betöltéskor GET /api/auth/me/, kosár user-id szinkron
+ *
+ * Globális: openAuthModal() — a homepage hívja, ha vendég bejelentkezés nélkül kosárba tenni akar
+ */
+
 document.addEventListener("DOMContentLoaded", () => {
     initLogin();
 });
 
-
-// ======================================================
-// SESSION AUTH — segédfüggvények
-// ======================================================
-// Session auth-nál a böngésző automatikusan kezeli a session cookie-t.
-// POST kérésekhez viszont kell a CSRF token is (Django védelem).
-
-// Cookie olvasása név alapján (pl. "csrftoken")
-function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-        return parts.pop().split(";").shift();
-    }
-    return null;
-}
-
-
-// Központi fetch wrapper auth API hívásokhoz.
-// - credentials: "include" → a böngésző küldi a session cookie-t
-// - X-CSRFToken header → Django CSRF védelem POST kéréseknél
-async function authRequest(url, options = {}) {
-    const headers = {
-        "Content-Type": "application/json",
-        ...(options.headers || {}),
-    };
-
-    const csrfToken = getCookie("csrftoken");
-    if (csrfToken) {
-        headers["X-CSRFToken"] = csrfToken;
-    }
-
-    return fetch(url, {
-        credentials: "include",
-        ...options,
-        headers,
-    });
-}
-
-
-// ======================================================
-// Session auth állapot lekérdezése
-// ======================================================
-async function checkAuthSession() {
-    try {
-        const response = await fetch("/api/auth/me/", {
-            credentials: "include",
-        });
-
-        if (!response.ok) {
-            return null;
-        }
-
-        const user = await response.json();
-        return user.id ? user : null;
-    } catch (error) {
-        console.error("Auth állapot lekérdezése sikertelen:", error);
-        return null;
-    }
-}
-
-window.checkAuthSession = checkAuthSession;
+// --- Navbar profil menü (lenyíló panel — nem a /guest-portal/ oldal) ---
+const PROFILE_PANEL_CLOSE_MS = 280;   // Profil panel bezárási animáció (ms)
+const PROFILE_IDLE_CLOSE_MS = 6000;   // ennyi inaktivitás után magától bezáródik
+const PROFILE_COMPACT_MQ = window.matchMedia("(max-width: 992px)"); // mobil + tablet nézet
 
 
 function openAuthModal() {
@@ -87,16 +43,14 @@ function openAuthModal() {
 window.openAuthModal = openAuthModal;
 
 
-// ======================================================
-// Függőben lévő kosár tétel folytatása login után
-// ======================================================
-// Bejelentkezés után: pendingCart (localStorage) hozzáadása a meglévő kosárhoz.
-function handlePendingCartItem() {
+// Vendég rendelni akart bejelentkezés nélkül → a kosár adatai pendingCart-ként mentve,
+// sikeres login/reg után visszakerülnek a kosárba (homepage heti menü gomb).
+async function handlePendingCartItem() {
     const pendingCart = localStorage.getItem("pendingCart");
 
     if (pendingCart && typeof addDailyMenuToCart === "function") {
         const cartData = JSON.parse(pendingCart);
-        addDailyMenuToCart(cartData);
+        await addDailyMenuToCart(cartData);
         localStorage.removeItem("pendingCart");
 
         if (typeof renderCart === "function") {
@@ -106,9 +60,6 @@ function handlePendingCartItem() {
 }
 
 
-// ======================================================
-// Név formázás
-// ======================================================
 function formatName(name) {
     return name
         .trim()
@@ -121,68 +72,266 @@ function formatName(name) {
 }
 
 
-// ======================================================
-// Profil gomb kinézet
-// ======================================================
-function setUserUI(loginBtn, userName) {
-    if (!loginBtn) return;
-
-    const initials = userName
-        .split(" ")
+function getInitials(name) {
+    return name
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean)
         .map(word => word[0])
         .join("")
-        .toUpperCase();
-
-    loginBtn.textContent = initials;
-    loginBtn.title = `${userName} - Kattintson a kijelentkezéshez`;
+        .toUpperCase()
+        .slice(0, 3);
 }
 
 
-function clearUserUI(loginBtn) {
-    if (!loginBtn) return;
+function setUserUI(profileEls, user) {
+    if (!profileEls?.btn || !user) return;
 
-    loginBtn.innerHTML = '<i class="fa-regular fa-user"></i>';
-    loginBtn.title = "Profil";
+    const isAdmin = user.role === "admin";
+    const displayName = isAdmin ? "Admin" : user.name;
+    const initials = isAdmin ? "A" : getInitials(user.name);
+
+    profileEls.btnInner.textContent = initials;
+    profileEls.btn.classList.add("profile-menu-btn--logged-in");
+    profileEls.menu?.classList.add("profile-menu--logged-in");
+    profileEls.chevron?.removeAttribute("hidden");
+
+    if (profileEls.panelAvatar) profileEls.panelAvatar.textContent = initials;
+    if (profileEls.panelName) profileEls.panelName.textContent = displayName;
+    if (profileEls.panelEmail) profileEls.panelEmail.textContent = user.email || "";
+
+    if (isAdmin) {
+        profileEls.linkLabel.textContent = "Admin felület";
+        profileEls.link.href = "/dashboard/";
+        profileEls.linkIcon.className = "fa-solid fa-gauge-high profile-panel-item-icon";
+    } else {
+        profileEls.linkLabel.textContent = "Vendégközpont";
+        profileEls.link.href = "/guest-portal/";
+        profileEls.linkIcon.className = "fa-regular fa-user profile-panel-item-icon";
+    }
+
+    profileEls.btn.setAttribute(
+        "aria-label",
+        isAdmin ? "Admin felület — menü" : `${displayName} — menü`,
+    );
+}
+
+
+function clearUserUI(profileEls) {
+    if (!profileEls?.btn) return;
+
+    profileEls.btnInner.innerHTML = '<i class="fa-regular fa-user" aria-hidden="true"></i>';
+    profileEls.btn.classList.remove("profile-menu-btn--logged-in");
+    profileEls.menu?.classList.remove("profile-menu--logged-in");
+    profileEls.chevron?.setAttribute("hidden", "");
+    profileEls.btn.setAttribute("aria-label", "Profil");
 }
 
 
 function isAdminUser(user) {
-    // Csak a UserProfile.role === "admin" felhasználó (pl. admin@aranyfakanal.hu)
     return user.role === "admin";
 }
 
 
-// ======================================================
-// Login rendszer
-// ======================================================
 function initLogin() {
+    // --- DOM: auth modál + navbar profil panel elemek ---
     const modal = document.getElementById("authModal");
-    const loginBtn = document.querySelector(".login-btn");
+    const profileEls = {
+        menu: document.getElementById("profileMenu"),
+        btn: document.getElementById("profileMenuBtn"),
+        btnInner: document.getElementById("profileMenuBtnInner"),
+        chevron: document.getElementById("profileMenuChevron"),
+        overlay: document.getElementById("profileMenuOverlay"),
+        panel: document.getElementById("profileDropdown"),
+        panelClose: document.getElementById("profilePanelClose"),
+        panelAvatar: document.getElementById("profilePanelAvatar"),
+        panelName: document.getElementById("profilePanelName"),
+        panelEmail: document.getElementById("profilePanelEmail"),
+        link: document.getElementById("guestPortalLink"),
+        linkLabel: document.getElementById("guestPortalLinkLabel"),
+        linkIcon: document.getElementById("guestPortalLinkIcon"),
+        logoutBtn: document.getElementById("profileLogoutBtn"),
+    };
+
     const closeBtn = document.getElementById("closeAuth");
     const switchBtn = document.getElementById("switchAuth");
     const authTitle = document.getElementById("authTitle");
     const loginForm = document.getElementById("loginForm");
     const registerForm = document.getElementById("registerForm");
 
-    if (!modal || !loginBtn) {
+    if (!modal || !profileEls.btn) {
         return;
     }
 
-    // Memóriában tároljuk a bejelentkezett usert (nem localStorage-ban!)
     let currentUser = null;
     let isLoginMode = true;
+    let profileMenuOpen = false;
+    let profileCloseTimer = null;
+    let profileIdleTimer = null;
 
-    // Oldal betöltéskor: ellenőrizzük, van-e aktív session a szerveren
+    // --- Profil menü: nyitás, bezárás, pozíció (mobil sheet / desktop dropdown) ---
+
+    function isCompactProfile() {
+        return PROFILE_COMPACT_MQ.matches;
+    }
+
+    // Leállítja az „idő múlva bezáródik” időzítőt
+    function clearProfileIdleTimer() {
+        if (profileIdleTimer) {
+            clearTimeout(profileIdleTimer);
+            profileIdleTimer = null;
+        }
+    }
+
+    // Újraindítja: ha nem nyúlsz a profil menühöz, PROFILE_IDLE_CLOSE_MS múlva bezár
+    function scheduleProfileIdleClose() {
+        clearProfileIdleTimer();
+        if (!profileMenuOpen) return;
+
+        profileIdleTimer = setTimeout(() => {
+            if (profileMenuOpen) {
+                closeProfileMenu();
+            }
+        }, PROFILE_IDLE_CLOSE_MS);
+    }
+
+    function unlockProfileSheet() {
+        document.body.classList.remove("profile-sheet-open");
+    }
+
+    // A profil panel a navbar gomb alá (vagy fölé) kerül — mobilon és desktopon is
+    function positionProfilePanel() {
+        if (!profileEls.btn || !profileEls.panel) {
+            return;
+        }
+
+        const rect = profileEls.btn.getBoundingClientRect();
+        const panelHeight = profileEls.panel.offsetHeight || 260;
+        const gap = 12;
+        let top = rect.bottom + gap;
+        let openAbove = false;
+
+        if (top + panelHeight > window.innerHeight - 12 && rect.top > panelHeight + gap) {
+            top = rect.top - panelHeight - gap;
+            openAbove = true;
+        }
+
+        top = Math.max(12, top);
+
+        profileEls.panel.classList.toggle("profile-panel--above", openAbove);
+
+        if (isCompactProfile()) {
+            // Mobil + tablet: navbar szélességű, középre (94% vagy görgetve 100%)
+            const navbar = document.querySelector(".navbar");
+            const navbarScrolled = navbar?.classList.contains("scrolled");
+            const vw = window.innerWidth;
+            const left = navbarScrolled ? 0 : vw * 0.03;
+            const width = navbarScrolled ? vw : vw * 0.94;
+
+            profileEls.panel.classList.toggle("profile-panel--navbar-scrolled", navbarScrolled);
+            profileEls.panel.classList.toggle("profile-panel--navbar-float", !navbarScrolled);
+            profileEls.panel.style.setProperty("--profile-panel-left", `${left}px`);
+            profileEls.panel.style.setProperty("--profile-panel-width", `${width}px`);
+            profileEls.panel.style.removeProperty("--profile-panel-right");
+        } else {
+            // Desktop: keskeny panel, jobbra a gomb alá
+            const panelWidth = Math.min(300, window.innerWidth - 24);
+            let right = Math.max(12, window.innerWidth - rect.right);
+
+            if (right + panelWidth > window.innerWidth - 12) {
+                right = Math.max(12, window.innerWidth - panelWidth - 12);
+            }
+
+            profileEls.panel.classList.remove(
+                "profile-panel--navbar-scrolled",
+                "profile-panel--navbar-float"
+            );
+            profileEls.panel.style.setProperty("--profile-panel-top", `${top}px`);
+            profileEls.panel.style.setProperty("--profile-panel-right", `${right}px`);
+            profileEls.panel.style.setProperty("--profile-panel-width", `${panelWidth}px`);
+            profileEls.panel.style.removeProperty("--profile-panel-left");
+        }
+
+        profileEls.panel.style.setProperty("--profile-panel-top", `${top}px`);
+    }
+
+    // Profil panel összecsukása (animáció után elrejtjük a DOM-ból)
+    function closeProfileMenu() {
+        if (!profileEls.panel || !profileMenuOpen) return;
+
+        profileMenuOpen = false;
+        clearProfileIdleTimer();
+        profileEls.menu?.classList.remove("is-open");
+        profileEls.btn.setAttribute("aria-expanded", "false");
+        document.body.classList.remove("profile-menu-open");
+        unlockProfileSheet();
+
+        clearTimeout(profileCloseTimer);
+        profileCloseTimer = setTimeout(() => {
+            if (!profileMenuOpen) {
+                profileEls.panel.hidden = true;
+                if (profileEls.overlay) profileEls.overlay.hidden = true;
+            }
+        }, PROFILE_PANEL_CLOSE_MS);
+    }
+
+    function openProfileMenu() {
+        if (!currentUser || !profileEls.panel) return;
+
+        clearTimeout(profileCloseTimer);
+        profileEls.panel.hidden = false;
+        if (profileEls.overlay) profileEls.overlay.hidden = false;
+
+        positionProfilePanel();
+
+        requestAnimationFrame(() => {
+            profileMenuOpen = true;
+            profileEls.menu?.classList.add("is-open");
+            profileEls.btn.setAttribute("aria-expanded", "true");
+            document.body.classList.add("profile-menu-open");
+            // Pontos pozíció a megjelenés után
+            requestAnimationFrame(() => {
+                positionProfilePanel();
+                scheduleProfileIdleClose();
+            });
+        });
+    }
+
+    function toggleProfileMenu() {
+        if (profileMenuOpen) {
+            closeProfileMenu();
+        } else {
+            openProfileMenu();
+        }
+    }
+
+    function confirmLogout() {
+        const lineCount =
+            typeof getCartLineCount === "function" ? getCartLineCount() : 0;
+        const message =
+            lineCount > 0
+                ? `Kosarában ${lineCount} tétel van — a kosár megmarad bejelentkezés után. Biztosan kijelentkezik?`
+                : "Kijelentkezik?";
+
+        if (confirm(message)) {
+            logout();
+        }
+    }
+
+    // --- Session ellenőrzés oldal betöltéskor + kosár szinkron ---
     async function refreshAuthState() {
         const user = await checkAuthSession();
 
         if (!user) {
-            clearUserUI(loginBtn);
+            clearUserUI(profileEls);
             currentUser = null;
+            closeProfileMenu();
 
-            // Nincs bejelentkezve → kosár nem látható (üres marad)
             if (typeof setCartUserId === "function") {
                 setCartUserId(null);
+            }
+            if (typeof clearActiveOrderSlots === "function") {
+                clearActiveOrderSlots();
             }
             if (typeof renderCart === "function") {
                 renderCart();
@@ -196,35 +345,42 @@ function initLogin() {
             setCartUserId(user.id);
         }
 
+        if (typeof refreshActiveOrderSlots === "function") {
+            await refreshActiveOrderSlots();
+        }
+
         if (typeof validateCartItems === "function") {
             validateCartItems({ silent: true });
         }
 
-        setUserUI(loginBtn, user.name);
+        setUserUI(profileEls, user);
 
         if (typeof renderCart === "function") {
             renderCart();
+        }
+
+        if (typeof window.prefillBookingFormFromUser === "function") {
+            window.prefillBookingFormFromUser(user);
+        }
+        if (typeof window.prefillContactFormFromUser === "function") {
+            window.prefillContactFormFromUser(user);
         }
     }
 
     refreshAuthState();
 
-    loginBtn.addEventListener("click", (e) => {
+    // --- Események: profil gomb, menü bezárás, auth modál ---
+
+    profileEls.btn.addEventListener("click", (e) => {
         e.preventDefault();
+        e.stopPropagation();
 
         if (currentUser) {
-            const lineCount =
-                typeof getCartLineCount === "function" ? getCartLineCount() : 0;
-            const message =
-                lineCount > 0
-                    ? `Kosarában ${lineCount} tétel van — a kosár megmarad bejelentkezés után. Biztosan kijelentkezik?`
-                    : "Kijelentkezik?";
-
-            if (confirm(message)) {
-                logout();
-            }
+            toggleProfileMenu();
             return;
         }
+
+        closeProfileMenu();
 
         loginForm.style.display = "flex";
         registerForm.style.display = "none";
@@ -232,6 +388,63 @@ function initLogin() {
         switchBtn.textContent = "Regisztráció";
         isLoginMode = true;
         modal.style.display = "flex";
+    });
+
+    profileEls.logoutBtn?.addEventListener("click", (e) => {
+        e.preventDefault();
+        closeProfileMenu();
+        confirmLogout();
+    });
+
+    profileEls.link?.addEventListener("click", () => {
+        closeProfileMenu();
+    });
+
+    profileEls.overlay?.addEventListener("click", () => {
+        closeProfileMenu();
+    });
+
+    profileEls.panelClose?.addEventListener("click", () => {
+        closeProfileMenu();
+    });
+
+    // Kattintás a profil panelen → újraindul az automatikus bezárás időzítője
+    profileEls.panel?.addEventListener("pointerdown", scheduleProfileIdleClose);
+    profileEls.panel?.addEventListener("focusin", scheduleProfileIdleClose);
+
+    // Desktop: kívül kattintásra bezár (mobilon/tableten az overlay intézi)
+    document.addEventListener("click", (e) => {
+        if (!profileMenuOpen || isCompactProfile()) return;
+
+        const target = e.target;
+        const clickedInside =
+            profileEls.menu?.contains(target) ||
+            profileEls.panel?.contains(target) ||
+            profileEls.btn?.contains(target);
+
+        if (!clickedInside) {
+            closeProfileMenu();
+        }
+    });
+
+    window.addEventListener("resize", () => {
+        if (profileMenuOpen) {
+            positionProfilePanel();
+        }
+    });
+
+    // Oldal görgetésekor bezáródik a profil menü
+    window.addEventListener("scroll", () => {
+        if (profileMenuOpen) {
+            closeProfileMenu();
+        }
+    }, { passive: true });
+
+    // Escape billentyű
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && profileMenuOpen) {
+            closeProfileMenu();
+        }
     });
 
     closeBtn?.addEventListener("click", () => {
@@ -260,6 +473,7 @@ function initLogin() {
         isLoginMode = !isLoginMode;
     });
 
+    // --- Bejelentkezés: POST /api/auth/login/ → session cookie, UI frissítés ---
     loginForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -267,15 +481,12 @@ function initLogin() {
         const password = document.getElementById("login-password").value;
 
         try {
-            // API hívás → szerver ellenőrzi a jelszót és létrehozza a session-t
-            const response = await authRequest("/api/auth/login/", {
+            const response = await apiRequest("/api/auth/login/", {
                 method: "POST",
                 body: JSON.stringify({ email, password }),
             });
 
             const raw = await response.text();
-
-            console.log("LOGIN SERVER RESPONSE:", raw);
 
             let loginData;
 
@@ -284,7 +495,6 @@ function initLogin() {
             } catch (err) {
                 throw new Error("A szerver nem JSON választ adott.");
             }
-            
 
             if (!response.ok) {
                 window.showToast?.(loginData.detail || "Sikertelen bejelentkezés.", "error");
@@ -292,6 +502,7 @@ function initLogin() {
             }
 
             if (isAdminUser(loginData)) {
+                // Dupla ellenőrzés: a login válasz admin, de a session cookie is kell a dashboardhoz
                 const sessionUser = await checkAuthSession();
                 if (!sessionUser || sessionUser.role !== "admin") {
                     window.showToast?.(
@@ -305,7 +516,7 @@ function initLogin() {
             }
 
             currentUser = loginData;
-            setUserUI(loginBtn, loginData.name);
+            setUserUI(profileEls, loginData);
 
             if (typeof setCartUserId === "function") {
                 setCartUserId(loginData.id);
@@ -313,7 +524,12 @@ function initLogin() {
 
             modal.style.display = "none";
             loginForm.reset();
-            handlePendingCartItem();
+
+            if (typeof refreshActiveOrderSlots === "function") {
+                await refreshActiveOrderSlots();
+            }
+
+            await handlePendingCartItem();
 
             if (typeof validateCartItems === "function") {
                 validateCartItems({ silent: true });
@@ -322,7 +538,7 @@ function initLogin() {
                 renderCart();
             }
             if (typeof window.prefillBookingFormFromUser === "function") {
-                window.prefillBookingFormFromUser(loginData);
+                window.prefillBookingFormFromUser(loginData, { overwrite: true });
             }
             if (typeof window.prefillContactFormFromUser === "function") {
                 window.prefillContactFormFromUser(loginData);
@@ -333,6 +549,7 @@ function initLogin() {
         }
     });
 
+    // --- Regisztráció: POST /api/auth/register/ → automatikus bejelentkezés ---
     registerForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
@@ -360,8 +577,7 @@ function initLogin() {
         fullName = formatName(fullName);
 
         try {
-            // API hívás → User + UserProfile létrehozása, majd automatikus bejelentkezés
-            const response = await authRequest("/api/auth/register/", {
+            const response = await apiRequest("/api/auth/register/", {
                 method: "POST",
                 body: JSON.stringify({
                     name: fullName,
@@ -385,7 +601,7 @@ function initLogin() {
             }
 
             currentUser = data;
-            setUserUI(loginBtn, data.name);
+            setUserUI(profileEls, data);
             window.showToast?.("Sikeres regisztráció!", "success");
 
             if (typeof setCartUserId === "function") {
@@ -394,7 +610,12 @@ function initLogin() {
 
             modal.style.display = "none";
             registerForm.reset();
-            handlePendingCartItem();
+
+            if (typeof refreshActiveOrderSlots === "function") {
+                await refreshActiveOrderSlots();
+            }
+
+            await handlePendingCartItem();
 
             if (typeof validateCartItems === "function") {
                 validateCartItems({ silent: true });
@@ -403,7 +624,7 @@ function initLogin() {
                 renderCart();
             }
             if (typeof window.prefillBookingFormFromUser === "function") {
-                window.prefillBookingFormFromUser(data);
+                window.prefillBookingFormFromUser(data, { overwrite: true });
             }
             if (typeof window.prefillContactFormFromUser === "function") {
                 window.prefillContactFormFromUser(data);
@@ -416,18 +637,15 @@ function initLogin() {
 }
 
 
-// ======================================================
-// Kijelentkezés — session törlése a szerveren
-// ======================================================
+// POST /api/auth/logout/ → teljes oldal újratöltés (session + UI tiszta állapot)
 async function logout() {
     try {
-        await authRequest("/api/auth/logout/", {
+        await apiRequest("/api/auth/logout/", {
             method: "POST",
         });
     } catch (error) {
         console.error("Kijelentkezés sikertelen:", error);
     }
 
-    // A kosár localStorage-ban megmarad — újra bejelentkezéskor visszatöltődik
     location.reload();
 }

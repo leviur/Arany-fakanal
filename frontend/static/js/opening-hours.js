@@ -1,16 +1,27 @@
 /**********************
- * Nyitvatartás — közös modul (API + megjelenítés + időpontok)
+ * opening-hours.js — nyitvatartás kezelése
+ *
+ * Mit csinál ez a fájl?
+ *   - Lekéri a szerverről: mikor vagyunk nyitva (heti sablon + kivételek)
+ *   - Megjeleníti a főoldal láblécében és az asztalfoglalásnál
+ *   - Admin menti a dashboard Beállításokból
+ *
+ * Szerver: GET/PUT /api/opening-hours/
+ * Kívülről: window.OpeningHours.<függvénynév>
  **********************/
 
 const OpeningHours = (() => {
+  // A hét napjai angolul, hétfőtől vasárnapig (ilyen sorrendben dolgozzuk fel)
   const WEEKDAY_ORDER = [
     "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
   ];
 
+  // Dátumból megállapítjuk a nap nevét: pl. szerda → "wednesday"
   const DAY_KEY_BY_INDEX = [
     "sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
   ];
 
+  // Angol napnév → magyar szöveg a képernyőn (pl. monday → "Hétfő")
   const WEEKDAY_LABELS = {
     monday: "Hétfő",
     tuesday: "Kedd",
@@ -21,6 +32,7 @@ const OpeningHours = (() => {
     sunday: "Vasárnap",
   };
 
+  // Angol napnév → rövidítés (pl. "H–P" a kompakt megjelenítéshez)
   const WEEKDAY_ABBREV = {
     monday: "H",
     tuesday: "K",
@@ -31,17 +43,10 @@ const OpeningHours = (() => {
     sunday: "Vas",
   };
 
+  // Utoljára betöltött nyitvatartás — ne kérjük újra feleslegesen a szervert
   let cache = null;
 
-  function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-      return parts.pop().split(";").shift();
-    }
-    return null;
-  }
-
+  // Elmenti a szerver válaszát memóriába (cache + APP_STATE)
   function applyToAppState(data) {
     window.APP_STATE = window.APP_STATE || {};
     window.APP_STATE.openingHours = data.opening_hours || {};
@@ -49,6 +54,7 @@ const OpeningHours = (() => {
     cache = data;
   }
 
+  // Visszaadja a már betöltött nyitvatartást (cache vagy APP_STATE)
   function getData() {
     if (cache) return cache;
     return {
@@ -57,6 +63,9 @@ const OpeningHours = (() => {
     };
   }
 
+  // ========== Szerverrel kommunikál ==========
+
+  // Letölti a nyitvatartást (GET)
   async function fetchOpeningHours({ force = false } = {}) {
     if (cache && !force) return cache;
 
@@ -70,17 +79,10 @@ const OpeningHours = (() => {
     return data;
   }
 
+  // Admin menti a módosított nyitvatartást a szerverre (PUT)
   async function saveOpeningHours(payload) {
-    const headers = { "Content-Type": "application/json" };
-    const csrfToken = getCookie("csrftoken");
-    if (csrfToken) {
-      headers["X-CSRFToken"] = csrfToken;
-    }
-
-    const response = await fetch("/api/opening-hours/", {
+    const response = await apiRequest("/api/opening-hours/", {
       method: "PUT",
-      credentials: "include",
-      headers,
       body: JSON.stringify(payload),
     });
 
@@ -94,12 +96,18 @@ const OpeningHours = (() => {
     return data;
   }
 
+  // Dátumból napnevet csinál — pl. "2026-07-08" → "wednesday" (szerda)
   function getDayKeyFromDateStr(dateStr) {
     const [y, m, d] = dateStr.split("-").map(Number);
     const date = new Date(y, m - 1, d);
     return DAY_KEY_BY_INDEX[date.getDay()];
   }
 
+  // ========== Egy konkrét nap nyitvatartása ==========
+
+  // Megmondja, adott napon mikor vagyunk nyitva
+  //   - Ha van kivétel (pl. ünnep) → az számít
+  //   - Különben a heti sablon (hétfői, keddie stb. nyitvatartás)
   function getDayHoursInfo(dateStr) {
     if (!dateStr) return null;
 
@@ -111,6 +119,8 @@ const OpeningHours = (() => {
     return data.opening_hours?.[dayKey] || null;
   }
 
+  // Foglaláshoz időpontok listája — 30 percenként, nyitástól zárásig
+  //   Példa: ["11:00", "11:30", "12:00", …] vagy üres tömb, ha zárva vagyunk
   function getTimeSlotsForDate(dateStr) {
     if (!dateStr) return [];
 
@@ -133,12 +143,16 @@ const OpeningHours = (() => {
     return slots;
   }
 
+  // Egy nap nyitvatartását rövid szöveggé alakítja összehasonlításhoz
+  //   Példa: zárva → "closed", nyitva 11–22 → "11:00-22:00"
   function daySignature(dayInfo) {
     if (!dayInfo) return "missing";
     if (dayInfo.closed) return "closed";
     return `${dayInfo.open}-${dayInfo.close}`;
   }
 
+  // Nap(ok) felirata a képernyőre
+  //   Egy nap: "Hétfő" — több nap: "Hétfő – Péntek" (abbrev=true: "H–P")
   function formatRangeLabel(startKey, endKey, abbrev = false) {
     if (abbrev) {
       if (startKey === endKey) return WEEKDAY_ABBREV[startKey];
@@ -148,6 +162,8 @@ const OpeningHours = (() => {
     return `${WEEKDAY_LABELS[startKey]} – ${WEEKDAY_LABELS[endKey]}`;
   }
 
+  // Összevonja az egymás utáni azonos nyitvatartású napokat
+  //   H–P mind 11–22 → egy sor: "Hétfő – Péntek  11:00 – 22:00" (nem 5 külön sor)
   function groupWeeklyHoursForDisplay(openingHours, { abbrev = false } = {}) {
     const groups = [];
     let index = 0;
@@ -181,6 +197,7 @@ const OpeningHours = (() => {
     return groups;
   }
 
+  // A következő 90 nap kivételei (ünnep, rendkívüli zárás) — csak a jövőbeli
   function getUpcomingExceptions(exceptions, daysAhead = 90) {
     const today = new Date().toISOString().split("T")[0];
     const limit = new Date();
@@ -192,10 +209,14 @@ const OpeningHours = (() => {
       .sort((a, b) => a.date.localeCompare(b.date));
   }
 
+  // Dátum formátum átlakító — "2026-12-24" → "2026.12.24."
   function formatExceptionDate(dateStr) {
     return `${dateStr.replace(/-/g, ".")}.`;
   }
 
+  // ========== Megjelenítés a weboldalon ==========
+
+  // Kirajzolja a heti nyitvatartást egy HTML elembe (lábléc, nyitvatartás oldal)
   function renderWeeklyHours(container, { abbrev = false } = {}) {
     if (!container) return;
 
@@ -213,6 +234,7 @@ const OpeningHours = (() => {
       .join("");
   }
 
+  // „Közelgő eltérések” lista (pl. karácsony zárva) — ha nincs, elrejti
   function renderUpcomingExceptions(container, { daysAhead = 90 } = {}) {
     if (!container) return;
 
@@ -245,6 +267,7 @@ const OpeningHours = (() => {
     `;
   }
 
+  // Asztalfoglalásnál feltölti az idő legördülőt a választott dátum alapján
   function populateTimeSelect(selectEl, dateStr, selectedTime = "") {
     if (!selectEl) return;
 
@@ -286,4 +309,5 @@ const OpeningHours = (() => {
   };
 })();
 
+// A fájl végén exportáljuk — más oldalak így hívják: OpeningHours.fetchOpeningHours()
 window.OpeningHours = OpeningHours;

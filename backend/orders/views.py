@@ -1,3 +1,5 @@
+# Rendelés API végpontok — dashboard (admin) + kosár leadás (bejelentkezett vendég)
+
 from django.shortcuts import get_object_or_404
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
@@ -15,11 +17,13 @@ from .serializers import (
 )
 
 
+# GET /api/orders/ — dashboard táblázat (orders.js loadOrdersFromApi)
 class OrderListAPIView(generics.ListAPIView):
     serializer_class = OrderSerializer
     permission_classes = [IsAppAdmin]
 
     def get_queryset(self):
+        # user + profile + heti menü — egy lekérdezésben
         return (
             Order.objects
             .select_related("user", "user__profile")
@@ -28,6 +32,7 @@ class OrderListAPIView(generics.ListAPIView):
         )
 
 
+# POST /api/orders/create/ — kosár leadás (cart.js)
 class OrderCreateAPIView(generics.CreateAPIView):
     serializer_class = OrderCreateSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -40,7 +45,7 @@ class OrderCreateAPIView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        order = serializer.save()
+        order = serializer.save()  # dupla-védelem a serializerben (conflicts.py)
 
         return Response(
             OrderSerializer(order).data,
@@ -48,11 +53,8 @@ class OrderCreateAPIView(generics.CreateAPIView):
         )
 
 
+# PATCH /api/orders/<id>/ — admin szerkesztés (név, cím, egy nap A/B qty)
 class OrderUpdateAPIView(generics.UpdateAPIView):
-    """
-    PATCH /api/orders/<id>/
-    Admin: vevő adatai; opcionálisan egy nap A/B menü és darabszám (delivery_date fix).
-    """
     serializer_class = OrderUpdateSerializer
     permission_classes = [IsAppAdmin]
 
@@ -73,6 +75,7 @@ class OrderUpdateAPIView(generics.UpdateAPIView):
 
 
 def _order_with_relations(pk):
+    # friss JSON válaszhoz — items + weekly_menu előtöltve
     return (
         Order.objects
         .select_related("user", "user__profile")
@@ -82,16 +85,12 @@ def _order_with_relations(pk):
 
 
 def _recalculate_order_total(order):
+    # részleges törlés után — total_price újraszámolás
     order.recalculate_total()
 
 
 class OrderItemsStatusAPIView(APIView):
-    """
-    PATCH /api/orders/<order_id>/items/status/
-    Body: { "item_ids": [2, 3], "status": "confirmed" }  (vagy magyar: "Elfogadva")
-    A megadott OrderItem rekordok státusza frissül.
-    """
-
+    # PATCH /api/orders/<id>/items/status/ — body: item_ids + status (dashboard badge)
     permission_classes = [IsAppAdmin]
 
     def patch(self, request, pk):
@@ -119,6 +118,7 @@ class OrderItemsStatusAPIView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # minden id ehhez a rendeléshez tartozzon
         items = order.items.filter(id__in=item_ids)
         if items.count() != len(item_ids):
             return Response(
@@ -135,12 +135,7 @@ class OrderItemsStatusAPIView(APIView):
 
 
 class OrderItemsDeleteAPIView(APIView):
-    """
-    DELETE /api/orders/<order_id>/items/delete/
-    Body: { "item_ids": [2, 3] }
-    Csak a megadott tételek törlődnek; üres rendelés esetén az Order is törlődik.
-    """
-
+    # DELETE /api/orders/<id>/items/delete/ — body: item_ids (dashboard kuka gomb)
     permission_classes = [IsAppAdmin]
 
     def delete(self, request, pk):
@@ -160,12 +155,12 @@ class OrderItemsDeleteAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        items.delete()
+        items.delete()  # post_delete signal → bump_revision automatikusan
 
         if not order.items.exists():
-            order.delete()
+            order.delete()  # orders.js: 204 → removeOrder()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-        _recalculate_order_total(order)
+        _recalculate_order_total(order)  # maradt másik nap
         order = _order_with_relations(pk)
         return Response(OrderSerializer(order).data)

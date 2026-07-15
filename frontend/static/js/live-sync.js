@@ -1,35 +1,25 @@
 /**********************
- * live-sync.js — élő szinkron (revision poll, 2 másodpercenként)
+ * live-sync.js — automatikus frissítés több böngészőablak között
  *
- * ═══ Hogyan működik a verziókezelés? ═══
+ * Mit csinál ez a fájl?
+ *   - 2 másodpercenként rákérdez a szerverre: változott-e valami az adatbázisban?
+ *   - Ha igen → újratölti a menüt, kosarat, dashboardot, vendégközpontot stb.
  *
- * BACKEND (adatbázis):
- *   sync/models.py       → AppRevision.revision (egyetlen szám, pl. 42)
- *   sync/services.py     → bump_revision() növeli, get_revision() olvassa
- *   sync/signals.py      → on_dashboard_data_change() → bump_revision() mentés/törléskor
- *   sync/views.py        → GET /api/revision/ → { "revision": 42 }
+ * Hogyan működik?
+ *   1. Admin módosít valamit (rendelés, menü, nyitvatartás…) → a szerver revision száma nő
+ *   2. Ez a fájl lekéri: GET /api/revision/ → pl. { "revision": 43 }
+ *   3. Ha más szám jött, mint legutóbb → meghívja a frissítő függvényeket
  *
- * FRONTEND (ez a fájl):
- *   start() → setInterval(poll, 2000)
- *   poll() → fetchRevision() → ha a szám változott → onRevisionChanged()
- *
- * onRevisionChanged() meghívja (ami az adott oldalon létezik):
- *   OpeningHours.fetchOpeningHours() + refreshOpeningHoursDisplays()  → opening-hours.js
- *   window.refreshWeeklyMenu()   → weekly-menu.js (főoldal heti menü)
- *   window.refreshEtlap()        → etlap.js (publikus étlap)
- *   refreshDashboardData()     → orders.js, bookings.js, messages.js, dashboard.js
- *   refreshSettingsPanel()     → settings.js → refreshSettingsFromApi()
- *   MenuManager.refresh()      → menu-manager.js (dashboard Ételek / Heti menü fül)
- *
- * Kézi frissítés (revision nélkül): index.js refresh gomb → loadOrdersFromApi() stb.
+ * Backend (röviden): sync/models.py, sync/signals.py — mentéskor revision++
+ * Kívülről: window.LiveSync.start() / stop() (automatikusan indul oldal betöltéskor)
  **********************/
 
 const LiveSync = (() => {
-  const POLL_MS = 2000;
-  let revision = null; // utoljára ismert revision (összehasonlításhoz)
-  let timer = null;
+  const POLL_MS = 2000; // ennyi ms-enként kérdez rá a szerverre
+  let revision = null; // utoljára látott revision szám — ehhez hasonlítjuk az újat
+  let timer = null; // setInterval azonosítója — leállításhoz
 
-  /** GET /api/revision/ — backend: get_revision() → RevisionAPIView */
+  // Lekéri a szerver aktuális revision számát (GET /api/revision/)
   async function fetchRevision() {
     const response = await fetch("/api/revision/");
     if (!response.ok) {
@@ -39,7 +29,8 @@ const LiveSync = (() => {
     return data.revision;
   }
 
-  /** Nyitvatartás megjelenítés — adat már OpeningHours.fetchOpeningHours()-ban frissült */
+  // Újrarajzolja a nyitvatartást a képernyőn (adat már frissült fetchOpeningHours-szal)
+  //   Hol: főoldal lábléc, nyitvatartás szekció, asztalfoglalás idő dropdown
   function refreshOpeningHoursDisplays() {
     if (typeof OpeningHours === "undefined") return;
 
@@ -70,7 +61,8 @@ const LiveSync = (() => {
     }
   }
 
-  /** Dashboard: rendelések, foglalások, üzenetek, KPI — lásd orders.js, bookings.js, messages.js */
+  // Dashboard adatok újratöltése — rendelések, foglalások, üzenetek, KPI
+  //   Csak akkor fut, ha az adott JS betöltődött (orders.js, bookings.js, messages.js)
   async function refreshDashboardData() {
     if (typeof loadOrdersFromApi === "function") {
       try {
@@ -102,7 +94,19 @@ const LiveSync = (() => {
     window.refreshDashboard?.();
   }
 
-  /** Beállítások fül — settings.js → refreshSettingsFromApi() */
+  // Vendégközpont (/guest-portal/) szekciók frissítése
+  //   Átadja a guest-portal-sync.js-nek → rendelések, adataim, foglalások
+  async function refreshGuestPortalData() {
+    if (typeof window.refreshGuestPortal !== "function") return;
+
+    try {
+      await window.refreshGuestPortal();
+    } catch (error) {
+      console.error("Vendégközpont szinkron sikertelen:", error);
+    }
+  }
+
+  // Dashboard Beállítások fül frissítése (settings.js)
   async function refreshSettingsPanel() {
     if (typeof window.refreshSettingsFromApi !== "function") return;
     try {
@@ -112,10 +116,8 @@ const LiveSync = (() => {
     }
   }
 
-  /**
-   * Revision nőtt (bump_revision a backenden) → minden releváns adat újratöltése.
-   * Csak azok a függvények futnak, amelyek az adott oldalon betöltődtek.
-   */
+  // Mit csinál: revision nőtt → mindent újratölt, ami az adott oldalon betöltődött
+  //   Példa: főoldalon heti menü + nyitvatartás; dashboardon rendelések + üzenetek
   async function onRevisionChanged() {
     if (typeof OpeningHours !== "undefined") {
       await OpeningHours.fetchOpeningHours({ force: true });
@@ -140,6 +142,8 @@ const LiveSync = (() => {
 
     await refreshDashboardData();
 
+    await refreshGuestPortalData();
+
     if (typeof MenuManager !== "undefined") {
       MenuManager.refresh();
     }
@@ -147,10 +151,9 @@ const LiveSync = (() => {
     await refreshSettingsPanel();
   }
 
-  /**
-   * 2 mp-enként: összehasonlítja a fetchRevision() eredményét az előzővel.
-   * Első poll: csak eltárolja (nem frissít — már betöltött az oldal).
-   */
+  // 2 mp-enként ellenőrzi, nőtt-e a revision szám
+  //   Első alkalommal: csak eltárolja (az oldal már betöltötte az adatot)
+  //   Ha a lap háttérben van (document.hidden) → nem kérdez (kíméli a szervert)
   async function poll() {
     if (document.hidden) return;
 
@@ -165,10 +168,11 @@ const LiveSync = (() => {
         await onRevisionChanged();
       }
     } catch (_error) {
-      // Csendes hiba — következő poll újrapróbálja
+      // Hálózati hiba — csendben várunk a következő poll-ra
     }
   }
 
+  // Elindítja a 2 mp-enkénti ellenőrzést
   function start() {
     if (timer) return;
 
@@ -181,6 +185,7 @@ const LiveSync = (() => {
     timer = setInterval(poll, POLL_MS);
   }
 
+  // Leállítja az automatikus ellenőrzést
   function stop() {
     if (timer) {
       clearInterval(timer);

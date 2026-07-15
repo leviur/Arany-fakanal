@@ -1,6 +1,18 @@
 // ======================================================
 // KOSÁR — felhasználóhoz kötött tárolás (localStorage)
-// Beküldés előtt itt marad; POST /api/orders/create/ után törlődik.
+//
+// Főoldal heti menü rendelés: tételek a böngészőben maradnak,
+// POST /api/orders/create/ (checkout) után törlődnek.
+//
+// Függőség: core/api.js (apiRequest, checkAuthSession), login.js (setCartUserId)
+// HTML: components/cart.html
+//
+// Fő részek:
+//   1. Rendelhető napok + delivery_date számítás
+//   2. localStorage (userenként: cart_user_<id>)
+//   3. Dupla rendelés védelem (aktív slotok cache)
+//   4. Kosár drawer UI (render, +/-, törlés)
+//   5. Checkout → POST /api/orders/create/
 // ======================================================
 
 // Aktuális bejelentkezett user ID — csak ő látja a saját kosarát
@@ -38,6 +50,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const user = await window.checkAuthSession?.();
     setCartUserId(user?.id ?? null);
 
+    if (user?.id) {
+        await refreshActiveOrderSlots();
+    }
+
     migrateLegacyCartStorage();
     initCart();
     validateCartItems({ silent: false });
@@ -46,9 +62,134 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 
+// ======================================================
+// Dupla rendelés védelem — nap + menütípus (A/B)
+// A backend orders/serializers.py validate() ugyanezt nézi POST-nál.
+// ======================================================
+
+// Már leadott aktív rendelések: "2026-07-15|A" formátumú kulcsok
+window.ACTIVE_ORDER_SLOTS = null;
+let activeOrderSlotsLoadPromise = null;
+
+function clearActiveOrderSlots() {
+    window.ACTIVE_ORDER_SLOTS = null;
+    activeOrderSlotsLoadPromise = null;
+}
+
+window.clearActiveOrderSlots = clearActiveOrderSlots;
+
+
+// Vendégközpont API — összes aktív rendelés tétele lapozva
+async function fetchActiveOrderMenuSlots() {
+    const slots = new Set();
+    let page = 1;
+    let hasMore = true;
+
+    while (hasMore) {
+        const response = await apiRequest(
+            `/api/guest-portal/orders/?scope=active&page=${page}&page_size=50`,
+        );
+
+        if (!response.ok) {
+            console.warn("Aktív rendelések lekérdezése sikertelen:", response.status);
+            return null;
+        }
+
+        const data = await response.json();
+
+        for (const order of data.results || []) {
+            for (const item of order.items || []) {
+                if (item.delivery_date && item.menu_type) {
+                    slots.add(`${item.delivery_date}|${item.menu_type}`);
+                }
+            }
+        }
+
+        hasMore = Boolean(data.next);
+        page += 1;
+    }
+
+    return slots;
+}
+
+
+async function refreshActiveOrderSlots() {
+    // Nincs user → nincs cache (login.js kijelentkezéskor is hívja a clear-t)
+    if (!window.CART_USER_ID) {
+        clearActiveOrderSlots();
+        return null;
+    }
+
+    const slots = await fetchActiveOrderMenuSlots();
+    window.ACTIVE_ORDER_SLOTS = slots;
+    return slots;
+}
+
+window.refreshActiveOrderSlots = refreshActiveOrderSlots;
+
+
+async function ensureActiveOrderSlots() {
+    // Ha még nincs cache, egyszerre csak egy lekérés fusson (párhuzamos hívások ne duplázzák)
+    if (!window.CART_USER_ID) {
+        return null;
+    }
+
+    if (window.ACTIVE_ORDER_SLOTS) {
+        return window.ACTIVE_ORDER_SLOTS;
+    }
+
+    if (!activeOrderSlotsLoadPromise) {
+        activeOrderSlotsLoadPromise = refreshActiveOrderSlots().finally(() => {
+            activeOrderSlotsLoadPromise = null;
+        });
+    }
+
+    return activeOrderSlotsLoadPromise;
+}
+
+
+function findCartOrderConflicts(cartItems, activeSlots) {
+    // Kosár tétel ütközik-e már leadott aktív rendeléssel
+    const conflicts = [];
+
+    cartItems.forEach((item) => {
+        const key = `${item.delivery_date}|${item.menu_type}`;
+        if (activeSlots.has(key)) {
+            conflicts.push(item);
+        }
+    });
+
+    return conflicts;
+}
+
+
+function formatConflictSlotShort(item) {
+    const dateLabel = formatDeliveryDate(item.delivery_date).replace(/^\d{4}\.\s/, "");
+    return `${dateLabel} ${item.menu_type}`;
+}
+
+
+function formatCartOrderConflictMessage(conflicts) {
+    // Ugyanaz a szöveg, mint a backend format_order_conflict_message
+    const parts = conflicts.map(formatConflictSlotShort);
+
+    if (conflicts.length === 1) {
+        return `${parts[0]} menü — már rendeltél, nem került a kosárba.`;
+    }
+
+    return `Már rendeltél (${parts.join(", ")}) — nem került a kosárba.`;
+}
+
+
 // Bejelentkezett user ID beállítása (login.js is hívja)
 function setCartUserId(userId) {
-    window.CART_USER_ID = userId ? Number(userId) : null;
+    const nextId = userId ? Number(userId) : null;
+
+    if (window.CART_USER_ID !== nextId) {
+        clearActiveOrderSlots();
+    }
+
+    window.CART_USER_ID = nextId;
 }
 
 window.setCartUserId = setCartUserId;
@@ -204,17 +345,7 @@ function populateDaySelect() {
 window.populateDaySelect = populateDaySelect;
 
 
-// CSRF token olvasása a rendelés POST kéréséhez
-function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-        return parts.pop().split(";").shift();
-    }
-    return null;
-}
-
-
+// Kosár drawer nyitva: az oldal mögötti görgetés tiltása (csak a panel görgethető)
 function lockPageScroll() {
     // Kosár nyitva: csak a drawer görgethető, ne az oldal mögötte
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
@@ -230,8 +361,12 @@ function unlockPageScroll() {
 }
 
 function closeCartDrawer() {
-    document.getElementById("cartDrawer")?.classList.remove("active");
-    document.getElementById("cartOverlay")?.classList.remove("active");
+    const drawer = document.getElementById("cartDrawer");
+    const overlay = document.getElementById("cartOverlay");
+
+    drawer?.classList.remove("active");
+    overlay?.classList.remove("active");
+    drawer?.setAttribute("aria-hidden", "true");
     unlockPageScroll();
 }
 
@@ -240,10 +375,14 @@ window.closeCart = closeCartDrawer;
 function initCart() {
     const closeCart = document.getElementById("closeCart");
     const checkoutBtn = document.getElementById("checkoutBtn");
+    const drawer = document.getElementById("cartDrawer");
+
+    drawer?.setAttribute("aria-hidden", "true");
 
     window.openCart = () => {
-        document.getElementById("cartDrawer")?.classList.add("active");
+        drawer?.classList.add("active");
         document.getElementById("cartOverlay")?.classList.add("active");
+        drawer?.setAttribute("aria-hidden", "false");
         lockPageScroll();
         validateCartItems({ silent: true });
         renderCart();
@@ -254,6 +393,13 @@ function initCart() {
 
     closeCart?.addEventListener("click", closeCartDrawer);
     document.getElementById("cartOverlay")?.addEventListener("click", closeCartDrawer);
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && drawer?.classList.contains("active")) {
+            closeCartDrawer();
+        }
+    });
+
     checkoutBtn?.addEventListener("click", handleCheckout);
 
     renderCart();
@@ -284,10 +430,7 @@ function getCart() {
 }
 
 
-/**
- * Elavult / nem rendelhető tételek eltávolítása, delivery_date frissítése.
- * @returns {{ removed: number, updated: boolean }}
- */
+// Elavult tételek kidobása, delivery_date újraszámolása (hétváltás után)
 function validateCartItems({ silent = true } = {}) {
     const storageKey = getCartStorageKey();
     if (!storageKey) {
@@ -444,28 +587,28 @@ function clearCart() {
 window.clearCart = clearCart;
 
 
-// Új tételek hozzáadása — ismétlődés nem engedélyezett (nap + menütípus)
-function addItemsToCart(newItems) {
+// Kosárba tétel — előbb kosár-dupla, aztán aktív rendelés ütközés
+async function addItemsToCart(newItems) {
     if (!window.CART_USER_ID) {
         console.warn("Nincs bejelentkezve — kosár nem módosítható.");
-        return { added: false, skipped: newItems };
+        return { added: false, skipped: newItems, orderConflicts: [] };
     }
 
     const cart = getCart();
     const itemsToAdd = [];
-    const duplicates = [];
+    const cartDuplicates = [];
 
+    // 1. már a kosárban van ugyanaz a nap + A/B?
     newItems.forEach((item) => {
         if (isDuplicateInCart(cart, item)) {
-            duplicates.push(item);
+            cartDuplicates.push(item);
         } else {
             itemsToAdd.push(item);
         }
     });
 
-    // Már kosárban lévő tételek — nem adhatók hozzá újra
-    if (duplicates.length > 0) {
-        const messages = duplicates.map((item) => {
+    if (cartDuplicates.length > 0) {
+        const messages = cartDuplicates.map((item) => {
             const dayLabel = DAY_LABELS[item.day] || item.day;
             return `${dayLabel} – ${item.menu_type} menü`;
         });
@@ -473,22 +616,48 @@ function addItemsToCart(newItems) {
         window.showToast?.(`Ez a tétel már a kosárban van: ${messages.join(", ")}`, "error");
     }
 
-    if (itemsToAdd.length === 0) {
-        return { added: false, skipped: duplicates };
+    // 2. már van aktív rendelés erre a napra + A/B-re?
+    const activeSlots = await ensureActiveOrderSlots();
+    let orderConflicts = [];
+    let allowedItems = itemsToAdd;
+
+    if (activeSlots) {
+        orderConflicts = findCartOrderConflicts(itemsToAdd, activeSlots);
+        if (orderConflicts.length > 0) {
+            window.showToast?.(formatCartOrderConflictMessage(orderConflicts), "error");
+            const conflictKeys = new Set(
+                orderConflicts.map((item) => `${item.delivery_date}|${item.menu_type}`),
+            );
+            allowedItems = itemsToAdd.filter(
+                (item) => !conflictKeys.has(`${item.delivery_date}|${item.menu_type}`),
+            );
+        }
     }
 
-    cart.items.push(...itemsToAdd);
+    if (allowedItems.length === 0) {
+        return {
+            added: false,
+            skipped: [...cartDuplicates, ...orderConflicts],
+            orderConflicts,
+        };
+    }
+
+    cart.items.push(...allowedItems);
     saveCart(cart);
 
     const message =
-        itemsToAdd.length === 1
+        allowedItems.length === 1
             ? "A menü hozzáadva a kosárhoz."
-            : `${itemsToAdd.length} menü hozzáadva a kosárhoz.`;
+            : `${allowedItems.length} menü hozzáadva a kosárhoz.`;
 
     window.showToast?.(message, "success");
 
     console.log("Kosár frissítve:", cart);
-    return { added: true, skipped: duplicates };
+    return {
+        added: true,
+        skipped: [...cartDuplicates, ...orderConflicts],
+        orderConflicts,
+    };
 }
 
 window.addItemsToCart = addItemsToCart;
@@ -666,7 +835,7 @@ function calculateCartTotal(items) {
 }
 
 
-// Checkout adatok — cím a bejelentkezett user profiljából
+// Checkout adatok — szállítási cím a UserProfile-ból (/api/auth/me/)
 async function createCheckoutData() {
     const cart = getCart();
     const user = await window.checkAuthSession?.();
@@ -711,18 +880,22 @@ async function handleCheckout() {
         return;
     }
 
+    const activeSlots = await ensureActiveOrderSlots();
+    // Utolsó ellenőrzés checkout előtt — cache elavulhatott
+    if (activeSlots) {
+        const conflicts = findCartOrderConflicts(cart.items, activeSlots);
+        if (conflicts.length > 0) {
+            window.showToast?.(formatCartOrderConflictMessage(conflicts), "error");
+            return;
+        }
+    }
+
     console.log("Checkout adatok:", checkoutData);
 
-    const csrfToken = getCookie("csrftoken");
-
     try {
-        const response = await fetch("/api/orders/create/", {
+        // CSRF + session: apiRequest (core/api.js)
+        const response = await apiRequest("/api/orders/create/", {
             method: "POST",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-                ...(csrfToken ? { "X-CSRFToken": csrfToken } : {}),
-            },
             body: JSON.stringify(checkoutData),
         });
 
@@ -750,6 +923,7 @@ async function handleCheckout() {
         window.showToast?.("Rendelés sikeresen elküldve!", "success");
         clearCart();
         closeCartDrawer();
+        await refreshActiveOrderSlots(); // most már ez a slot is foglalt
     } catch (error) {
         console.error("Rendelési hiba:", error);
         window.showToast?.("Hiba történt a rendelés elküldésekor!", "error");

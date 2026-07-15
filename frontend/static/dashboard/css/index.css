@@ -70,6 +70,11 @@ h1, h2, h3 {
 .sidebar.collapsed {
   padding-left: 12px;
   padding-right: 12px;
+  overflow: visible;
+}
+
+.sidebar.collapsed .menu {
+  overflow: visible;
 }
 
 /* ================= SIDEBAR TOGGLE (X <-> hamburger) ================= */
@@ -170,7 +175,62 @@ h1, h2, h3 {
 }
 
 .sidebar.collapsed .menu a::after {
-  display: none;
+  /* összecsukva: aláhúzás helyett címke-tooltip (csak ikon látszik) */
+  content: attr(data-nav-label);
+  left: calc(100% + 10px);
+  bottom: auto;
+  top: 50%;
+  transform: translateY(-50%);
+  width: auto;
+  height: auto;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(30, 22, 16, 0.96);
+  border: 1px solid rgba(200, 155, 99, 0.35);
+  color: #eee;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+  z-index: 20;
+}
+
+.sidebar.collapsed .menu a:hover::after,
+.sidebar.collapsed .menu a:focus-visible::after {
+  width: auto;
+  opacity: 1;
+}
+
+.sidebar.collapsed .admin-logout-btn {
+  position: relative;
+  gap: 0;
+}
+
+.sidebar.collapsed .admin-logout-btn::after {
+  content: attr(data-nav-label);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(30, 22, 16, 0.96);
+  border: 1px solid rgba(200, 155, 99, 0.35);
+  color: #eee;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+  z-index: 20;
+}
+
+.sidebar.collapsed .admin-logout-btn:hover::after,
+.sidebar.collapsed .admin-logout-btn:focus-visible::after {
+  opacity: 1;
 }
 
 .sidebar.collapsed .menu a,
@@ -1240,6 +1300,12 @@ html.modal-scroll-locked .dashboard .main .content {
   min-width: 0;
   display: flex;
   flex-direction: column;
+  overflow-x: clip;
+}
+
+#orders-section .dash-kpi-strip,
+#bookings-section .dash-kpi-strip {
+  flex-shrink: 0;
 }
 
 .main.orders-layout #orders-section.active .table-card,
@@ -1263,8 +1329,13 @@ html.modal-scroll-locked .dashboard .main .content {
   min-height: 0;
 }
 
+#dashboard-section {
+  min-width: 0;
+  overflow-x: clip;
+}
+
 html, body {
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 /* ================= AKADÁLYMENTESSÉG - VIZUÁLISAN REJTETT CIMKÉK ================= */

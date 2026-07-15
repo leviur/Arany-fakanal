@@ -32,19 +32,19 @@
           <!-- Sor 1: Név + Email -->
           <div class="form-row">
             <div class="form-group">
-              <label for="name">Teljes név <span class="req">*</span></label>
+              <label for="booking-name">Teljes név <span class="req">*</span></label>
               <input
                 type="text"
-                id="name"
+                id="booking-name"
                 placeholder="Pl. Kiss János"
                 autocomplete="name"
               />
             </div>
             <div class="form-group">
-              <label for="email">Email cím <span class="req">*</span></label>
+              <label for="booking-email">Email cím <span class="req">*</span></label>
               <input
                 type="email"
-                id="email"
+                id="booking-email"
                 placeholder="pelda@email.hu"
                 autocomplete="email"
               />
@@ -54,10 +54,10 @@
           <!-- Sor 2: Telefon + Alkalom -->
           <div class="form-row">
             <div class="form-group">
-              <label for="phone">Telefonszám <span class="req">*</span></label>
+              <label for="booking-phone">Telefonszám <span class="req">*</span></label>
               <input
                 type="tel"
-                id="phone"
+                id="booking-phone"
                 placeholder="+36 30 123 4567"
                 autocomplete="tel"
               />
@@ -242,6 +242,7 @@
   {% endblock %}
 
   {% block scripts %}
+    <script src="{% static 'js/booking-form-prefill.js' %}?v=1"></script>
     <script>
     function getCSRFToken() {
       const name = "csrftoken=";
@@ -257,42 +258,75 @@
     }
     </script>
     <script>
+      // dupla foglalás védelem
       let guests = 2;
       const DEFAULT_GUEST_COUNT = 2;
       const submitBtnDefaultHtml = document.querySelector(".submit-btn")?.innerHTML;
 
       const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
+      // bejelentkezve: már lefoglalt nap+idő párok
+      let activeReservationSlots = null;
+
+      function formatTimeSlot(timeStr) {
+        if (!timeStr) return "";
+        return String(timeStr).slice(0, 5);
+      }
+
+      function reservationSlotKey(date, time) {
+        // levágja a másodpercet (20:00:00 → 20:00)
+        return `${date}|${formatTimeSlot(time)}`;
+      }
+
+      async function refreshActiveReservationSlots() {
+        const user = await window.checkAuthSession?.();
+        if (!user?.id) {
+          activeReservationSlots = null;
+          return null;
+        }
+
+        const slots = new Set();
+        let page = 1;
+        let hasMore = true;
+
+        while (hasMore) {
+          const response = await apiRequest(
+            `/api/guest-portal/reservations/?scope=active&page=${page}&page_size=50`,
+          );
+          if (!response.ok) {
+            console.warn("Aktív foglalások lekérdezése sikertelen:", response.status);
+            return null;
+          }
+
+          const data = await response.json();
+          for (const reservation of data.results || []) {
+            if (reservation.date && reservation.time) {
+              slots.add(reservationSlotKey(reservation.date, reservation.time));
+            }
+          }
+          hasMore = Boolean(data.next);
+          page += 1;
+        }
+
+        activeReservationSlots = slots;
+        return slots;
+      }
+
+      function formatReservationConflictMessage(date, time) {
+        // hibaüzenet formátuma
+        const [year, month, day] = date.split("-").map(Number);
+        const months = [
+          "jan.", "feb.", "már.", "ápr.", "máj.", "jún.",
+          "júl.", "aug.", "szept.", "okt.", "nov.", "dec.",
+        ];
+        const dateLabel = `${months[month - 1]} ${day}.`;
+        return `${dateLabel} ${formatTimeSlot(time)} — már foglaltál erre az időpontra.`;
+      }
+
       function changeGuests(delta) {
         guests = Math.max(1, Math.min(20, guests + delta));
         document.getElementById("guest-count").textContent = guests;
       }
-
-      document.getElementById("date").min = new Date()
-        .toISOString()
-        .split("T")[0];
-
-      // Bejelentkezve: név, email, telefon a profilból (üres mezőket tölti ki)
-      function prefillBookingFormFromUser(user) {
-        if (!user?.id) return;
-
-        const nameEl = document.getElementById("name");
-        const emailEl = document.getElementById("email");
-        const phoneEl = document.getElementById("phone");
-        if (!nameEl || !emailEl || !phoneEl) return;
-
-        if (!nameEl.value.trim() && user.name) {
-          nameEl.value = user.name;
-        }
-        if (!emailEl.value.trim() && user.email) {
-          emailEl.value = user.email;
-        }
-        if (!phoneEl.value.trim() && user.phone_number) {
-          phoneEl.value = user.phone_number;
-        }
-      }
-
-      window.prefillBookingFormFromUser = prefillBookingFormFromUser;
 
       // Sikeres küldés után: ürítés + vendégszám alapérték; bejelentkezve profil újratöltése
       function resetBookingForm() {
@@ -311,12 +345,22 @@
           btn.disabled = false;
         }
 
-        window.checkAuthSession?.().then((user) => prefillBookingFormFromUser(user));
+        window.checkAuthSession?.().then((user) => {
+          window.prefillBookingFormFromUser?.(user);
+        });
       }
 
       document.addEventListener("DOMContentLoaded", async () => {
+        const dateEl = document.getElementById("date");
+        if (dateEl) {
+          dateEl.min = new Date().toISOString().split("T")[0];
+        }
+
         const user = await window.checkAuthSession?.();
-        prefillBookingFormFromUser(user);
+
+        if (user?.id) {
+          await refreshActiveReservationSlots();
+        }
 
         try {
           await OpeningHours.fetchOpeningHours();
@@ -338,9 +382,9 @@
       });
 
       function validateBookingForm() {
-        const name = document.getElementById("name").value.trim();
-        const email = document.getElementById("email").value.trim();
-        const phone = document.getElementById("phone").value.trim();
+        const name = document.getElementById("booking-name").value.trim();
+        const email = document.getElementById("booking-email").value.trim();
+        const phone = document.getElementById("booking-phone").value.trim();
         const occasion = document.getElementById("occasion").value;
         const date = document.getElementById("date").value;
         const time = document.getElementById("time").value;
@@ -394,6 +438,10 @@
         if (typeof err === "string") return err;
         if (err?.detail) return err.detail;
 
+        if (Array.isArray(err?.non_field_errors) && err.non_field_errors.length) {
+          return String(err.non_field_errors[0]);
+        }
+
         const fieldMessages = {
           guest_name: "Kérjük, adja meg a teljes nevét!",
           guest_email: "Érvénytelen e-mail cím. Használjon formátumot: pelda@email.hu",
@@ -420,10 +468,19 @@
         e.preventDefault();
 
         const btn = e.target.querySelector(".submit-btn");
-        const validation = validateBookingForm();
+        const validation = validateBookingForm(); //űrlap validálás (név, email, dátum, idő…)
 
         if (typeof validation === "string") {
           window.showToast?.(validation, "error");
+          return;
+        }
+
+        // ha már van aktív foglalás erre a slotra, felesleges POST
+        if (activeReservationSlots?.has(reservationSlotKey(validation.date, validation.time))) {
+          window.showToast?.(
+            formatReservationConflictMessage(validation.date, validation.time),
+            "error",
+          );
           return;
         }
 
@@ -449,6 +506,8 @@
           btn.innerHTML = "✓ Foglalás sikeres!";
           btn.style.background = "#4CAF50";
           window.showToast?.("Foglalás sikeresen elküldve! Hamarosan visszaigazolunk.", "success");
+
+          await refreshActiveReservationSlots();
 
           // Rövid sikerjelzés, majd űrlap ürítése (dupla küldés elkerülése)
           setTimeout(resetBookingForm, 2500);

@@ -1965,7 +1965,7 @@
   "fields": {
     "day": "2026-07-13",
     "menu_type": "A",
-    "soup": 38,
+    "soup": 7,
     "main_course": 17,
     "dessert": 3,
     "price": "1500.00",
@@ -2160,17 +2160,6 @@
   }
 },
 {
-  "model": "opening_hours.openinghoursexception",
-  "pk": 3,
-  "fields": {
-    "date": "2026-07-12",
-    "label": "",
-    "closed": true,
-    "open_time": null,
-    "close_time": null
-  }
-},
-{
   "model": "opening_hours.slasettings",
   "pk": 1,
   "fields": {
@@ -2188,10 +2177,10 @@
   "pk": 1,
   "fields": {
     "password": "pbkdf2_sha256$1200000$mUpd7kd9f2MH4waRAGkdaw$Wv+MdFVkY45ezCwuaZXVOcGgs0kGAvvQOU9ISz6OPfM=",
-    "last_login": "2026-07-10T13:17:05.827Z",
+    "last_login": "2026-07-12T11:04:20.859Z",
     "is_superuser": true,
     "username": "admin",
-    "first_name": "",
+    "first_name": "Teszt Elek",
     "last_name": "",
     "email": "admin@aranyfakanal.hu",
     "is_staff": true,
@@ -2224,10 +2213,10 @@
   "pk": 3,
   "fields": {
     "password": "pbkdf2_sha256$1200000$0pHYmZfNbZ5kaOsqssrAKp$qCaWggMA5CQPeLVPCJBIQRswuXWe7SADy/Ti0qZpMBE=",
-    "last_login": "2026-07-09T20:22:18.833Z",
+    "last_login": "2026-07-12T16:50:05.945Z",
     "is_superuser": false,
     "username": "kissanna@gmail.com",
-    "first_name": "Kiss Anna",
+    "first_name": "Kiss Anna Júlia",
     "last_name": "",
     "email": "kissanna@gmail.com",
     "is_staff": false,
@@ -2379,8 +2368,8 @@
   "pk": 2,
   "fields": {
     "user": 1,
-    "phone_number": "0000000000",
-    "address": "N/A",
+    "phone_number": "+36 30 111 2233",
+    "address": "Szilvaskut 1",
     "role": "admin",
     "created_at": "2026-07-01T18:18:13.947Z"
   }
@@ -2390,8 +2379,8 @@
   "pk": 3,
   "fields": {
     "user": 3,
-    "phone_number": "12345678",
-    "address": "4024 Debrecen, Thomas Mann utca23",
+    "phone_number": "0620123654",
+    "address": "4024 Debrecen, Thomas Mann utca 23",
     "role": "customer",
     "created_at": "2026-07-04T17:02:22.085Z"
   }

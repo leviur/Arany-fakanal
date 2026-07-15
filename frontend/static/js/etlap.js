@@ -1,5 +1,6 @@
 // ======================================================
 // ÉTLAP — kategóriák és ételek az adatbázisból (GET /api/categories/, GET /api/menu/)
+//  Étlap oldal dinamikus tartalma
 // ======================================================
 
 const CATEGORIES_API = "/api/categories/";

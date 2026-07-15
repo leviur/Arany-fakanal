@@ -106,15 +106,10 @@
 /* ================= KPI FILTER CHIPS ================= */
 
 #messages-section .msg-kpi-row {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
   margin-bottom: 16px;
 }
 
 #messages-section .msg-kpi {
-  flex: 1;
-  min-width: 140px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -566,56 +561,5 @@
     order: 3;
     flex-basis: 100%;
     max-width: none;
-  }
-
-  /* Szűk kijelzőn 1 soros, horizontálisan görgethető chip-csík —
-     a páratlan (5) KPI-szám így sosem törik árva elemmel, és csak ~1 sort
-     foglal, nem 2-3 sornyi kártyarácsot, ami elvenné a helyet a listától. */
-  #messages-section .msg-kpi-row {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    scroll-snap-type: x proximity;
-    gap: 8px;
-    margin-bottom: 12px;
-    /* flex-elemként alapból min-width:auto (= tartalom-alapú) lenne, ami
-       kitágítaná a sort a chipek miatt, helyben görgetés helyett */
-    min-width: 0;
-  }
-
-  #messages-section .msg-kpi-row::-webkit-scrollbar {
-    display: none;
-  }
-
-  #messages-section .msg-kpi {
-    flex: 0 0 auto;
-    min-width: 0;
-    padding: 8px 14px;
-    gap: 8px;
-    scroll-snap-align: start;
-    white-space: nowrap;
-  }
-
-  #messages-section .msg-kpi-icon-wrap {
-    width: 26px;
-    height: 26px;
-    font-size: 11px;
-  }
-
-  #messages-section .msg-kpi-text {
-    flex-direction: row;
-    align-items: baseline;
-    gap: 5px;
-  }
-
-  #messages-section .msg-kpi-value {
-    font-size: 14px;
-  }
-
-  #messages-section .msg-kpi-label {
-    font-size: 11px;
-    white-space: nowrap;
   }
 }

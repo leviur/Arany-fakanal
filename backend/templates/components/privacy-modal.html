@@ -1,3 +1,13 @@
+<!--
+  Adatkezelési tájékoztató — modal tartalom.
+
+  Ezt a `privacy-modal.js` kezeli:
+  - nyitás: `[data-open-privacy-modal]` gombok (privacy-consent.html)
+  - wrapper: `#privacyModal` (overlay kattintásra zár)
+  - zárás: `#closePrivacyModal` (X gomb), illetve ESC
+  - elfogadás: `#privacyModalAccept` ("Megértettem") → checkbox bepipál + zárás
+-->
+
 <div
   class="modal privacy-modal"
   id="privacyModal"
@@ -5,6 +15,7 @@
   aria-modal="true"
   aria-labelledby="privacyModalTitle"
   aria-hidden="true"
+  hidden
 >
   <div class="privacy-modal-box">
     <button

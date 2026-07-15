@@ -1,12 +1,16 @@
 // ======================================================
 // HETI MENÜ — főoldal (GET /api/weekly-menu/)
-// A dashboard ugyanabból az adatbázisból tölt; itt a kosár nap-slugjai (hetfo, kedd, …) kellenek.
+//
+// Lekéri a rendelhető heti menüt a szerverről, napnevekre alakítja (hétfő, kedd…), és frissíti a főoldal menü űrlapját.
+//
+// Függőség: cart.js (populateDaySelect  — nap dropdown, validateCartItems - — kosár ellenőrzés menü frissítés után, renderCart)
+// Hívók: homepage DOMContentLoaded, live-sync.js → refreshWeeklyMenu()
 // ======================================================
 
 const WEEKLY_MENU_API = "/api/weekly-menu/";
 const DAY_SLUGS = ["hetfo", "kedd", "szerda", "csutortok", "pentek"];
 
-// A kosár és a menü-megjelenítés ezt a tömböt használja (weekly_menu.json helyett)
+// A kosár és a menü-megjelenítés ezt a tömböt használja (API-ból töltve)
 window.weeklyMenuData = [];
 
 /**
@@ -99,7 +103,7 @@ function showWeeklyMenuLoadError() {
   if (descB) descB.textContent = "Nem sikerült betölteni.";
 }
 
-/** GET /api/weekly-menu/?week_start= — API válasz átalakítása a régi JSON formátumra */
+/** GET /api/weekly-menu/?week_start= — publikus GET, ezért fetch (nem apiRequest) */
 async function loadWeeklyMenuFromApi() {
   const weekStart = getOrderWeekMonday();
   const response = await fetch(`${WEEKLY_MENU_API}?week_start=${weekStart}`);

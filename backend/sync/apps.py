@@ -7,4 +7,4 @@ class SyncConfig(AppConfig):
 
     def ready(self):
         # Signal regisztráció induláskor (revision automatikus növelése).
-        import sync.signals  # noqa: F401
+        import sync.signals  

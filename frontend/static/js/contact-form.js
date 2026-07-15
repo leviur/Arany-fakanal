@@ -1,14 +1,22 @@
 /**
- * Kapcsolatfelvétel űrlap (homepage) — POST /api/contact/create/
+ * contact-form.js — főoldal kapcsolatfelvételi űrlap
+ * 
+ * * Összegyűjti a mezőket, ellenőrzi őket, elküldi a szervernek, siker esetén köszönő üzenetet mutat 
+ *
+ * HTML: homepage.html — .contact-form-fields (#contact-name, #contact-email, …)
+ * Függőség: core/api.js (apiRequest), privacy-modal.js (adatkezelési pipa ellenőrzés, tájékoztató megnyitása)
+ * Backend: POST /api/contact/create/ → ContactMessage (dashboard Üzenetek)
+ *
+ * Hívók: login.js → prefillContactFormFromUser() login/reg után
  */
-document.addEventListener("DOMContentLoaded", () => {
-  const form = document.querySelector(".contact-form-fields");
+document.addEventListener("DOMContentLoaded", () => {  const form = document.querySelector(".contact-form-fields");
   if (!form) return;
 
   const submitBtn = form.querySelector('button[type="submit"]');
   const defaultBtnHtml = submitBtn?.innerHTML ?? "Üzenet küldése";
   const privacyCheckbox = form.querySelector("#contact-privacy");
 
+  // --- Bejelentkezett user: név + e-mail előtöltése (session nem kötelező a küldéshez) ---
   function prefillContactFormFromUser(user) {
     if (!user?.id) return;
 
@@ -27,6 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.prefillContactFormFromUser = prefillContactFormFromUser;
   window.checkAuthSession?.().then(prefillContactFormFromUser);
 
+  // --- Küldés: adatkezelés → validáció → POST /api/contact/create/ ---
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -34,6 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // Publikus endpoint — bejelentkezés nélkül is küldhető
     const payload = {
       name: form.querySelector("#contact-name")?.value.trim() ?? "",
       email: form.querySelector("#contact-email")?.value.trim() ?? "",
@@ -53,16 +63,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      const headers = { "Content-Type": "application/json" };
-      const csrfToken = getCookie("csrftoken");
-      if (csrfToken) {
-        headers["X-CSRFToken"] = csrfToken;
-      }
-
-      const response = await fetch("/api/contact/create/", {
+      const response = await apiRequest("/api/contact/create/", {
         method: "POST",
-        credentials: "include",
-        headers,
         body: JSON.stringify(payload),
       });
 
@@ -84,15 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-      return parts.pop().split(";").shift();
-    }
-    return null;
-  }
-
+  // Django REST hibák: { detail: "..." } vagy mezőnkénti üzenetlista
   function formatApiError(err) {
     if (!err || typeof err !== "object") {
       return "Az üzenet küldése sikertelen. Próbáld újra később.";
@@ -108,6 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return parts.length ? parts.join(" ") : "Az üzenet küldése sikertelen.";
   }
 
+  // Siker után az űrlap helyett fix köszönő blokk (nincs „új üzenet” gomb)
   function showContactSuccess(container) {
     if (!container) return;
 

@@ -1,33 +1,10 @@
-/**********************
- * 🔐 AUTH CHECK — dashboard védése
- *
- *   szerveroldali session ellenőrzés /api/auth/me/ végponton
- **********************/
-function getCookie(name) {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) {
-    return parts.pop().split(";").shift();
-  }
-  return null;
-}
+/* Dashboard belépés — csak admin role maradhat az oldalon (checkAuthSession). */
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
-    // Session ellenőrzés: van-e érvényes bejelentkezés?
-    const response = await fetch("/api/auth/me/", {
-      credentials: "include",
-    });
+    const user = await checkAuthSession();
 
-    if (!response.ok) {
-      window.location.replace("/");
-      return;
-    }
-
-    const user = await response.json();
-
-    // /api/auth/me/ nem bejelentkezve: { authenticated: false }
-    if (!user.id || user.authenticated === false || user.role !== "admin") {
+    if (!user || user.role !== "admin") {
       alert("Ehhez az oldalhoz nincs jogosultsága!");
       window.location.replace("/");
       return;
@@ -49,11 +26,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 
-/**********************
- * ❗ GLOBALS
- **********************/
-
-
+// Közös állapot: SLA küszöbök, nyitvatartás (sla-rules.js, settings.js tölti)
 window.APP_STATE = {
   // SLA küszöbök — SlaRules.fetchSlaRules() tölti fel az API-ból (lásd sla-rules.js)
   statusLimits: {
@@ -72,10 +45,8 @@ window.APP_STATE = {
   openingHours: {},
 };
 
-/**********************
- * 🔐 AUTH MODULE
- **********************/
 const Auth = (() => {
+  // Kijelentkezés megerősítő modal megnyitása
   function logout() {
     const modal = document.getElementById("logoutModal");
     if (!modal) return;
@@ -92,16 +63,10 @@ const Auth = (() => {
     setTimeout(() => modal.classList.add("modal-hidden"), 200);
   }
 
+  // POST /api/auth/logout/ → főoldal
   async function confirmLogout() {
     try {
-      // Session törlése a szerveren, majd visszairányítás a főoldalra
-      await fetch("/api/auth/logout/", {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "X-CSRFToken": getCookie("csrftoken"),
-        },
-      });
+      await apiRequest("/api/auth/logout/", { method: "POST" });
     } catch (error) {
       console.error("Kijelentkezés sikertelen:", error);
     }
@@ -113,9 +78,6 @@ const Auth = (() => {
 })();
 
 
-/**********************
- * 🎛️ UI MODULE
- **********************/
 const SECTION_TITLES = {
   "dashboard-section": "Dashboard",
   "orders-section": "Rendelések",
@@ -126,6 +88,7 @@ const SECTION_TITLES = {
 };
 
 const UI = (() => {
+  // Sidebar kattintás: szekcióváltás, topbar cím, layout osztályok
   function switchSection(targetId) {
     const leavingSettingsWithUnsaved =
       window.settingsDirty &&
@@ -165,12 +128,13 @@ const UI = (() => {
     document.querySelector(".main")?.classList.toggle("bookings-layout", targetId === "bookings-section");
     document.querySelector(".main")?.classList.toggle("messages-layout", targetId === "messages-section");
 
-    // generál egy véletlenszerű időt
+    // Rendelések szekció: főoldali statok + „Frissítve” időbélyeg
     if (targetId === "orders-section") {
       refreshDashboard({ times: true });
     }
   }
 
+  // Főoldal fülek (Áttekintés / Teendők)
   function switchTab(tabId, btn) {
     document.querySelectorAll(".tab-content").forEach(t => {
       t.classList.remove("active");
@@ -197,9 +161,7 @@ const UI = (() => {
 })();
 
 
-/**********************
- * 🚀 APP
- **********************/
+// Nyitott modalnál a háttér görgetés tiltása (wheel + touch)
 const ModalScrollLock = (() => {
   let locked = false;
 
@@ -258,6 +220,7 @@ const ModalScrollLock = (() => {
 const App = (() => {
   let closeMobileSidebar = () => {};
 
+  // Gombok, sidebar, frissítés, gyorsműveletek
   function bindEvents() {
 
     document.addEventListener("input", (e) => {
@@ -280,21 +243,12 @@ const App = (() => {
       if (e.target === logoutModal) Auth.closeLogoutModal();
     });
 
-    // Profil-chip kitöltése — adatok a session-ből (window.CURRENT_USER), nem localStorage-ból
-    const userName = window.CURRENT_USER?.name;
-    if (userName) {
-      const initials = userName
-        .split(" ")
-        .map(word => word[0])
-        .join("")
-        .toUpperCase();
+    // Admin topbar chip — személyes név nélkül, csak „Admin”
+    const profileAvatar = document.getElementById("profileAvatar");
+    const profileName = document.getElementById("profileName");
 
-      const profileAvatar = document.getElementById("profileAvatar");
-      const profileName = document.getElementById("profileName");
-
-      if (profileAvatar) profileAvatar.textContent = initials;
-      if (profileName) profileName.textContent = userName;
-    }
+    if (profileAvatar) profileAvatar.textContent = "A";
+    if (profileName) profileName.textContent = "Admin";
 
     // Sidebar összecsukás (asztali ikon-csík nézet)
     const sidebar = document.querySelector(".sidebar");
@@ -435,12 +389,19 @@ const App = (() => {
 
   }
 
+  // Bal menü linkek → UI.switchSection (belső szekció vagy külső URL)
   function bindSidebar() {
     document.querySelectorAll(".menu a").forEach(link => {
       link.addEventListener("click", (e) => {
-        e.preventDefault();
-
         const target = link.dataset.target;
+
+        // Külső navigáció ( pl. Főoldal → / ) 
+        if (!target) {
+          closeMobileSidebar();
+          return;
+        }
+
+        e.preventDefault();
 
         UI.switchSection(target);
         closeMobileSidebar();
@@ -453,6 +414,7 @@ const App = (() => {
     });
   }
 
+  // Beállítások + rendelések betöltése, szekciók első renderje, live-sync előkészítés
   async function init() {
 
     window.appData = window.appData || {};
@@ -467,7 +429,7 @@ const App = (() => {
       window.showToast?.("Beállítások betöltése sikertelen", "error");
     }
 
-    // Rendelések betöltése az adatbázisból (demoOrders helyett)
+    // Rendelések betöltése az adatbázisból
     try {
       await loadOrdersFromApi();
     } catch (error) {
@@ -495,17 +457,14 @@ const App = (() => {
     }
 
     refreshDashboard({ times: true });
+
+    if (typeof startLiveTimeTicker === "function") {
+      startLiveTimeTicker();
+    }
   }
 
   return { init };
 })();
-
-
-/**********************
- * 🔔 TOAST MODUL
- * A showToast függvény közös komponensbe lett kiemelve:
- * static/js/toast.js — betöltve a dashboard/index.html <head>-jében.
- **********************/
 
 
 

@@ -1,6 +1,6 @@
-// ======================================================
-// ORDERS HELPERS — statusLimits az APP_STATE-ből (GET /api/sla-rules/)
-// ======================================================
+/* Dashboard főoldal — mai statok, teendők, agenda, trend. */
+
+// SLA túllépés: a státuszhoz tartozó perc-limit felett piros jelzés
 function isProblemOrder(o) {
   const status = (o.status || "").trim();
 
@@ -16,6 +16,7 @@ function isProblemOrder(o) {
   return false;
 }
 
+// „2026.07.14 …” szöveg = mai nap
 function isToday(dateText) {
   if (!dateText) return false;
 
@@ -34,23 +35,7 @@ function isToday(dateText) {
 }
 
 
-function getMinutesFromOrderTime(timeText) {
-  if (!timeText) return 0;
-
-  const [datePart, timePart] = timeText.split(" ");
-  if (!datePart || !timePart) return 0;
-
-  const [y, m, d] = datePart.split(".").map(Number);
-  const [h, min] = timePart.split(":").map(Number);
-
-  const orderDate = new Date(y, m - 1, d, h, min, 0);
-
-  return Math.floor((Date.now() - orderDate.getTime()) / 60000);
-}
-
-// ======================================================
-// BOOKING SLA — getBookingStatus() a settings.js-ben (APP_STATE bookingLimits)
-// ======================================================
+// Foglalás teendő szintje — settings.js getBookingStatus() alapján
 function getBookingTodoLevel(booking) {
   const sla = typeof getBookingStatus === "function"
     ? getBookingStatus(booking)
@@ -65,9 +50,7 @@ function getBookingTodoLevel(booking) {
   return null;
 }
 
-// ======================================================
-// ORDERS DASHBOARD
-// ======================================================
+// Felső KPI: mai rendelések száma, aktív, kiszállítás alatt
 function updateDashboardStats() {
   const orders = window.appData?.orders || [];
 
@@ -112,9 +95,7 @@ function updateDashboardStats() {
     issues
   });
 }
-// ======================================================
-// BOOKINGS DASHBOARD
-// ======================================================
+// Foglalások KPI (stat-total-bookings) — sidebar badge külön számolódik
 function updateBookingDashboardStats() {
   const bookings = Bookings.getBookings?.() || [];
 
@@ -143,9 +124,7 @@ function updateBookingDashboardStats() {
   console.log("📊 Booking dashboard:", { total, confirmed, guests, problems });
 }
 
-// ======================================================
-// SEGÉDFÜGGVÉNY: lista-tartalom csere finom crossfade-del
-// ======================================================
+// Lista csere rövid elhalványítással (frissítés gombnál)
 function fadeRender(container, draw) {
   if (!container) return;
 
@@ -162,9 +141,7 @@ function fadeRender(container, draw) {
   }, 150);
 }
 
-// ======================================================
-// TEENDŐK (kezeletlen rendelések + foglalások)
-// ======================================================
+// Teendők blokk kirajzolása (üres állapot vagy todo-item sorok)
 function renderTodoList(container, items) {
   if (!container) return;
 
@@ -176,12 +153,20 @@ function renderTodoList(container, items) {
       return;
     }
 
-    // lejárt teendők előre
-    items.sort((a, b) => (a.level === "problem" ? -1 : 1) - (b.level === "problem" ? -1 : 1));
+    // SLA-probléma elöl, majd közelgő kiszállítási dátum
+    items.sort((a, b) => {
+      const rank = (level) => (level === "problem" ? 0 : level === "warning" ? 1 : 2);
+      const diff = rank(a.level) - rank(b.level);
+      if (diff !== 0) return diff;
+      if (a.sortDate && b.sortDate) {
+        return String(a.sortDate).localeCompare(String(b.sortDate));
+      }
+      return 0;
+    });
 
     items.forEach(t => {
       const div = document.createElement("div");
-      div.className = `todo-item level-${t.level}`;
+      div.className = `todo-item${t.level ? ` level-${t.level}` : ""}`;
       div.innerHTML = `
         <span class="todo-name">${t.name}</span>
         <span class="todo-reason">${t.reason}</span>
@@ -191,30 +176,44 @@ function renderTodoList(container, items) {
   });
 }
 
+// Kezeletlen rendelés-napok → todo-orders-list (getUnhandledOrderRows)
 function renderOrderTodos() {
   const container = document.getElementById("todo-orders-list");
   if (!container) return;
 
-  const todos = [];
-  const orders = window.appData?.orders || [];
+  const rows = typeof getUnhandledOrderRows === "function"
+    ? getUnhandledOrderRows()
+    : [];
 
-  orders.forEach(o => {
-    if (!isProblemOrder(o)) return;
+  const todos = rows.map((row) => {
+    const status = (row.rowStatus || "").trim();
+    const slaProblem = typeof isProblemRow === "function" && isProblemRow(row);
+    const dateLabel = typeof formatOrderDate === "function"
+      ? formatOrderDate(row.deliveryDate)
+      : row.deliveryDate;
 
-    const status = (o.status || "").trim();
-    const minutesAgo = getMinutesFromOrderTime(o.createdAt);
+    // SLA túllépés: olvasható idő + limit (pl. „Új: 1 órája (limit: 30 perc)”)
+    let reason = status;
+    if (slaProblem) {
+      const limit = window.APP_STATE?.statusLimits?.[status];
+      reason = typeof formatSlaTodoReason === "function" && limit
+        ? formatSlaTodoReason(status, row.order.createdAt, limit)
+        : `${status}: ${relativeTime(row.order.createdAt)}`;
+    }
 
-    todos.push({
-      level: "warning",
-      name: `#${o.id} – ${o.name}`,
-      reason: `${status}: ${minutesAgo} perce`,
-    });
+    return {
+      level: slaProblem ? "problem" : "",
+      sortDate: row.deliveryDate || "",
+      name: `#${row.order.id} – ${row.order.name} · ${dateLabel}`,
+      reason,
+    };
   });
 
   renderTodoList(container, todos);
   return todos.length;
 }
 
+// SLA-problémás foglalások → todo-bookings-list
 function renderBookingTodos() {
   const container = document.getElementById("todo-bookings-list");
   if (!container) return;
@@ -237,6 +236,7 @@ function renderBookingTodos() {
   return todos.length;
 }
 
+// Sidebar számláló badge (rendelések / foglalások menüpont)
 function updateSidebarNavBadge(badgeId, count) {
   const badge = document.getElementById(badgeId);
   if (!badge) return;
@@ -250,6 +250,7 @@ function updateSidebarNavBadge(badgeId, count) {
   }
 }
 
+// Teendők összesítése + KPI kártya + sidebar badge-ek
 function renderTodos() {
   const orderCount = renderOrderTodos();
   const bookingCount = renderBookingTodos();
@@ -265,9 +266,7 @@ function renderTodos() {
   updateSidebarNavBadge("sidebar-bookings-badge", bookingCount);
 }
 
-// ======================================================
-// MAI FOGLALÁSOK - AGENDA
-// ======================================================
+// Mai foglalások időrendben — agenda-list
 function renderAgenda() {
   const container = document.getElementById("agenda-list");
   if (!container) return;
@@ -303,9 +302,7 @@ function renderAgenda() {
   });
 }
 
-// ======================================================
-// HETI RENDELÉS-TREND
-// ======================================================
+// Heti oszlopdiagram — rendelések létrehozási napja szerint
 function renderTrendChart() {
   const container = document.getElementById("trend-chart");
   if (!container) return;
@@ -363,9 +360,7 @@ function renderTrendChart() {
   </p>`;
 }
 
-// ======================================================
-// LEGNÉPSZERŰBB MENÜK
-// ======================================================
+// Top 5 menü tétel összesített mennyiség alapján
 function renderTopItems() {
   const container = document.getElementById("top-items-list");
   if (!container) return;
@@ -412,9 +407,7 @@ function renderTopItems() {
   `;
 }
 
-// ======================================================
-// LEGUTÓBBI ÜZENETEK
-// ======================================================
+// Utolsó 3 üzenet + olvasatlan szám (KPI + sidebar badge)
 function renderMessagesPreview() {
   const container = document.getElementById("messages-preview-list");
 
@@ -460,9 +453,36 @@ function escapeHtml(str) {
   }[c]));
 }
 
-// ======================================================
-// REFRESH
-// ======================================================
+// Időfüggő kijelzések frissítése API nélkül („X perce”, SLA piros/sárga sorok, teendők)
+function refreshLiveTimeDisplays() {
+  if (document.hidden) return;
+
+  renderTodos();
+
+  if (document.getElementById("orders-section")?.classList.contains("active")) {
+    if (typeof renderOrders === "function") renderOrders(false);
+  }
+
+  if (document.getElementById("bookings-section")?.classList.contains("active")) {
+    if (typeof Bookings !== "undefined") Bookings.renderBookings(false);
+  }
+}
+
+function startLiveTimeTicker() {
+  const TICK_MS = 60_000;
+
+  refreshLiveTimeDisplays();
+  setInterval(refreshLiveTimeDisplays, TICK_MS);
+
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) refreshLiveTimeDisplays();
+  });
+}
+
+window.refreshLiveTimeDisplays = refreshLiveTimeDisplays;
+window.startLiveTimeTicker = startLiveTimeTicker;
+
+// Főoldal teljes újrarajz — live-sync és frissítés gomb is ezt hívja
 window.refreshDashboard = function () {
   updateDashboardStats();
   updateBookingDashboardStats();

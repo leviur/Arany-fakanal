@@ -1,0 +1,323 @@
+/* =========================================================
+   guest-portal/css/sections.css — Guest Portal üres szekciók „Hamarosan” kártyái
+   A 3–6. fázisban ezek helyére jönnek a valódi listák / űrlapok.
+   ========================================================= */
+
+.gp-placeholder {
+  background: #fff;
+  border-radius: var(--radius, 14px);
+  border: 1px solid rgba(197, 160, 89, 0.2);
+  box-shadow: var(--shadow, 0 6px 20px rgba(0, 0, 0, 0.08));
+  padding: clamp(28px, 6vw, 48px) clamp(20px, 5vw, 40px);
+  text-align: center;
+  max-width: 560px;
+}
+
+.gp-placeholder-icon {
+  font-size: 2.2rem;
+  color: var(--gold, #c5a059);
+  margin-bottom: 16px;
+  opacity: 0.85;
+}
+
+.gp-placeholder h2 {
+  font-size: 1.5rem;
+  color: #2d221b;
+  margin-bottom: 12px;
+}
+
+.gp-placeholder p {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--text-light, #777);
+  margin-bottom: 20px;
+}
+
+.gp-placeholder-badge {
+  display: inline-block;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(197, 160, 89, 0.12);
+  border: 1px solid rgba(197, 160, 89, 0.25);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8b6914;
+}
+
+/* ================= ADATAIM — Account Hub elrendezés ================= */
+/* Profil fejléc + 2 kártya grid + bejelentkezés sáv (A koncepció) */
+
+#guest-portal-account-section .gp-account-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+/* ── Kontextus sáv: reg. dátum — a topbar név/szerepkörét nem ismétli ── */
+#guest-portal-account-section .gp-account-context {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 22px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ffffff 0%, #fbf7f2 100%);
+  border: 1px solid rgba(200, 155, 99, 0.18);
+  box-shadow: 0 6px 18px rgba(45, 34, 27, 0.05);
+}
+
+#guest-portal-account-section .gp-account-context-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(197, 160, 89, 0.12);
+  color: var(--gold, #c5a059);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+#guest-portal-account-section .gp-account-context-text {
+  min-width: 0;
+}
+
+#guest-portal-account-section .gp-account-context-text > p:first-child {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #2d221b;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+#guest-portal-account-section .gp-account-context-hint {
+  font-size: 0.82rem;
+  color: #6b5d52;
+  line-height: 1.45;
+  font-style: italic;
+}
+
+/* ── Űrlap: két oszlopos kártya grid + alul e-mail blokk ── */
+#guest-portal-account-section .gp-account-form-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+#guest-portal-account-section .gp-account-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+}
+
+#guest-portal-account-section .settings-block {
+  background: #fff;
+  border-radius: 18px;
+  padding: 20px;
+  border: 1px solid rgba(200, 155, 99, 0.15);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+}
+
+#guest-portal-account-section .settings-block h3 {
+  font-family: "Playfair Display", serif;
+  font-size: 20px;
+  color: #2d221b;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+#guest-portal-account-section .settings-block h3::after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 3px;
+  margin-top: 8px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--gold, #c5a059), var(--gold-light, #f4e8d1));
+}
+
+#guest-portal-account-section .settings-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+#guest-portal-account-section .setting-row {
+  display: flex;
+  flex-direction: column;
+  background: #f7f3ee;
+  padding: 14px 16px;
+  border-radius: 12px;
+  transition: transform 0.2s;
+  gap: 6px;
+}
+
+#guest-portal-account-section .setting-row:hover {
+  transform: translateY(-1px);
+}
+
+#guest-portal-account-section .setting-row-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+#guest-portal-account-section .setting-row-main--stack {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+}
+
+#guest-portal-account-section .setting-row-main label {
+  font-weight: 600;
+  color: #2d221b;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Lakat a label mellett — nem takarja az e-mail szöveget */
+#guest-portal-account-section .gp-field-locked-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #8b7355;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+#guest-portal-account-section .gp-field-locked-hint i {
+  font-size: 0.68rem;
+  opacity: 0.85;
+}
+
+#guest-portal-account-section .gp-required {
+  color: #9a3028;
+}
+
+#guest-portal-account-section .input-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+#guest-portal-account-section .input-wrapper--full {
+  width: 100%;
+}
+
+#guest-portal-account-section .input-wrapper--full input,
+#guest-portal-account-section .input-wrapper--full textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  background: #fff;
+  text-align: left;
+  font-weight: 500;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text-dark, #333);
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+/* Zárolt e-mail mező — halvány háttér, normál padding (lakat a labelen) */
+#guest-portal-account-section .input-wrapper--full input:disabled {
+  background: #f5f0e8;
+  color: var(--text-light, #777);
+  cursor: not-allowed;
+}
+
+#guest-portal-account-section .input-wrapper--full textarea {
+  resize: vertical;
+  min-height: 120px;
+  line-height: 1.45;
+}
+
+#guest-portal-account-section .input-wrapper--full input:focus,
+#guest-portal-account-section .input-wrapper--full textarea:focus {
+  border-color: var(--gold, #c5a059);
+  box-shadow: 0 0 0 3px rgba(197, 160, 89, 0.15);
+}
+
+#guest-portal-account-section .helper-text {
+  font-size: 0.75em;
+  color: #6b5d52;
+  font-style: italic;
+  font-weight: normal;
+  line-height: 1.35;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  padding-top: 6px;
+}
+
+#guest-portal-account-section .gp-address-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-style: normal;
+}
+
+#guest-portal-account-section .gp-address-info i {
+  color: var(--gold, #c5a059);
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+#guest-portal-account-section .save-menu-btn {
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, var(--gold, #c5a059), #8b5e3c);
+  color: white;
+  font-weight: 600;
+  width: 100%;
+  cursor: pointer;
+  transition: opacity 160ms ease, transform 160ms ease-out;
+}
+
+#guest-portal-account-section .save-menu-btn:hover {
+  opacity: 0.9;
+}
+
+#guest-portal-account-section .save-menu-btn:active {
+  transform: scale(0.97);
+}
+
+#guest-portal-account-section .save-menu-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* Tablet: kártyák egymás alá */
+@media (max-width: 768px) {
+  #guest-portal-account-section .gp-account-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  #guest-portal-account-section .gp-account-context {
+    padding: 14px 16px;
+  }
+
+  #guest-portal-account-section .settings-block {
+    padding: 14px;
+  }
+
+  #guest-portal-account-section .setting-row {
+    padding: 10px 12px;
+  }
+}

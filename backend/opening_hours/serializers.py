@@ -1,6 +1,13 @@
+# Nyitvatartás + SLA — JSON ↔ adatbázis.
+#
+# GET: build_*_payload() összerakja a választ az DB-ből
+# PUT: *PayloadSerializer.save() ellenőrzi az űrlapot, ment, bump_revision()
+#
+# Front: opening-hours.js (nyitvatartás), settings.js + sla-rules.js (SLA)
+# Logika olvasáshoz: services.py (pl. foglalás slot ellenőrzés)
+
 from datetime import datetime, time
 
-from django.utils import timezone
 from rest_framework import serializers
 
 from .constants import WEEKDAY_KEYS
@@ -8,12 +15,14 @@ from .models import OpeningHoursException, WeeklyOpeningHour
 
 
 def _format_time(value):
+    # DB time mező → "11:00" string (API / front formátum)
     if value is None:
         return None
     return value.strftime("%H:%M")
 
 
 def _parse_time(value):
+    # "11:00" string → time objektum mentéshez. services.py is ezt használja.
     if not value:
         return None
     if isinstance(value, time):
@@ -22,6 +31,8 @@ def _parse_time(value):
 
 
 class DayHoursSerializer(serializers.Serializer):
+    # Egy nap nyitvatartása — heti sablon egy sora (pl. monday: zárva / 11:00–22:00)
+
     closed = serializers.BooleanField()
     open = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     close = serializers.CharField(required=False, allow_null=True, allow_blank=True)
@@ -32,6 +43,7 @@ class DayHoursSerializer(serializers.Serializer):
         close_raw = attrs.get("close")
 
         if closed:
+            # Zárva nap — open/close nem kell
             attrs["open"] = None
             attrs["close"] = None
             return attrs
@@ -50,6 +62,8 @@ class DayHoursSerializer(serializers.Serializer):
 
 
 class OpeningHoursExceptionSerializer(serializers.Serializer):
+    # Kivétel nap — konkrét dátum (pl. dec. 24. zárva, vagy rövidebb nyitvatartás)
+
     date = serializers.DateField()
     label = serializers.CharField(required=False, allow_blank=True, default="")
     closed = serializers.BooleanField()
@@ -57,6 +71,7 @@ class OpeningHoursExceptionSerializer(serializers.Serializer):
     close = serializers.CharField(required=False, allow_null=True, allow_blank=True)
 
     def validate(self, attrs):
+        # Ugyanaz a szabály, mint DayHoursSerializer — zárva vagy open < close
         closed = attrs.get("closed", True)
         open_raw = attrs.get("open")
         close_raw = attrs.get("close")
@@ -80,10 +95,13 @@ class OpeningHoursExceptionSerializer(serializers.Serializer):
 
 
 class OpeningHoursPayloadSerializer(serializers.Serializer):
+    # PUT /api/opening-hours/ teljes body — dashboard Beállítások nyitvatartás fül
+
     opening_hours = serializers.DictField(child=DayHoursSerializer())
     exceptions = OpeningHoursExceptionSerializer(many=True, required=False, default=list)
 
     def validate_opening_hours(self, value):
+        # Mind a 7 nap kötelező (monday … sunday)
         missing = [day for day in WEEKDAY_KEYS if day not in value]
         if missing:
             raise serializers.ValidationError(f"Hiányzó napok: {', '.join(missing)}")
@@ -93,6 +111,7 @@ class OpeningHoursPayloadSerializer(serializers.Serializer):
         opening_hours = self.validated_data["opening_hours"]
         exceptions = self.validated_data.get("exceptions", [])
 
+        # Heti sablon — naponta update_or_create
         for day, data in opening_hours.items():
             WeeklyOpeningHour.objects.update_or_create(
                 day=day,
@@ -103,6 +122,7 @@ class OpeningHoursPayloadSerializer(serializers.Serializer):
                 },
             )
 
+        # Kivételek — ami nincs a listában, törlődik (admin eltávolította)
         exception_dates = []
         for item in exceptions:
             exception_dates.append(item["date"])
@@ -118,7 +138,7 @@ class OpeningHoursPayloadSerializer(serializers.Serializer):
 
         OpeningHoursException.objects.exclude(date__in=exception_dates).delete()
 
-        # Mentés után revision++ → live-sync.js → OpeningHours.fetchOpeningHours()
+        # Másik ablak / főoldal frissüljön — opening-hours.js újratölt
         from sync.services import bump_revision
 
         bump_revision()
@@ -126,6 +146,7 @@ class OpeningHoursPayloadSerializer(serializers.Serializer):
 
 
 def weekly_row_to_dict(row):
+    # WeeklyOpeningHour ORM sor → JSON (GET válasz egy napja)
     return {
         "closed": row.closed,
         "open": _format_time(row.open_time),
@@ -134,6 +155,7 @@ def weekly_row_to_dict(row):
 
 
 def exception_row_to_dict(row):
+    # OpeningHoursException ORM sor → JSON
     return {
         "date": row.date.isoformat(),
         "label": row.label,
@@ -144,6 +166,7 @@ def exception_row_to_dict(row):
 
 
 def build_opening_hours_payload():
+    # GET /api/opening-hours/ válasz — az egész hetet + kivételeket összerakja
     weekly = {
         row.day: weekly_row_to_dict(row)
         for row in WeeklyOpeningHour.objects.all()
@@ -159,12 +182,14 @@ def build_opening_hours_payload():
 
 
 class SlaRulesPayloadSerializer(serializers.Serializer):
-    """Dashboard SLA — rendelés státusz limitek (perc) + foglalás figyelmeztetések."""
+    # PUT /api/sla-rules/ — dashboard Beállítások SLA fül
+    # Mikor legyen piros/sárga egy rendelés vagy foglalás sor (perc / óra küszöbök)
 
     status_limits = serializers.DictField(child=serializers.IntegerField(min_value=1))
     booking_limits = serializers.DictField(child=serializers.IntegerField(min_value=1))
 
     def validate_status_limits(self, value):
+        # Mind a 4 rendelés-státusz kell: Új, Elfogadva, Készül, Kiszállítás alatt
         from .constants import ORDER_STATUS_LIMIT_KEYS
 
         missing = [key for key in ORDER_STATUS_LIMIT_KEYS if key not in value]
@@ -173,6 +198,7 @@ class SlaRulesPayloadSerializer(serializers.Serializer):
         return value
 
     def validate_booking_limits(self, value):
+        # Foglalás figyelmeztetés mezők — warnNew, problemNew, warnConfirmed
         from .constants import BOOKING_LIMIT_KEYS
 
         missing = [key for key in BOOKING_LIMIT_KEYS if key not in value]
@@ -196,7 +222,6 @@ class SlaRulesPayloadSerializer(serializers.Serializer):
         settings.booking_warn_confirmed_hours = booking_limits["warnConfirmed"]
         settings.save()
 
-        # SLA mentés → revision++ → dashboard beállítások + rendelés színezés frissül ("valami megváltozott, érdemes újratölteni az adatokat”.)
         from sync.services import bump_revision
 
         bump_revision()
@@ -204,6 +229,7 @@ class SlaRulesPayloadSerializer(serializers.Serializer):
 
 
 def build_sla_rules_payload():
+    # GET /api/sla-rules/ válasz — APP_STATE / sla-rules.js ebből tölt
     from .models import SlaSettings
     from .services import ensure_sla_settings
 
@@ -222,4 +248,3 @@ def build_sla_rules_payload():
             "warnConfirmed": settings.booking_warn_confirmed_hours,
         },
     }
-

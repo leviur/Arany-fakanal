@@ -17,7 +17,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import LoginSerializer, RegisterSerializer, user_to_dict
+from .serializers import LoginSerializer, MeUpdateSerializer, RegisterSerializer, user_to_dict
 
 
 class LoginView(APIView):
@@ -94,20 +94,30 @@ class RegisterView(APIView):
 @method_decorator(ensure_csrf_cookie, name="dispatch")
 class MeView(APIView):
     """
-    GET /api/auth/me/
-    Visszaadja az aktuális bejelentkezett felhasználót.
-
-    Ha nincs session: { "authenticated": false }
-    Ha van session:   { id, email, name, role, ... }
+    GET  /api/auth/me/   — aktuális felhasználó (vagy { authenticated: false })
+    PATCH /api/auth/me/  — "saját adatok mentése" (név, telefon, cím)
 
     Az ensure_csrf_cookie biztosítja, hogy a GET kérés beállítsa
-    a csrftoken cookie-t a későbbi POST kérésekhez.
+    a csrftoken cookie-t a későbbi POST/PATCH kérésekhez.
     """
 
-    permission_classes = [AllowAny]  # nem bejelentkezett user is hívhatja (false-t kap)
+    permission_classes = [AllowAny]  # GET: nem bejelentkezett user is hívhatja
 
     def get(self, request):
-        if not request.user.is_authenticated:
-            return Response({"authenticated": False})
+        if not request.user.is_authenticated: # Ha nincs bejelentkezve 
+            return Response({"authenticated": False}) # visszaadja: { "authenticated": false }
 
         return Response(user_to_dict(request.user))
+
+    def patch(self, request):
+        if not request.user.is_authenticated: # Ha nincs bejelentkezve: 
+            return Response(
+                {"detail": "Bejelentkezés szükséges."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+
+        serializer = MeUpdateSerializer(data=request.data) # Ha be van: a MeUpdateSerializer validálja a küldött adatokat, majd frissíti a user profilját (név/telefon/cím), és visszaadja az új user adatokat.
+        serializer.is_valid(raise_exception=True)
+        user = serializer.update(request.user, serializer.validated_data)
+
+        return Response(user_to_dict(user))

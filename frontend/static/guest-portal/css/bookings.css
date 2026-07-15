@@ -1,0 +1,491 @@
+/* =========================================================
+   guest-portal/css/bookings.css — Foglalásaim szekció
+   A tabok/bannerek stílusa: orders.css (gp-orders-*)
+   ========================================================= */
+
+.gp-bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.gp-bookings-list--closed {
+  gap: 8px;
+}
+
+/* ── Aktív: kártya ── */
+.gp-booking-card {
+  background: linear-gradient(180deg, #ffffff 0%, #fbf7f2 100%);
+  border: 1px solid rgba(200, 155, 99, 0.15);
+  border-radius: 20px;
+  box-shadow: 0 12px 30px rgba(45, 34, 27, 0.06);
+  overflow: hidden;
+}
+
+.gp-booking-card-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.gp-booking-card-toggle-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.gp-booking-card-toggle-title {
+  display: block;
+  font-family: "Playfair Display", serif;
+  font-size: 1.05rem;
+  color: #2d221b;
+  margin-bottom: 4px;
+}
+
+.gp-booking-card-toggle-summary {
+  display: block;
+  font-size: 0.82rem;
+  color: #6b5d52;
+}
+
+.gp-booking-card-toggle-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.gp-booking-card-chevron {
+  color: var(--gold, #c5a059);
+  font-size: 0.85rem;
+  transition: transform 200ms ease;
+}
+
+.gp-booking-card.is-expanded .gp-booking-card-chevron {
+  transform: rotate(180deg);
+}
+
+.gp-booking-card-body {
+  padding: 0 20px 20px;
+  border-top: 1px solid rgba(200, 155, 99, 0.1);
+}
+
+.gp-booking-card.is-expanded .gp-booking-card-body {
+  padding-top: 16px;
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.gp-booking-card.is-collapsed .gp-booking-card-body {
+  display: none;
+}
+
+/* ── Lezárt: kompakt sor ── */
+.gp-booking-row {
+  position: relative;
+  background: #fff;
+  border: 1px solid rgba(200, 155, 99, 0.15);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(45, 34, 27, 0.04);
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.gp-booking-row.is-expanded {
+  background: linear-gradient(180deg, #ffffff 0%, #fbf7f2 100%);
+  border-color: rgba(197, 160, 89, 0.42);
+  box-shadow: 0 10px 28px rgba(45, 34, 27, 0.1);
+}
+
+.gp-booking-row.is-expanded::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--gold, #c5a059), #8b5e3c);
+  z-index: 1;
+}
+
+.gp-booking-row-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+}
+
+.gp-booking-row.is-expanded .gp-booking-row-toggle {
+  background: rgba(247, 243, 238, 0.9);
+}
+
+.gp-booking-row-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.gp-booking-row-title {
+  display: block;
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: #2d221b;
+  margin-bottom: 2px;
+}
+
+.gp-booking-row.is-expanded .gp-booking-row-title {
+  color: #8b5e3c;
+}
+
+.gp-booking-row-summary {
+  display: block;
+  font-size: 0.8rem;
+  color: #6b5d52;
+}
+
+.gp-booking-row-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.gp-booking-row-guests {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #2d221b;
+}
+
+.gp-booking-row-chevron {
+  color: var(--gold, #c5a059);
+  font-size: 0.8rem;
+  transition: transform 200ms ease;
+}
+
+.gp-booking-row.is-expanded .gp-booking-row-chevron {
+  transform: rotate(180deg);
+}
+
+.gp-booking-row-body {
+  padding: 0 16px 16px;
+  border-top: 1px solid rgba(200, 155, 99, 0.1);
+}
+
+.gp-booking-row.is-collapsed .gp-booking-row-body {
+  display: none;
+}
+
+.gp-booking-row.is-expanded .gp-booking-row-body {
+  padding: 16px 16px 16px;
+  border-top-color: rgba(200, 155, 99, 0.22);
+  background: rgba(255, 255, 255, 0.55);
+}
+
+/* ── Kinyitott részletek — közös (Aktív kártya + Lezárt sor) ── */
+.gp-booking-details {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Hero: dátum / idő kiemelve, chip-ek jobbra vagy alatta */
+.gp-booking-details-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(247, 243, 238, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+  border: 1px solid rgba(200, 155, 99, 0.2);
+}
+
+.gp-booking-details-when {
+  min-width: 0;
+}
+
+.gp-booking-details-weekday {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8b7355;
+  margin-bottom: 6px;
+}
+
+.gp-booking-details-datetime {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 14px;
+}
+
+.gp-booking-details-date {
+  font-family: "Playfair Display", serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #2d221b;
+  line-height: 1.2;
+}
+
+.gp-booking-details-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #6b5d52;
+}
+
+.gp-booking-details-time i {
+  color: var(--gold, #c5a059);
+  font-size: 0.9rem;
+}
+
+.gp-booking-details-chips {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.gp-booking-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid rgba(200, 155, 99, 0.22);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #2d221b;
+  white-space: nowrap;
+}
+
+.gp-booking-chip i {
+  color: var(--gold, #c5a059);
+  font-size: 0.78rem;
+}
+
+/* Alkalom + telefon — ikonos csempék */
+.gp-booking-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.gp-booking-detail-tile {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #fff;
+  border: 1px solid rgba(200, 155, 99, 0.14);
+  box-shadow: 0 2px 8px rgba(45, 34, 27, 0.03);
+}
+
+.gp-booking-detail-tile-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(197, 160, 89, 0.12);
+  color: var(--gold, #c5a059);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.gp-booking-detail-tile-body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.gp-booking-detail-tile-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8b7355;
+}
+
+.gp-booking-detail-tile-value {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #2d221b;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.gp-booking-detail-link {
+  text-decoration: none;
+  color: #8b5e3c;
+  transition: color 150ms ease;
+}
+
+.gp-booking-detail-link:hover {
+  color: #2d221b;
+  text-decoration: underline;
+}
+
+/* Megjegyzés blokk */
+.gp-booking-details-notes {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(247, 243, 238, 0.55);
+  border: 1px solid rgba(200, 155, 99, 0.12);
+}
+
+.gp-booking-details-notes-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8b7355;
+}
+
+.gp-booking-details-notes-title i {
+  color: var(--gold, #c5a059);
+  font-size: 0.85rem;
+}
+
+.gp-booking-notes {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #2d221b;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.gp-booking-notes--empty {
+  color: #999;
+  font-style: italic;
+}
+
+/* Leadás ideje — diszkrét lábléc */
+.gp-booking-details-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 2px;
+  font-size: 0.78rem;
+  color: #999;
+}
+
+.gp-booking-details-footer i {
+  color: rgba(197, 160, 89, 0.65);
+  font-size: 0.72rem;
+}
+
+.gp-booking-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 2px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(200, 155, 99, 0.12);
+}
+
+.gp-booking-actions .gp-order-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Szerkesztő modál — mezők két oszlopban dátum/időnél */
+.gp-booking-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gp-booking-edit-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.gp-booking-edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gp-booking-edit-form select,
+.gp-booking-edit-form input,
+.gp-booking-edit-form textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  font-family: inherit;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .gp-booking-edit-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .gp-booking-details-hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gp-booking-details-chips {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .gp-booking-details-date {
+    font-size: 1.2rem;
+  }
+
+  .gp-booking-details-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gp-booking-card-toggle {
+    flex-wrap: wrap;
+    padding: 14px 16px;
+  }
+
+  .gp-booking-card-toggle-meta {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .gp-booking-card-body {
+    padding: 0 16px 16px;
+  }
+}

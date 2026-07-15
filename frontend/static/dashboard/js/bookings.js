@@ -36,32 +36,6 @@ const Bookings = (() => {
     "Teljesítve": "done",
   };
 
-  function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-      return parts.pop().split(";").shift();
-    }
-    return null;
-  }
-  // rendelések  módosításához 
-  async function reservationsApiRequest(url, options = {}) {
-    const headers = {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    };
-    const csrfToken = getCookie("csrftoken");
-    if (csrfToken) {
-      headers["X-CSRFToken"] = csrfToken;
-    }
-    return fetch(url, {
-      credentials: "include",
-      ...options,
-      headers,
-    });
-  }
-
-  // dataset.id mindig string — az API numerikus id-t ad
   function findBooking(id) {
     const numId = Number(id);
     return bookings.find((b) => b.id === numId || String(b.id) === String(id));
@@ -79,6 +53,22 @@ const Bookings = (() => {
   function mapOccasion(value) {
     if (!value) return "—";
     return OCCASION_LABELS[value] || value;
+  }
+
+  function escapeHtml(str) {
+    return String(str ?? "").replace(/[&<>"']/g, (c) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    }[c]));
+  }
+
+  function truncateNote(text, maxLen = 28) {
+    const value = String(text ?? "");
+    if (value.length <= maxLen) return value;
+    return `${value.slice(0, maxLen)}…`;
   }
 
   function setLoading(state) {
@@ -131,25 +121,16 @@ const Bookings = (() => {
     try {
 
       console.log("API RAW RESPONSE START");
-
       setLoading(true);
-
       const res = await fetch("/api/reservations/", {
         credentials: "include",
       });
-
       if (!res.ok) throw new Error(`HTTP error: ${res.status}`);
-
       const data = await res.json();
-
       console.log("RAW DATA:", data);
-
       bookings = normalizeReservations(data);
-
       console.log("NORMALIZED BOOKINGS:", bookings);
-
       isReady = true;
-      
       renderBookings(false);
 
     } catch (err) {
@@ -230,7 +211,7 @@ const Bookings = (() => {
     renderBookings(false);
 
     try {
-      const res = await reservationsApiRequest(`/api/reservations/${booking.id}/status/`, {
+      const res = await apiRequest(`/api/reservations/${booking.id}/status/`, {
         method: "PATCH",
         body: JSON.stringify({ status: apiStatus }),
       });
@@ -331,6 +312,7 @@ const Bookings = (() => {
     return list;
   }
 
+  // Kereső + KPI chip szűrő — sorok display:none alapján
   function filterBookings() {
     renderBookings(false);
   }
@@ -343,34 +325,34 @@ const Bookings = (() => {
     if (sla.state === "problem") rowClass = "row-problem";
 
     const statusKey = STATUS_TO_KEY[b.status] || "new";
-    const note = b.note || "—";
-    const noteIsLong = b.note && b.note.length > 28;
-    const noteTruncated = noteIsLong ? b.note.slice(0, 28) + "…" : note;
-    const noteTitle = b.note ? `title="${b.note.replace(/"/g, '&quot;')}"` : "";
+    const hasNote = Boolean(b.note);
+    const noteDisplay = hasNote ? truncateNote(b.note) : "—";
+    const noteIsLong = hasNote && b.note.length > 28;
     const noteExpandClass = noteIsLong ? " note-expandable" : "";
+    const noteTitle = hasNote ? ` title="${escapeHtml(b.note)}"` : "";
 
     return `
       <tr data-id="${b.id}" class="${rowClass}">
-        <td data-label="Vendég"><span class="booking-cell-primary">${b.name}</span></td>
+        <td data-label="Vendég"><span class="booking-cell-primary">${escapeHtml(b.name)}</span></td>
         <td data-label="Kapcsolat">
           <div class="booking-cell-contact">
-            <span class="booking-contact-email">${b.email}</span>
-            <span class="booking-contact-phone">${b.phone}</span>
+            <span class="booking-contact-email">${escapeHtml(b.email)}</span>
+            <span class="booking-contact-phone">${escapeHtml(b.phone)}</span>
           </div>
         </td>
         <td data-label="Részletek">
           <div class="booking-cell-detail">
-            <span class="booking-detail-occasion">${b.occasion}</span>
+            <span class="booking-detail-occasion">${escapeHtml(b.occasion)}</span>
             <span class="booking-detail-guests"><span class="booking-guests-chip">${b.guests} fő</span></span>
           </div>
         </td>
         <td data-label="Időpont">
           <div class="booking-cell-time">
-            <span class="booking-time-event">${b.dateLabel} ${b.time}</span>
-            <span class="booking-time-created">Leadva: ${b.createdAt}</span>
+            <span class="booking-time-event">${escapeHtml(b.dateLabel)} ${escapeHtml(b.time)}</span>
+            <span class="booking-time-created">Leadva: ${escapeHtml(b.createdAt)}</span>
           </div>
         </td>
-        <td data-label="Megjegyzés"><span class="booking-note-cell${noteExpandClass}" data-id="${b.id}" ${noteTitle}>${noteTruncated}</span></td>
+        <td data-label="Megjegyzés"><span class="booking-note-cell${noteExpandClass}" data-id="${b.id}"${noteTitle}>${escapeHtml(noteDisplay)}</span></td>
         <td data-label="Státusz">
           <button type="button" class="booking-status-badge status-${statusKey}" data-id="${b.id}" aria-label="Státusz módosítása">
             ${b.status}
@@ -390,7 +372,7 @@ const Bookings = (() => {
     return list.map(createRow).join("");
   }
 
-  /* ================= RENDER ================= */
+  // KPI sor + tbody; keresés/szűrő a drawTable végén fut
   function renderBookings(animate = false) {
     console.log("RENDER BOOKINGS CALLED");
     const tbody = document.getElementById("bookingTableBody");
@@ -487,9 +469,16 @@ const Bookings = (() => {
 
     const pop = document.createElement("div");
     pop.id = "booking-note-popover";
-    pop.innerHTML = `
-      <p class="note-popover-name">${booking.name}</p>
-      <p class="note-popover-text">${booking.note}</p>`;
+
+    const nameEl = document.createElement("p");
+    nameEl.className = "note-popover-name";
+    nameEl.textContent = booking.name;
+
+    const textEl = document.createElement("p");
+    textEl.className = "note-popover-text";
+    textEl.textContent = booking.note;
+
+    pop.append(nameEl, textEl);
     document.body.appendChild(pop);
 
     requestAnimationFrame(() => {
@@ -576,7 +565,7 @@ const Bookings = (() => {
     };
 
     try {
-      const res = await reservationsApiRequest(`/api/reservations/${booking.id}/`, {
+      const res = await apiRequest(`/api/reservations/${booking.id}/`, {
         method: "PATCH",
         body: JSON.stringify(payload),
       });
@@ -619,7 +608,7 @@ const Bookings = (() => {
 
     try {
       // DELETE /api/reservations/<id>/ — Reservation rekord törlése az adatbázisból
-      const res = await reservationsApiRequest(`/api/reservations/${bookingId}/`, {
+      const res = await apiRequest(`/api/reservations/${bookingId}/`, {
         method: "DELETE",
       });
 

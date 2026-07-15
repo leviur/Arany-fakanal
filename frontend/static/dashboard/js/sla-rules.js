@@ -18,15 +18,6 @@ const SlaRules = (() => {
 
   let cache = null;
 
-  function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-      return parts.pop().split(";").shift();
-    }
-    return null;
-  }
-
   // Memória + APP_STATE szinkron (dashboard.js, orders.js, getBookingStatus)
   function applyToAppState(data) {
     window.APP_STATE = window.APP_STATE || {};
@@ -64,17 +55,8 @@ const SlaRules = (() => {
       booking_limits: partial.booking_limits || current.booking_limits,
     };
 
-    const headers = { "Content-Type": "application/json" };
-    const csrfToken = getCookie("csrftoken");
-    if (csrfToken) {
-      headers["X-CSRFToken"] = csrfToken;
-    }
-    
-    // szabályok mentése az adatbázisba
-    const response = await fetch("/api/sla-rules/", {
+    const response = await apiRequest("/api/sla-rules/", {
       method: "PUT",
-      credentials: "include",
-      headers,
       body: JSON.stringify(payload),
     });
 

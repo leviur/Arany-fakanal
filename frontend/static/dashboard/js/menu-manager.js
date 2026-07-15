@@ -1,3 +1,7 @@
+/**********************
+ * Menük kezelése — heti menü + ételek/kategóriák (dashboard menu-section)
+ **********************/
+
 const MenuManager = (() => {
 
   /* ================= STATE ================= */
@@ -402,7 +406,7 @@ const MenuManager = (() => {
         const existing = foods.find((f) => sameId(f.id, modal.dataset.foodId));
         if (!existing) return;
 
-        const response = await menuApiRequest(`${MENU_API}${existing.id}/`, {
+        const response = await apiRequest(`${MENU_API}${existing.id}/`, {
           method: "PATCH",
           body: JSON.stringify(foodToApiPayload(foodFields, existing.categoryId)),
         });
@@ -411,7 +415,7 @@ const MenuManager = (() => {
         }
         activeCategoryId = existing.categoryId;
       } else {
-        const response = await menuApiRequest(`${MENU_API}create/`, {
+        const response = await apiRequest(`${MENU_API}create/`, {
           method: "POST",
           body: JSON.stringify(foodToApiPayload(foodFields, activeCategoryId)),
         });
@@ -451,7 +455,7 @@ const MenuManager = (() => {
     if (!food) { closeMenuDeleteConfirm(); return; }
 
     try {
-      const response = await menuApiRequest(`${MENU_API}${food.id}/`, { method: "DELETE" });
+      const response = await apiRequest(`${MENU_API}${food.id}/`, { method: "DELETE" });
       if (!response.ok) {
         throw new Error(await parseApiError(response, "Az étel törlése sikertelen."));
       }
@@ -512,7 +516,7 @@ const MenuManager = (() => {
         const category = categories.find((c) => sameId(c.id, modal.dataset.catId));
         if (!category) return;
 
-        const response = await menuApiRequest(`${CATEGORIES_API}${category.id}/`, {
+        const response = await apiRequest(`${CATEGORIES_API}${category.id}/`, {
           method: "PATCH",
           body: JSON.stringify({ name }),
         });
@@ -520,7 +524,7 @@ const MenuManager = (() => {
           throw new Error(await parseApiError(response, "A kategória mentése sikertelen."));
         }
       } else {
-        const response = await menuApiRequest(`${CATEGORIES_API}create/`, {
+        const response = await apiRequest(`${CATEGORIES_API}create/`, {
           method: "POST",
           body: JSON.stringify({ name }),
         });
@@ -579,7 +583,7 @@ const MenuManager = (() => {
     if (!category) { closeCategoryDeleteConfirm(); return; }
 
     try {
-      const response = await menuApiRequest(`${CATEGORIES_API}${category.id}/`, {
+      const response = await apiRequest(`${CATEGORIES_API}${category.id}/`, {
         method: "DELETE",
       });
       if (!response.ok) {
@@ -604,32 +608,8 @@ const MenuManager = (() => {
 
   /*
    * ================= HETI MENÜ — API hívások (adatbázis ↔ böngésző) =================
+   * Fetch: core/api.js → apiRequest()
    */
-
-  /** CSRF token a POST/PATCH/DELETE kérésekhez (Django session). */
-  function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(";").shift();
-    return "";
-  }
-
-  /** Közös fetch wrapper: JSON + session cookie + CSRF. */
-  async function menuApiRequest(url, options = {}) {
-    const headers = {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    };
-    const csrfToken = getCookie("csrftoken");
-    if (csrfToken) {
-      headers["X-CSRFToken"] = csrfToken;
-    }
-    return fetch(url, {
-      credentials: "include",
-      ...options,
-      headers,
-    });
-  }
 
   /** API válasz → dashboard táblázat sor */
   function foodFromApi(item) {
@@ -658,19 +638,19 @@ const MenuManager = (() => {
   }
 
   async function loadAllergensFromApi() {
-    const response = await menuApiRequest(ALLERGENS_API);
+    const response = await apiRequest(ALLERGENS_API);
     if (!response.ok) throw new Error("Nem sikerült betölteni az allergéneket.");
     ALLERGENS = await response.json();
   }
 
   async function loadCategoriesFromApi() {
-    const response = await menuApiRequest(CATEGORIES_API);
+    const response = await apiRequest(CATEGORIES_API);
     if (!response.ok) throw new Error("Nem sikerült betölteni a kategóriákat.");
     categories = await response.json();
   }
 
   async function loadFoodsFromApi() {
-    const response = await menuApiRequest(MENU_API);
+    const response = await apiRequest(MENU_API);
     if (!response.ok) throw new Error("Nem sikerült betölteni az ételeket.");
     foods = (await response.json()).map(foodFromApi);
   }
@@ -762,7 +742,7 @@ const MenuManager = (() => {
   async function loadWeeklyMenuItems(force = false) {
     if (weeklyMenuItemsLoaded && !force) return;
 
-    const response = await menuApiRequest(WEEKLY_MENU_ITEMS_API);
+    const response = await apiRequest(WEEKLY_MENU_ITEMS_API);
     if (!response.ok) {
       throw new Error("Nem sikerült betölteni a heti menü tételeket.");
     }
@@ -779,7 +759,7 @@ const MenuManager = (() => {
    */
   async function loadWeeklyMenuFromApi() {
     const weekStart = getSelectedWeekMonday();
-    const response = await menuApiRequest(`${WEEKLY_MENU_API}?week_start=${weekStart}`);
+    const response = await apiRequest(`${WEEKLY_MENU_API}?week_start=${weekStart}`);
     if (!response.ok) {
       throw new Error("Nem sikerült betölteni a heti menüt.");
     }
@@ -838,7 +818,7 @@ const MenuManager = (() => {
 
     const url = existingId ? `${WEEKLY_MENU_API}${existingId}/` : `${WEEKLY_MENU_API}create/`;
     const method = existingId ? "PATCH" : "POST";
-    const response = await menuApiRequest(url, {
+    const response = await apiRequest(url, {
       method,
       body: JSON.stringify(payload),
     });
@@ -862,7 +842,7 @@ const MenuManager = (() => {
     const requests = ["A", "B"]
       .filter((menuType) => entry[menuType]?.id)
       .map((menuType) =>
-        menuApiRequest(`${WEEKLY_MENU_API}${entry[menuType].id}/`, { method: "DELETE" }),
+        apiRequest(`${WEEKLY_MENU_API}${entry[menuType].id}/`, { method: "DELETE" }),
       );
 
     const responses = await Promise.all(requests);
@@ -1030,7 +1010,7 @@ const MenuManager = (() => {
     }
 
     try {
-      const response = await menuApiRequest(`${WEEKLY_MENU_ITEMS_API}create/`, {
+      const response = await apiRequest(`${WEEKLY_MENU_ITEMS_API}create/`, {
         method: "POST",
         body: JSON.stringify({ name: trimmed, category, is_available: true }),
       });
@@ -1062,7 +1042,7 @@ const MenuManager = (() => {
     }
 
     try {
-      const response = await menuApiRequest(`${WEEKLY_MENU_ITEMS_API}${itemId}/`, {
+      const response = await apiRequest(`${WEEKLY_MENU_ITEMS_API}${itemId}/`, {
         method: "PATCH",
         body: JSON.stringify({ name: trimmed }),
       });
@@ -1096,7 +1076,7 @@ const MenuManager = (() => {
     const label = String(itemName || "").trim() || "Tétel";
 
     try {
-      const response = await menuApiRequest(`${WEEKLY_MENU_ITEMS_API}${itemId}/`, {
+      const response = await apiRequest(`${WEEKLY_MENU_ITEMS_API}${itemId}/`, {
         method: "PATCH",
         body: JSON.stringify({ is_available: isAvailable }),
       });
@@ -1214,7 +1194,7 @@ const MenuManager = (() => {
       if (food) {
         void (async () => {
           try {
-            const response = await menuApiRequest(`${MENU_API}${food.id}/`, {
+            const response = await apiRequest(`${MENU_API}${food.id}/`, {
               method: "PATCH",
               body: JSON.stringify({ is_available: true }),
             });

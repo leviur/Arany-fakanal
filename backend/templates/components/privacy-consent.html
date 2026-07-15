@@ -1,3 +1,13 @@
+<!--
+  Adatkezelési checkbox + "tájékoztató" link.
+
+  Ez egy újrahasznosítható checkbox komponens, amit az űrlapok be tudnak include-olni.
+
+  - `checkbox_id`: az űrlap adja meg, hogy egyedi legyen
+  - a gomb `data-open-privacy-modal` attribútuma nyitja a modalt (privacy-modal.js)
+  - a modal "Megértettem" gombja bepipálja a labelben lévő checkboxot
+-->
+
 <label class="checkbox-row privacy-consent-row">
   <input type="checkbox" name="privacy" id="{{ checkbox_id }}" />
   <span>

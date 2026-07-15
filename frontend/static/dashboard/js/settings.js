@@ -1,3 +1,7 @@
+/**********************
+ * Beállítások — nyitvatartás, rendelési/foglalási SLA űrlapok
+ **********************/
+
 // Rendelési + foglalási SLA — alapértelmezések (API betöltés előtt, index.js APP_STATE)
 let statusLimits = {
   "Új": 30,
@@ -345,11 +349,18 @@ function getBookingStatus(booking) {
   }
 
   if (status === "Új") {
+    // SLA túllépés: olvasható idő + limit (pl. „Új: 2 órája (limit: 60 perc)”)
     if (diffMin >= limits.problemNew) {
-      return { state: "problem", label: `Új > ${limits.problemNew} perc` };
+      return {
+        state: "problem",
+        label: formatSlaTodoReason("Új", booking.createdAt, limits.problemNew),
+      };
     }
     if (diffMin >= limits.warnNew) {
-      return { state: "warning", label: `Új > ${limits.warnNew} perc` };
+      return {
+        state: "warning",
+        label: formatSlaTodoReason("Új", booking.createdAt, limits.warnNew),
+      };
     }
     return { state: "ok", label: "Új" };
   }
@@ -362,7 +373,12 @@ function getBookingStatus(booking) {
 
     const diffHours = (eventTime - now) / 3600000;
 
-    if (diffHours >= 0 && diffHours <= limits.warnConfirmed) {
+    // Időpont elmúlt, de még nincs Teljesítve — admini teendő
+    if (diffHours < 0) {
+      return { state: "problem", label: "Lejárt — nincs lezárva" };
+    }
+
+    if (diffHours <= limits.warnConfirmed) {
       return { state: "warning", label: "Közelgő foglalás" };
     }
 

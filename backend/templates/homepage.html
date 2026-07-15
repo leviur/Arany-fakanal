@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{# homepage.html — főoldal (hero, heti menü rendelés, kapcsolat, lábléc) #}
 
 
 
@@ -503,8 +504,7 @@
 {% endblock content%}
 
 {% block scripts %}
-  
-    
+    {# Főoldal-specifikus külső JS — a base.html közös scriptjei már betöltődtek #}
     <script src="{% static 'js/contact-form.js' %}?v=5"></script>
     <script src="{% static 'js/weekly-menu.js' %}?v=1"></script>
 
@@ -607,31 +607,26 @@
       }
     </script>
 
-    <!-- ===================== Kosárba helyezés - bejelentkezés ellenőrzése ===================== -->
-<script>
+    <!-- ===================== Heti menü → kosár (napi menü kártya) ===================== -->
+    <script>
+  // weeklyMenuData-ból keres — csak elérhető (is_available) menük
   function findSelectedMenu(day, type) {
-
     return window.weeklyMenuData.find(menu =>
         menu.day === day &&
         menu.menu_type === type &&
         menu.is_available === true
     );
-
   }
 
   function getMenu(day, type) {
-
     return window.weeklyMenuData.find(menu =>
-
         menu.day === day &&
         menu.menu_type === type &&
         menu.is_available === true
-
     );
   }
 
-
- <!-- ===================== Kosár objektum létrehozása ===================== -->
+  // UI-ból (nap + A/B + darabszám) → kosár objektum
   function createCartData(
     day,
     menuAChecked,
@@ -725,7 +720,8 @@
             calculateTotal(items)
     };
 }
-<!-- =====================  Menü megnevezés ===================== -->
+
+  // Leves / főétel / desszert nevek egy sorban (kosár megjelenítéshez)
   function getMenuName(menu){
 
     return (
@@ -765,7 +761,7 @@ function calculateTotal(items){
 }
 
   // Kosárba helyezés — a központi addItemsToCart() függvényt használja (cart.js)
-  function addDailyMenuToCart(item = null) {
+  async function addDailyMenuToCart(item = null) {
 
     // 1. ha nincs paraméter → UI-ból olvassuk ki a kiválasztást
     if (!item) {
@@ -805,13 +801,13 @@ function calculateTotal(items){
 
     // 3. tételek hozzáadása — duplikáció esetén figyelmeztetés (cart.js)
     if (typeof addItemsToCart === "function") {
-        const result = addItemsToCart(itemsWithDates);
+        const result = await addItemsToCart(itemsWithDates);
 
         if (result.added && typeof renderCart === "function") {
             renderCart();
         }
     }
-}
+  }
 
 
 
@@ -822,6 +818,7 @@ function calculateTotal(items){
       document.getElementById("dailyMenuForm");
 
 
+    // Napi menü űrlap: bejelentkezés nélkül pendingCart → auth modál
     dailyMenuForm?.addEventListener("submit", async (e) => {
 
       e.preventDefault();
@@ -892,7 +889,7 @@ function calculateTotal(items){
 
 
       // Már be van jelentkezve
-      addDailyMenuToCart();
+      await addDailyMenuToCart();
 
 
     });
@@ -903,7 +900,8 @@ function calculateTotal(items){
 
 </script>
 
-<script>
+    <!-- ===================== Lábléc nyitvatartás (opening-hours.js) ===================== -->
+    <script>
   document.addEventListener("DOMContentLoaded", async () => {
     try {
       await OpeningHours.fetchOpeningHours();

@@ -1,6 +1,9 @@
 from rest_framework import serializers
 
+from .conflicts import find_order_item_conflicts, format_order_conflict_message
 from .models import Order, OrderItem
+
+# Rendelés API — lista, új rendelés (publikus), dashboard szerkesztés
 
 WEEKDAY_LABELS = [
     "Hétfő",
@@ -12,22 +15,24 @@ WEEKDAY_LABELS = [
     "Vasárnap",
 ]
 
-# DB kulcs (new) ↔ dashboard felirat (Új)
+# Státusz: DB érték (new) és magyar felirat (Új) között vált
 STATUS_API_TO_HU = dict(OrderItem.STATUS_CHOICES)
 STATUS_HU_TO_API = {label: key for key, label in OrderItem.STATUS_CHOICES}
 
 
 def normalize_item_status(value):
-    """API kulcs vagy magyar felirat → DB érték (pl. confirmed)."""
+    # API kulcs vagy magyar szöveg → mindig DB kulcs megy ki
     if value in STATUS_API_TO_HU:
         return value
     return STATUS_HU_TO_API.get(value, value)
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    # Egy rendelés-sor a listában — nap, menü típus, tartalom, státusz
     menu_type = serializers.CharField(source="weekly_menu.menu_type", read_only=True)
     day = serializers.SerializerMethodField()
     menu = serializers.SerializerMethodField()
+    menu_details = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItem
@@ -41,6 +46,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
             "menu_type",
             "day",
             "menu",
+            "menu_details",
             "status",
         ]
         read_only_fields = ["created_at"]
@@ -51,14 +57,24 @@ class OrderItemSerializer(serializers.ModelSerializer):
     def get_menu(self, obj):
         return f"{obj.weekly_menu.menu_type} menü"
 
+    def get_menu_details(self, obj):
+        # A/B menü: leves, főétel, desszert neve
+        wm = obj.weekly_menu
+        return {
+            "soup": wm.soup.name,
+            "main_course": wm.main_course.name,
+            "dessert": wm.dessert.name,
+        }
+
     def to_representation(self, instance):
         data = super().to_representation(instance)
-        # Mindig API kulcsot küldünk; a frontend mapeli magyarra
+        # Státusz mindig angol kulcs (new, confirmed…) — a frontend fordít
         data["status"] = normalize_item_status(instance.status)
         return data
 
 
 class OrderSerializer(serializers.ModelSerializer):
+    # Teljes rendelés fejléc + tételek — dashboard lista
     items = OrderItemSerializer(many=True, read_only=True)
     customer_name = serializers.SerializerMethodField()
     customer_phone = serializers.SerializerMethodField()
@@ -85,6 +101,7 @@ class OrderSerializer(serializers.ModelSerializer):
         return profile.phone_number if profile else ""
 
     def get_created_at(self, obj):
+        # A rendelés „dátuma” = a legkorábbi tétel létrehozása
         created_times = [item.created_at for item in obj.items.all() if item.created_at]
         if not created_times:
             return None
@@ -92,7 +109,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class OrderItemCreateSerializer(serializers.Serializer):
-
+    # Új rendelés egy sora — mit, mennyit, melyik napra
     weekly_menu = serializers.IntegerField()
 
     quantity = serializers.IntegerField(min_value=1)
@@ -101,10 +118,25 @@ class OrderItemCreateSerializer(serializers.Serializer):
 
 
 class OrderCreateSerializer(serializers.Serializer):
+    # Publikus checkout — POST /api/orders/create/
 
     delivery_address = serializers.CharField()
 
     items = OrderItemCreateSerializer(many=True)
+
+    def validate(self, attrs):
+        request = self.context.get("request")
+        user = getattr(request, "user", None)
+
+        # Dupla rendelés: ugyanarra a napra + A/B-re nem lehet új aktív tétel
+        if user and user.is_authenticated:
+            conflicts = find_order_item_conflicts(user, attrs.get("items", []))
+            if conflicts:
+                raise serializers.ValidationError(
+                    format_order_conflict_message(conflicts)
+                )
+
+        return attrs
 
     def create(self, validated_data):
         from menu.models import WeeklyMenu
@@ -141,17 +173,14 @@ class OrderCreateSerializer(serializers.Serializer):
         return order
     
 class OrderItemLineUpdateSerializer(serializers.Serializer):
-    """Egy nap A vagy B menüjének darabszáma (delivery_date nem változik)."""
+    # Egy nap A vagy B menü darabszáma (a kiszállítási nap nem változik itt)
 
     menu_type = serializers.ChoiceField(choices=["A", "B"])
     quantity = serializers.IntegerField(min_value=0, max_value=20)
 
 
 class OrderUpdateSerializer(serializers.Serializer):
-    """
-    Dashboard szerkesztő: vevő adatai + opcionálisan egy nap menü-tételei.
-    item_lines: ugyanarra a delivery_date-re A/B menü és darabszám (nap nem változik).
-    """
+    # Dashboard PATCH — vevő adatok + opcionálisan egy nap A/B menüi
 
     customer_name = serializers.CharField(required=False, allow_blank=True)
     customer_phone = serializers.CharField(required=False, allow_blank=True)
@@ -163,6 +192,7 @@ class OrderUpdateSerializer(serializers.Serializer):
         delivery_date = attrs.get("delivery_date")
         item_lines = attrs.get("item_lines")
 
+        # Menü módosításhoz kell dátum is és A/B sorok is — egyik nélkül hiba
         if (delivery_date is None) ^ (item_lines is None):
             raise serializers.ValidationError(
                 "A tételek módosításához delivery_date és item_lines együtt szükséges."
@@ -179,6 +209,7 @@ class OrderUpdateSerializer(serializers.Serializer):
         return attrs
 
     def _update_delivery_day_items(self, order, delivery_date, item_lines):
+        # Egy kiszállítási nap A/B tételeinek cseréje (0 db = törlés)
         from menu.models import WeeklyMenu
 
         quantities = {line["menu_type"]: line["quantity"] for line in item_lines}
@@ -189,7 +220,7 @@ class OrderUpdateSerializer(serializers.Serializer):
             raise serializers.ValidationError("Ehhez a kiszállítási naphoz nem tartozik tétel.")
 
         row_status = existing_items[0].status
-        # A heti menü sablon napja (WeeklyMenu.day) ≠ kiszállítási dátum (delivery_date).
+        # weekly_menu.day = heti menü sablon napja (hétfő…), nem a delivery_date
         menu_slot_day = existing_items[0].weekly_menu.day
 
         for menu_type in ("A", "B"):

@@ -1,6 +1,6 @@
 from django.shortcuts import redirect, render
 
-from users.permissions import is_app_admin
+from users.permissions import is_app_admin, can_access_guest_portal
 
 
 def homepage(request):
@@ -18,3 +18,15 @@ def dashboard(request):
         return redirect("/")
 
     return render(request, "dashboard/index.html")
+
+
+def guest_portal(request):
+    
+    """
+    Guest Portal HTML oldal (/guest-portal/) — csak bejelentkezett customer / admin.
+    """
+
+    if not can_access_guest_portal(request.user):
+        return redirect("/")
+
+    return render(request, "guest-portal/index.html")

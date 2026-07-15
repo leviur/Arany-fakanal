@@ -72,7 +72,13 @@ class RegisterSerializer(serializers.Serializer):
 
 def user_to_dict(user):
     """
-    Django User → JSON dict.
+    Ez a “közös user JSON” amit visszakapsz (ezt használja: login válasz,  register válasz és GET /api/auth/me/ válasz):
+            - id, email, name
+            - phone_number, address
+            - role (customer/employee/admin)
+            - is_staff
+            - date_joined
+
     Ezt küldjük vissza a login/register/me végpontokon.
     """
     profile = UserProfile.objects.filter(user=user).first()
@@ -86,4 +92,53 @@ def user_to_dict(user):
         "address": profile.address if profile else "",
         "role": role,           # customer / employee / admin
         "is_staff": user.is_staff,  # Django admin jogosultság
+        # Vendégközpont profil fejléc — regisztráció dátuma
+        "date_joined": user.date_joined.isoformat() if user.date_joined else None,
     }
+
+
+class MeUpdateSerializer(serializers.Serializer):
+    """
+    PATCH /api/auth/me/ — saját adatok szerkesztése (Vendégközpont / Adataim).
+    Az e-mail és a szerepkör nem módosítható itt.
+    """
+
+    name = serializers.CharField(max_length=150)
+    phone_number = serializers.CharField(max_length=20)
+    address = serializers.CharField()
+
+    def validate_name(self, value):
+        cleaned = value.strip()
+        if len(cleaned) < 2:
+            raise serializers.ValidationError("A név legalább 2 karakter hosszú legyen.")
+        return cleaned
+
+    def validate_phone_number(self, value):
+        cleaned = value.strip()
+        if not cleaned:
+            raise serializers.ValidationError("A telefonszám megadása kötelező.")
+        return cleaned
+
+    def validate_address(self, value):
+        cleaned = value.strip()
+        if not cleaned:
+            raise serializers.ValidationError("A szállítási cím megadása kötelező.")
+        return cleaned
+
+    def update(self, user, validated_data):
+        user.first_name = validated_data["name"] # User.first_name frissül a névvel
+        user.save(update_fields=["first_name"]) # UserProfile frissül telefon+cím mezőkkel (ha nincs, létrehozza)
+
+        profile, _ = UserProfile.objects.get_or_create(
+            user=user,
+            defaults={
+                "phone_number": validated_data["phone_number"],
+                "address": validated_data["address"],
+                "role": "customer",
+            },
+        )
+        profile.phone_number = validated_data["phone_number"]
+        profile.address = validated_data["address"]
+        profile.save(update_fields=["phone_number", "address"])
+
+        return user

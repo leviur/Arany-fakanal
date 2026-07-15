@@ -39,17 +39,11 @@
    több flex-oszlop szintbe a táblázat-kártyán belül. */
 
 #orders-section .orders-kpi-row {
-  display: flex;
-  gap: 10px;
-  /* flex-grow:0 (alapérték) — a .table-card mellett a függőleges
-     hely 100%-át a táblázat kapja, a KPI-sor csak a saját, természetes
-     magasságát foglalja, mint az Üzeneteken/Dashboardon */
   flex-shrink: 0;
   margin-bottom: 16px;
 }
 
 #orders-section .orders-kpi {
-  flex: 1;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -712,55 +706,6 @@
 
   #orders-section td:last-child::before {
     display: none;
-  }
-
-  /* 1 soros, horizontálisan görgethető chip-csík — az Üzenetek KPI-sorának
-     mintája (messages.css), mert az 5 (páratlan) szűrő 50%-os törésnél
-     mindig árva elemmel végződött. */
-  #orders-section .orders-kpi-row {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    scroll-snap-type: x proximity;
-    gap: 8px;
-    /* flex-elemként alapból min-width:auto (= tartalom-alapú) lenne, ami
-       kitágítaná az egész sort/oldalt a sok chip miatt, helyben görgetés
-       helyett — ez korlátozza a sort a rendelkezésre álló helyre */
-    min-width: 0;
-  }
-
-  #orders-section .orders-kpi-row::-webkit-scrollbar {
-    display: none;
-  }
-
-  #orders-section .orders-kpi {
-    flex: 0 0 auto;
-    gap: 8px;
-    padding: 8px 14px;
-    scroll-snap-align: start;
-    white-space: nowrap;
-  }
-
-  #orders-section .orders-kpi-icon-wrap {
-    width: 26px;
-    height: 26px;
-    font-size: 11px;
-  }
-
-  #orders-section .orders-kpi-text {
-    flex-direction: row;
-    align-items: baseline;
-    gap: 5px;
-  }
-
-  #orders-section .orders-kpi-value {
-    font-size: 14px;
-  }
-
-  #orders-section .orders-kpi-label {
-    font-size: 11px;
-    white-space: nowrap;
   }
 
   /* Kártya-nézetben a kemény pixel-korlátok feloldása — a cella a kártya

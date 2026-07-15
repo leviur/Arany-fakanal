@@ -21,16 +21,9 @@
   padding-bottom: 20px;
 }
 
-/* --- KPI sáv ---
-   .kpi-row alapból display:contents, hogy a 6 .kpi-card közvetlen
-   .dash-grid rácselemként viselkedjen (span-alapú asztali elrendezés);
-   szűk kijelzőn ez vált át görgethető chip-csíkra (lásd lejjebb). */
-.kpi-row {
-  display: contents;
-}
+/* --- KPI sáv: elrendezés → kpi-strip.css (.dash-kpi-strip) --- */
 
 .kpi-card {
-  grid-column: span 2;
   background: linear-gradient(180deg, #ffffff 0%, #fbf7f2 100%);
   border: 1px solid rgba(200, 155, 99, 0.15);
   border-radius: var(--radius);
@@ -552,59 +545,9 @@
 }
 
 @media (max-width: 900px) {
-  .kpi-card { grid-column: span 4; }
   .dash-todos, .dash-agenda { grid-column: span 12; }
   .dash-trend, .dash-top-items, .dash-messages, .dash-quick-actions {
     grid-column: span 12;
-  }
-}
-
-/* Szűk (telefon) kijelzőn a 6 KPI-kártya 1 soros, horizontálisan görgethető
-   chip-csíkká vált — ugyanaz a minta, mint az Üzenetek KPI-során
-   (messages.css), így a 3-hasábos rács sosem törik árva/aránytalan elemmel. */
-@media (max-width: 640px) {
-  .kpi-row {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    scroll-snap-type: x proximity;
-    gap: 8px;
-    grid-column: span 12;
-    /* grid-elemként is van automatikus, tartalom-alapú minimum-méret,
-       ami kitágítaná a sort a chipek miatt, helyben görgetés helyett */
-    min-width: 0;
-  }
-
-  .kpi-row::-webkit-scrollbar {
-    display: none;
-  }
-
-  .kpi-card {
-    flex: 0 0 auto;
-    flex-direction: row;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 14px;
-    scroll-snap-align: start;
-    white-space: nowrap;
-  }
-
-  .kpi-card i {
-    width: 26px;
-    height: 26px;
-    font-size: 11px;
-    margin-bottom: 0;
-  }
-
-  .kpi-label {
-    font-size: 11px;
-    white-space: nowrap;
-  }
-
-  .kpi-value {
-    font-size: 14px;
   }
 }
 

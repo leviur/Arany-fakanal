@@ -24,12 +24,24 @@ from .views import (
 )
 
 urlpatterns = [
+    # --- Allergének ---
+    # GET: allergén lista (étlap ikonok, dashboard jelölőnégyzet)
     path("allergens/", AllergenListAPIView.as_view(), name="allergen-list"),
+
+    # --- Étlap kategóriák (Category tábla) ---
+    # GET: kategória lista — etlap.js nav, menu-manager Ételek fül
     path("categories/", CategoryListAPIView.as_view(), name="category-list"),
+    # POST: új kategória (admin)
     path("categories/create/", CategoryCreateAPIView.as_view(), name="category-create"),
+    # GET / PATCH / DELETE: egy kategória
     path("categories/<int:pk>/", CategoryDetailAPIView.as_view(), name="category-detail"),
+
+    # --- Állandó étlap tételek (MenuItem tábla) ---
+    # GET: ételek listája — etlap.js, menu-manager (vendégnél csak elérhetők)
     path("menu/", MenuItemListAPIView.as_view(), name="menu-list"),
+    # POST: új étel (admin)
     path("menu/create/", MenuItemCreateAPIView.as_view(), name="menu-create"),
+    # GET / PATCH / DELETE: egy étel (ár, leírás, allergének)
     path("menu/<int:pk>/", MenuItemDetailAPIView.as_view(), name="menu-detail"),
 
     # --- Heti menü (WeeklyMenu tábla) ---

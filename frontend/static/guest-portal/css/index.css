@@ -1,0 +1,1018 @@
+/* =========================================================
+   guest-portal/css/index.css — Guest Portal (/guest-portal/) alap elrendezés
+   A dashboard kinézetét követi, de külön fájlban (könnyebb karbantartás).
+   ========================================================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg-dark: #2d221b;
+  --gold: #c5a059;
+  --gold-light: #f4e8d1;
+  --gold-dark: #b8924e;
+  --gold-soft: rgba(197, 160, 89, 0.15);
+  --text-dark: #333;
+  --text-light: #777;
+  --radius: 14px;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  --shadow-hover: 0 10px 25px rgba(197, 160, 89, 0.35);
+  --font-main: "Playfair Display", serif;
+}
+
+body {
+  font-family: "Inter", sans-serif;
+  background: #f5efe6;
+  color: var(--text-dark);
+}
+
+h1, h2, h3 {
+  font-family: "Playfair Display", serif;
+}
+
+.logo {
+  width: 150px !important;
+  height: auto !important;
+  display: block;
+  margin: 0 auto 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(200, 155, 99, 0.15);
+}
+
+/* Teljes képernyős shell: sidebar + fő tartalom */
+.guest-portal-app {
+  display: flex;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+  position: relative;
+  width: 280px;
+  background: var(--bg-dark);
+  color: white;
+  padding: 30px 22px;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  text-align: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  transition: width 280ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.sidebar.collapsed {
+  width: 84px;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.sidebar-top {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Asztali összecsukó gomb (X ↔ hamburger) */
+.sidebar-toggle {
+  position: absolute;
+  top: 36px;
+  right: 8px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(200, 155, 99, 0.35);
+  border-radius: 50%;
+  background: var(--bg-dark);
+  cursor: pointer;
+}
+
+.sidebar-toggle span {
+  display: block;
+  width: 14px;
+  height: 2px;
+  background: var(--gold);
+  border-radius: 2px;
+  transition: transform 220ms ease, opacity 150ms ease;
+}
+
+.sidebar-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.sidebar-toggle span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.sidebar-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+.sidebar.collapsed .sidebar-toggle {
+  right: auto;
+  left: 50%;
+  margin-left: -16px;
+}
+
+.sidebar.collapsed .sidebar-toggle span:nth-child(1),
+.sidebar.collapsed .sidebar-toggle span:nth-child(3) {
+  transform: translateY(0) rotate(0);
+}
+
+.sidebar.collapsed .sidebar-toggle span:nth-child(2) {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.sidebar.collapsed .logo {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.menu a {
+  position: relative;
+  padding: 14px 18px;
+  border-radius: 14px;
+  color: #eee;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.menu a i {
+  width: 18px;
+  text-align: center;
+  color: var(--gold);
+  font-size: 15px;
+}
+
+.menu a:hover {
+  background: rgba(200, 155, 99, 0.08);
+  color: #fff;
+}
+
+.menu a.active {
+  background: rgba(200, 155, 99, 0.18);
+  color: #fff;
+}
+
+.menu-group-label {
+  display: block;
+  text-align: left;
+  padding: 24px 18px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(200, 155, 99, 0.55);
+  border-top: 1px solid rgba(200, 155, 99, 0.15);
+  margin-top: 6px;
+}
+
+.menu-group-label:first-child {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.link-text {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 160px;
+  opacity: 1;
+  transition: max-width 200ms ease, opacity 120ms ease;
+}
+
+.sidebar.collapsed .link-text,
+.sidebar.collapsed .menu-group-label {
+  max-width: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.sidebar.collapsed .menu a {
+  gap: 0;
+  justify-content: center;
+}
+
+.admin-logout-btn {
+  margin-top: 10px;
+  flex-shrink: 0;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(200, 155, 99, 0.3);
+  background: transparent;
+  color: rgba(238, 238, 238, 0.7);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.admin-logout-btn i {
+  color: var(--gold);
+}
+
+.admin-logout-btn:hover {
+  background: rgba(200, 155, 99, 0.12);
+  border-color: rgba(200, 155, 99, 0.5);
+  color: #fff;
+}
+
+.sidebar.collapsed .admin-logout-btn {
+  gap: 0;
+}
+
+/* ================= MAIN ================= */
+.main {
+  flex: 1;
+  padding: 24px;
+  min-width: 0;
+  height: 100%;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.topbar h1 {
+  font-size: clamp(1.5rem, 4vw, 2.1rem);
+  line-height: 1.15;
+}
+
+.topbar-subtitle {
+  font-size: 0.9rem;
+  color: var(--text-light);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.topbar-left-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.mobile-sidebar-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(200, 155, 99, 0.35);
+  background: #fff;
+  color: #5a4a42;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 14, 10, 0.5);
+  z-index: 290;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.sidebar-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.guest-portal-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 8px 18px 8px 8px;
+  border-radius: 50px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.guest-portal-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), #8b5e3c);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.guest-portal-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+  text-align: left;
+}
+
+.guest-portal-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #2d221b;
+}
+
+.guest-portal-role {
+  font-size: 12px;
+  color: #999;
+}
+
+/* Szekciók: egyszerre csak egy látszik (JS váltja az .active osztályt) */
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+}
+
+/* ================= TELJES PANEL LAYOUT (Rendeléseim, Adataim) ================= */
+/* Admin dashboard orders-layout mintájára: topbar fix, alatta kitöltő panel + belső scroll */
+
+.main.gp-fill-layout {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.main.gp-fill-layout .topbar {
+  flex-shrink: 0;
+  margin-bottom: 16px;
+}
+
+.main.gp-fill-layout .section.active {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.gp-section-panel {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid rgba(200, 155, 99, 0.18);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.gp-section-header {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid rgba(200, 155, 99, 0.12);
+  background: linear-gradient(180deg, #ffffff 0%, #fbf7f2 100%);
+}
+
+.gp-section-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px 18px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.gp-section-scroll--form {
+  padding: 18px 20px 24px;
+}
+
+/* Info banner a panel fejlécében — ne legyen dupla árnyék */
+.gp-section-header .gp-orders-info {
+  box-shadow: none;
+}
+
+/* ================= LOGOUT MODAL (ugyanaz a design, mint az admin dashboardon) ================= */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  backdrop-filter: blur(5px);
+  padding: 24px;
+  overflow-y: auto;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.modal.open {
+  opacity: 1;
+}
+
+.modal-hidden {
+  display: none !important;
+}
+
+.login-box {
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px 36px 32px;
+  width: 100%;
+  max-width: 380px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--gold-soft);
+  transform: scale(0.96);
+  opacity: 0;
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), opacity 150ms ease-out;
+}
+
+.modal.open .login-box {
+  transform: scale(1);
+  opacity: 1;
+}
+
+/* Szerkesztő modálok — dashboard modal-box mintája */
+.modal-box {
+  width: 100%;
+  max-width: 360px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid rgba(200, 155, 99, 0.2);
+  border-radius: 20px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 20px 50px rgba(45, 34, 27, 0.18);
+  transform: scale(0.96);
+  opacity: 0;
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), opacity 150ms ease-out;
+}
+
+.modal.open .modal-box {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.modal-box h2 {
+  font-family: "Playfair Display", serif;
+  font-size: 1.25rem;
+  color: #2d221b;
+  margin: 0;
+  text-align: center;
+}
+
+.modal-box label {
+  font-weight: bold;
+  color: #2c241e;
+}
+
+.modal-box .field-hint {
+  margin: -4px 0 8px;
+  font-size: 11px;
+  color: #888;
+  font-weight: normal;
+}
+
+/* Kiszállítás dátum — kiemelt blokk a szerkesztő modálban */
+.gp-modal-delivery-date {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f7f3ee 0%, #f0ebe3 100%);
+  border: 1px solid rgba(200, 155, 99, 0.22);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.gp-modal-delivery-kicker {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8b7355;
+  flex-shrink: 0;
+}
+
+.gp-modal-delivery-date time {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  text-align: right;
+}
+
+.gp-modal-delivery-weekday {
+  font-family: "Playfair Display", serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #2d221b;
+  line-height: 1.2;
+}
+
+.gp-modal-delivery-full {
+  font-size: 0.82rem;
+  color: #6b5d52;
+  line-height: 1.3;
+}
+
+#orderDayEditModal .modal-box {
+  max-width: 400px;
+}
+
+.modal-box input,
+.modal-box textarea {
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: #f3f0ea;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: #2d221b;
+}
+
+.modal-box textarea {
+  resize: vertical;
+  min-height: 80px;
+  line-height: 1.45;
+}
+
+.modal-box-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.modal-box-actions .login-btn,
+.modal-box-actions .cancel-btn {
+  flex: 1;
+}
+
+.login-btn {
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, var(--gold), #8b5e3c);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 160ms ease, transform 160ms ease-out;
+}
+
+.login-btn:hover {
+  opacity: 0.9;
+}
+
+.login-btn:active {
+  transform: scale(0.97);
+}
+
+.login-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+/* A/B menü stepper — dashboard editModal */
+.order-edit-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.order-edit-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f3f0ea;
+}
+
+.order-edit-line-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.order-edit-line-desc {
+  font-size: 12px;
+  color: #6b5d52;
+  line-height: 1.4;
+  font-weight: normal;
+}
+
+.order-edit-line-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d221b;
+}
+
+.order-edit-stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.order-edit-step-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(200, 155, 99, 0.2);
+  color: #8b5e3c;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+.order-edit-step-btn:hover {
+  background: rgba(200, 155, 99, 0.35);
+}
+
+.order-edit-qty {
+  min-width: 24px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d221b;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Törlés / lemondás megerősítő — dashboard confirm-box */
+.confirm-box {
+  background: #fff;
+  border: 1px solid rgba(200, 155, 99, 0.2);
+  border-radius: 20px;
+  padding: 28px 24px;
+  max-width: 360px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(45, 34, 27, 0.18);
+  transform: scale(0.96);
+  opacity: 0;
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), opacity 150ms ease-out;
+}
+
+.modal.open .confirm-box {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.confirm-box .confirm-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fde8e8;
+  color: #c0392b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.confirm-title {
+  font-family: "Playfair Display", serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2d221b;
+  margin: 0;
+}
+
+.confirm-body {
+  font-size: 13px;
+  color: #6b5d52;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.confirm-actions .cancel-btn,
+.confirm-actions .btn-danger {
+  flex: 1;
+}
+
+.cancel-btn {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(200, 155, 99, 0.5);
+  background: transparent;
+  color: #8b5e3c;
+  cursor: pointer;
+  transition: background 150ms ease, transform 120ms ease;
+}
+
+.cancel-btn:hover {
+  background: rgba(200, 155, 99, 0.08);
+}
+
+.cancel-btn:active {
+  transform: scale(0.97);
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-logo {
+  height: 54px;
+  width: auto;
+  margin-bottom: 14px;
+}
+
+.login-header h2 {
+  font-family: var(--font-main);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+}
+
+.divider {
+  width: 48px;
+  height: 2px;
+  margin: 0 auto;
+  background: var(--gold);
+  border-radius: 2px;
+}
+
+.close-modal {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  border-radius: 50%;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-light);
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.close-modal:hover {
+  color: var(--gold);
+  background: var(--gold-soft);
+}
+
+.logout-text {
+  text-align: center;
+  color: var(--text-dark);
+  margin-bottom: 24px;
+  line-height: 1.5;
+}
+
+.logout-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.logout-actions .cancel-btn,
+.logout-actions .btn-gold,
+.logout-actions .btn-danger {
+  flex: 1;
+}
+
+.btn-gold {
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--gold);
+  border: none;
+  border-radius: 8px;
+  padding: 14px 20px;
+  cursor: pointer;
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease-out;
+}
+
+.btn-gold:hover {
+  background: var(--gold-dark);
+  box-shadow: var(--shadow-hover);
+}
+
+.btn-gold:active {
+  transform: scale(0.97);
+}
+
+.btn-danger {
+  padding: 14px 20px;
+  border-radius: 8px;
+  border: none;
+  background: linear-gradient(135deg, #e05a4f, #b93c3c);
+  color: #fff;
+  font-weight: 600;
+  font-family: var(--font-main);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: filter 150ms ease, transform 120ms ease;
+}
+
+.btn-danger:hover {
+  filter: brightness(1.05);
+}
+
+.btn-danger:active {
+  transform: scale(0.97);
+}
+
+#logoutModal .cancel-btn {
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: var(--text-light);
+  border-radius: 8px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 14px 20px;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease-out;
+}
+
+#logoutModal .cancel-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.2);
+  color: var(--text-dark);
+}
+
+#logoutModal .cancel-btn:active {
+  transform: scale(0.97);
+}
+
+#logoutModal .btn-gold {
+  background: var(--bg-dark);
+}
+
+#logoutModal .btn-gold:hover {
+  background: #1a130d;
+  box-shadow: none;
+}
+
+#logoutModal .login-logo,
+#logoutModal .login-header h2,
+#logoutModal .divider,
+#logoutModal .logout-text,
+#logoutModal .logout-actions {
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
+}
+
+#logoutModal.open .login-logo       { transition-delay: 0ms; }
+#logoutModal.open .login-header h2  { transition-delay: 30ms; }
+#logoutModal.open .divider          { transition-delay: 50ms; }
+#logoutModal.open .logout-text      { transition-delay: 60ms; }
+#logoutModal.open .logout-actions   { transition-delay: 90ms; }
+
+#logoutModal.open .login-logo,
+#logoutModal.open .login-header h2,
+#logoutModal.open .divider,
+#logoutModal.open .logout-text,
+#logoutModal.open .logout-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-box,
+  #logoutModal .login-logo,
+  #logoutModal .login-header h2,
+  #logoutModal .divider,
+  #logoutModal .logout-text,
+  #logoutModal .logout-actions {
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ================= MOBIL: off-canvas sidebar ================= */
+@media (max-width: 768px) {
+  .mobile-sidebar-toggle {
+    display: flex;
+  }
+
+  .sidebar,
+  .sidebar.collapsed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: min(280px, 88vw);
+    z-index: 300;
+    transform: translateX(-100%);
+    transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1);
+    padding-bottom: max(24px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-toggle {
+    display: none;
+  }
+
+  .main {
+    padding: 16px;
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .guest-portal-chip .guest-portal-info {
+    display: none;
+  }
+
+  .topbar {
+    align-items: center;
+  }
+
+  .gp-section-header {
+    padding: 12px 14px;
+  }
+
+  .gp-section-scroll,
+  .gp-section-scroll--form {
+    padding: 12px 14px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .topbar-subtitle {
+    font-size: 0.85rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .sidebar-backdrop,
+  .modal,
+  .sidebar-toggle span {
+    transition: none;
+  }
+}

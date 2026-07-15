@@ -24,31 +24,6 @@ const Messages = (() => {
   let isReady = false;
   let pendingDeleteId = null;
 
-  function getCookie(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) {
-      return parts.pop().split(";").shift();
-    }
-    return null;
-  }
-
-  async function contactApiRequest(url, options = {}) {
-    const headers = {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    };
-    const csrfToken = getCookie("csrftoken");
-    if (csrfToken) {
-      headers["X-CSRFToken"] = csrfToken;
-    }
-    return fetch(url, {
-      credentials: "include",
-      ...options,
-      headers,
-    });
-  }
-
   function findMessage(id) {
     const numId = Number(id);
     return messages.find((m) => m.id === numId || String(m.id) === String(id));
@@ -61,7 +36,7 @@ const Messages = (() => {
 
   /** API lista → memória (mezők már dashboard formátumban jönnek) */
   async function loadMessagesFromApi() {
-    const response = await contactApiRequest("/api/contact/");
+    const response = await apiRequest("/api/contact/");
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
       throw err;
@@ -100,7 +75,7 @@ const Messages = (() => {
   }
 
   async function patchMessage(id, body) {
-    const response = await contactApiRequest(`/api/contact/${id}/`, {
+    const response = await apiRequest(`/api/contact/${id}/`, {
       method: "PATCH",
       body: JSON.stringify(body),
     });
@@ -301,6 +276,7 @@ const Messages = (() => {
     setKpi("kpi-messages-egyeb", counts["Egyéb"]);
   }
 
+  // Lista + részletek + KPI sor együtt
   function renderAll() {
     renderList();
     renderDetail();
@@ -397,7 +373,7 @@ const Messages = (() => {
     const messageId = pendingDeleteId;
 
     try {
-      const response = await contactApiRequest(`/api/contact/${messageId}/`, {
+      const response = await apiRequest(`/api/contact/${messageId}/`, {
         method: "DELETE",
       });
 
@@ -553,11 +529,13 @@ const Messages = (() => {
       });
   }
 
+  // API újratöltés + teljes inbox újrarajz
   async function refresh() {
     await loadMessagesFromApi();
     renderAll();
   }
 
+  // Első betöltés (App.init): események + GET /api/contact/
   async function render(animate = false) {
     bindEvents();
     isLoading = true;

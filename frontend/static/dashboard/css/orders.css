@@ -1,0 +1,695 @@
+/* =========================================================
+   ORDERS SECTION - STABLE NO-SCROLL DASHBOARD TABLE
+========================================================= */
+
+#orders-section {
+  width: 100%;
+  overflow-x: clip;
+}
+
+/* ================= CARD ================= */
+
+#orders-section .table-card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 14px 24px 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ================= HEADER ================= */
+
+#orders-section .table-header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+#orders-section .table-header h2 {
+  font-size: 24px;
+  font-family: "Playfair Display", serif;
+  color: #2d221b;
+}
+
+/* ================= KPI FILTER CHIPS ================= */
+
+#orders-section .orders-kpi-row {
+  flex-shrink: 0;
+  margin-bottom: 16px;
+}
+
+#orders-section .orders-kpi {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  background: linear-gradient(180deg, #ffffff 0%, #fbf7f2 100%);
+  border: 1px solid rgba(200, 155, 99, 0.15);
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+  padding: 16px 18px;
+  cursor: pointer;
+  transition: transform 160ms ease-out, box-shadow 160ms ease, border-color 160ms ease;
+  font-family: var(--font-ui);
+  text-align: left;
+}
+
+/* Ikon kör — bal oldali vizuális azonosító */
+#orders-section .orders-kpi-icon-wrap {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 15px;
+}
+
+#orders-section .orders-kpi[data-filter="problem"]  .orders-kpi-icon-wrap { background: rgba(192,57,43,0.12);  color: #c0392b; }
+#orders-section .orders-kpi[data-filter="new"]       .orders-kpi-icon-wrap { background: rgba(200,155,99,0.15); color: #8b5e3c; }
+#orders-section .orders-kpi[data-filter="preparing"] .orders-kpi-icon-wrap { background: rgba(224,112,32,0.12); color: #c05a10; }
+#orders-section .orders-kpi[data-filter="delivery"]  .orders-kpi-icon-wrap { background: rgba(96,64,192,0.10);  color: #5b42a0; }
+#orders-section .orders-kpi[data-filter="done"]       .orders-kpi-icon-wrap { background: rgba(39,174,96,0.12);   color: #1e8449; }
+
+@media (hover: hover) and (pointer: fine) {
+  #orders-section .orders-kpi:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(200, 155, 99, 0.15);
+  }
+}
+
+#orders-section .orders-kpi:active { transform: scale(0.97); }
+
+#orders-section .orders-kpi-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+#orders-section .orders-kpi-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #2d221b;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+#orders-section .orders-kpi-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #666;
+}
+
+#orders-section .orders-kpi[data-filter="problem"] .orders-kpi-value { color: #9a3028; }
+
+/* Aktív állapot — egységes, mint a dashboard kártya hover */
+#orders-section .orders-kpi.active {
+  border-color: var(--gold);
+  box-shadow: 0 10px 25px rgba(200, 155, 99, 0.2);
+  transform: translateY(-2px);
+}
+
+/* ================= KERESÉS ================= */
+
+#orders-section .table-actions {
+  flex-shrink: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(45, 34, 27, 0.08);
+}
+
+.search-wrap {
+  position: relative;
+}
+
+.search-wrap .search-icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+  font-size: 12px;
+  pointer-events: none;
+}
+
+#orders-section .table-actions input {
+  width: 280px;
+  padding: 9px 14px 9px 32px;
+  border: 1.5px solid rgba(200, 155, 99, 0.3);
+  background: #f8f5f0;
+  border-radius: 10px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease;
+}
+
+#orders-section .table-actions input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(200, 155, 99, 0.15);
+  background: #fff;
+}
+
+/* ================= FRISSÍTÉS CROSSFADE (mint a dashboardon) ================= */
+
+#orders-section #ordersTableBody,
+#orders-section .orders-kpi-row {
+  transition: opacity 150ms ease;
+}
+
+#orders-section #ordersTableBody.is-refreshing,
+#orders-section .orders-kpi-row.is-refreshing {
+  opacity: 0;
+}
+
+/* ================= SCROLL WRAPPER ================= */
+
+#orders-section .scroll-table {
+  max-height: calc(100vh - 330px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 0 0 14px 14px;
+  margin-top: 2px;
+}
+
+/* ================= TABLE BASE ================= */
+
+#orders-section table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  table-layout: auto;
+}
+
+/* ================= TABLE HEADER (th) ================= */
+
+#orders-section thead th {
+  background: #fff;
+  color: #2d221b;
+  padding: 10px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: left;
+  box-shadow: inset 0 -2px 0 #2d221b;
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+#orders-section th.sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: background 120ms ease;
+}
+
+#orders-section th.sortable:hover {
+  background: #f8f5f0;
+}
+
+#orders-section th.sort-active {
+  color: var(--gold-dark, #8b5e3c);
+}
+
+.sort-icon {
+  opacity: 0.35;
+  font-size: 10px;
+  margin-left: 3px;
+  vertical-align: middle;
+}
+
+#orders-section th.sort-active .sort-icon {
+  opacity: 1;
+}
+
+/* ================= CELLS ================= */
+
+#orders-section td {
+  padding: 7px 8px;
+  font-size: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  vertical-align: middle;
+}
+
+.cell-vcenter {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 100%;
+}
+
+/* Rendelés-csoportok — ugyanahhoz a rendeléshez tartozó nap-sorok (orders.js) */
+#orders-section tbody tr.order-group-even {
+  background: #fafafa;
+}
+
+#orders-section tbody tr.order-group-odd {
+  background: #fff;
+}
+
+#orders-section tbody tr.order-group-first:not(.order-group-only),
+#orders-section tbody tr.order-group-middle {
+  border-bottom-color: rgba(0, 0, 0, 0.03);
+}
+
+#orders-section tbody tr.order-group-last,
+#orders-section tbody tr.order-group-only {
+  border-bottom: 2px solid rgba(200, 155, 99, 0.22);
+}
+
+#orders-section tbody tr.order-group-first td:first-child,
+#orders-section tbody tr.order-group-only td:first-child {
+  box-shadow: inset 3px 0 0 rgba(200, 155, 99, 0.45);
+}
+
+#orders-section tbody tr.order-group-middle td:first-child,
+#orders-section tbody tr.order-group-last td:first-child {
+  box-shadow: inset 3px 0 0 rgba(200, 155, 99, 0.18);
+}
+
+#orders-section tbody tr:nth-child(even) {
+  background: inherit;
+}
+
+#orders-section tbody tr {
+  transition: background 120ms ease;
+}
+
+#orders-section tbody tr:hover {
+  background: rgba(200, 155, 99, 0.06) !important;
+}
+
+/* Elsődleges szöveg (Név) */
+.cell-primary {
+  font-weight: 600;
+  font-size: 13px;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.3;
+}
+
+/* Kapcsolat cella (telefon + cím egymás alatt) */
+.cell-contact-inner {
+  gap: 2px;
+}
+
+.contact-phone {
+  font-size: 12px;
+  color: #2d221b;
+  white-space: nowrap;
+}
+
+.contact-addr {
+  font-size: 11px;
+  color: #888;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.3;
+}
+
+/* Rendelés tételek (több menü egy sorban) */
+.cell-order-items {
+  min-width: 180px;
+}
+
+.order-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.order-line {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.order-line-day {
+  font-weight: 600;
+  color: #2d221b;
+}
+
+.order-line-menu {
+  color: #4a3f35;
+}
+
+.cell-delivery-dates {
+  min-width: 130px;
+}
+
+.order-time-inner {
+  gap: 1px;
+}
+
+.delivery-line {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: #4a3f35;
+  white-space: nowrap;
+}
+
+.delivery-line i {
+  font-size: 11px;
+  color: var(--gold);
+}
+
+#editOrderItems {
+  width: 100%;
+  resize: vertical;
+  font-family: inherit;
+  font-size: 13px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  background: #faf8f4;
+  border: 1px solid #e0d8cc;
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+/* Menü darabszám chip */
+.qty-chip {
+  display: inline-block;
+  background: rgba(200, 155, 99, 0.12);
+  color: var(--gold-dark, #8b5e3c);
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+/* Relatív és abszolút idő */
+.time-rel {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2d221b;
+  font-variant-numeric: tabular-nums;
+}
+
+.time-abs {
+  display: block;
+  font-size: 10px;
+  color: #aaa;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ================= STÁTUSZ BADGE ================= */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: none;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.15s, transform 0.1s;
+  font-family: var(--font-ui, sans-serif);
+}
+
+.status-badge:hover {
+  opacity: 0.82;
+  transform: scale(1.04);
+}
+
+.status-badge.status-new       { background: #e0eaf8; color: #2d5fa6; }
+.status-badge.status-accepted  { background: #d6ead6; color: #2d6b35; }
+.status-badge.status-preparing { background: #fde8c8; color: #9a5f1a; }
+.status-badge.status-delivery  { background: #e8daf5; color: #6b4a9a; }
+.status-badge.status-done      { background: #d6ead6; color: #1e6b35; }
+.status-badge.status-failed    { background: #fad6d3; color: #9a3028; }
+
+/* ================= STÁTUSZ POPOVER ================= */
+
+#status-popover {
+  position: fixed;
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.06);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 190px;
+  z-index: 1000;
+}
+
+.status-popover-option {
+  display: block;
+  width: 100%;
+  padding: 7px 12px;
+  border: none;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: filter 0.1s;
+  font-family: var(--font-ui, sans-serif);
+}
+
+.status-popover-option:hover    { filter: brightness(0.92); }
+.status-popover-option.current  { box-shadow: inset 0 0 0 1.5px currentColor; }
+
+.status-popover-option.status-new       { background: #e0eaf8; color: #2d5fa6; }
+.status-popover-option.status-accepted  { background: #d6ead6; color: #2d6b35; }
+.status-popover-option.status-preparing { background: #fde8c8; color: #9a5f1a; }
+.status-popover-option.status-delivery  { background: #e8daf5; color: #6b4a9a; }
+.status-popover-option.status-done      { background: #d6ead6; color: #1e6b35; }
+.status-popover-option.status-failed    { background: #fad6d3; color: #9a3028; }
+
+/* ================= ACTION BUTTONS ================= */
+
+#orders-section .action-btn {
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  background: transparent;
+  color: #a08a78;
+  margin: 0 2px;
+  transition: background 160ms ease, color 160ms ease, transform 160ms ease-out;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #orders-section .edit-btn:hover {
+    background: rgba(200, 155, 99, 0.14);
+    color: var(--gold);
+  }
+
+  #orders-section .orders-delete-btn:hover {
+    background: rgba(154, 48, 40, 0.1);
+    color: #9a3028;
+  }
+}
+
+#orders-section .action-btn:active {
+  transform: scale(0.93);
+}
+
+/* ================= OSZLOPSZÉLESSÉGEK (7 oszlop) ================= */
+
+#orders-section th:nth-child(1), #orders-section td:nth-child(1) { width: 18%; }
+#orders-section th:nth-child(2), #orders-section td:nth-child(2) { min-width: 170px; width: 22%; }
+#orders-section th:nth-child(3), #orders-section td:nth-child(3) { width: 16%; }
+#orders-section th:nth-child(4), #orders-section td:nth-child(4) { width: 12%; }
+#orders-section th:nth-child(5), #orders-section td:nth-child(5) { width: 14%; }
+#orders-section th:nth-child(6), #orders-section td:nth-child(6) { width: 12%; text-align: left; }
+#orders-section th:nth-child(7), #orders-section td:nth-child(7) { width: 8%; text-align: right; white-space: nowrap; }
+
+.cell-status {
+  text-align: left;
+}
+
+.cell-status .cell-vcenter {
+  align-items: flex-start;
+  width: fit-content;
+  max-width: 100%;
+}
+
+#orders-section .cell-status .status-badge {
+  width: auto;
+  align-self: flex-start;
+}
+
+.cell-actions-wrap {
+  text-align: right;
+}
+
+.cell-actions {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  white-space: nowrap;
+}
+
+/* ================= ROW STATES ================= */
+
+#orders-section tr.row-warning { background: #fff3f3 !important; }
+#orders-section tr.row-problem { background: #ffe5e5 !important; }
+
+/* ================= RESZPONZÍV KÁRTYA NÉZET (< 1200px) ================= */
+
+@media (max-width: 1200px) {
+  #orders-section .table-card,
+  #orders-section .table-header {
+    width: 100%;
+    min-width: 0;
+    overflow-x: hidden;
+  }
+
+  .search-wrap {
+    width: 100%;
+  }
+
+  #orders-section .table-actions input {
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  #orders-section .scroll-table {
+    max-height: none;
+    overflow: unset;
+  }
+
+  #orders-section table,
+  #orders-section thead,
+  #orders-section tbody,
+  #orders-section th,
+  #orders-section td,
+  #orders-section tr {
+    display: block;
+  }
+
+  #orders-section thead {
+    display: none;
+  }
+
+  #orders-section tbody tr:nth-child(even) {
+    background: inherit;
+  }
+
+  #orders-section tbody tr.order-group-even {
+    background: #fafafa;
+  }
+
+  #orders-section tbody tr.order-group-odd {
+    background: #fff;
+  }
+
+  #orders-section tbody tr {
+    border-radius: 16px;
+    margin-bottom: 12px;
+    padding: 14px 16px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+    border: 1px solid rgba(200, 155, 99, 0.12);
+    position: relative;
+    overflow: hidden;
+  }
+
+  #orders-section tbody tr::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    background: linear-gradient(180deg, var(--gold), var(--gold-light));
+    border-radius: 16px 0 0 16px;
+  }
+
+  #orders-section tbody tr.row-warning::before { background: #f0ad4e; }
+  #orders-section tbody tr.row-problem::before { background: #e74c3c; }
+
+  /* Csoportosítás mobilon — összetartozó nap-sorok */
+  #orders-section tbody tr.order-group-middle,
+  #orders-section tbody tr.order-group-last {
+    margin-top: -8px;
+    border-top: none;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  #orders-section tbody tr.order-group-first:not(.order-group-only) {
+    margin-bottom: 0;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  #orders-section tbody tr.order-group-last,
+  #orders-section tbody tr.order-group-only {
+    margin-bottom: 12px;
+  }
+
+  #orders-section tbody tr.order-group-middle::before,
+  #orders-section tbody tr.order-group-last::before {
+    opacity: 0.55;
+  }
+
+  #orders-section td {
+    padding: 7px 0;
+    border: none;
+    border-bottom: 1px solid rgba(200, 155, 99, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    gap: 8px;
+  }
+
+  
+  #orders-section td:nth-child(n) {
+    width: 100%;
+    min-width: 0;
+  }
+
+  #orders-section td:last-child {
+    border-bottom: none;
+    padding-top: 10px;
+    justify-content: flex-end;
+  }
+
+  #orders-section td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #8b5e3c;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    flex-shrink: 0;
+    min-width: 80px;
+    padding-top: 2px;
+  }
+
+  #orders-section td:last-child::before {
+    display: none;
+  }
+
+  #orders-section .contact-phone {
+    white-space: normal;
+    word-break: break-word;
+  }
+}

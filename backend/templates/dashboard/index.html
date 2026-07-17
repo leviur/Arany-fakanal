@@ -1,0 +1,1497 @@
+<!doctype html>
+{% load static %}
+<html lang="hu">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Arany Fakanál • Admin Dashboard</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+
+    <link rel="icon" href="{% static 'images/favicon.ico' %}">
+    
+    <link rel="stylesheet" href="{% static 'css/toast.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'dashboard/css/index.css' %}?v=42">
+    <link rel="stylesheet" href="{% static 'dashboard/css/kpi-strip.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}?v=40">
+    <link rel="stylesheet" href="{% static 'dashboard/css/orders.css' %}?v=45">
+    <link rel="stylesheet" href="{% static 'dashboard/css/menu-manager.css' %}?v=10">
+    <link rel="stylesheet" href="{% static 'dashboard/css/bookings.css' %}?v=3">
+    <link rel="stylesheet" href="{% static 'dashboard/css/settings.css' %}">
+    <link rel="stylesheet" href="{% static 'dashboard/css/messages.css' %}?v=2">
+
+    <script src="{% static 'js/core/api.js' %}?v=2" defer></script>
+    <script src="{% static 'js/opening-hours.js' %}?v=4" defer></script>
+    <script src="{% static 'dashboard/js/sla-rules.js' %}?v=2" defer></script>
+    <script src="{% static 'js/toast.js' %}" defer></script>
+    <script src="{% static 'dashboard/js/date-format.js' %}?v=2" defer></script>
+    <script src="{% static 'dashboard/js/dashboard.js' %}?v=51" defer></script>
+    <script src="{% static 'dashboard/js/api-errors.js' %}?v=1" defer></script>
+    <script src="{% static 'dashboard/js/weekly-menu-combobox.js' %}?v=14" defer></script>
+    <script src="{% static 'dashboard/js/orders.js' %}?v=57" defer></script>
+    <script src="{% static 'dashboard/js/menu-manager.js' %}?v=53" defer></script>
+    <script src="{% static 'dashboard/js/bookings.js' %}?v=57" defer></script>
+    <script src="{% static 'dashboard/js/settings.js' %}?v=47" defer></script>
+    <script src="{% static 'dashboard/js/messages.js' %}?v=42" defer></script>
+    <script src="{% static 'js/live-sync.js' %}?v=4" defer></script>
+    <script src="{% static 'dashboard/js/index.js' %}?v=50" defer></script>
+  </head>
+
+  <body>
+    <!-- ================= DASHBOARD ================= -->
+    <div id="dashboard" class="dashboard">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-top">
+          <button
+            class="sidebar-toggle"
+            id="sidebarToggle"
+            title="Menü összecsukása"
+            aria-label="Menü összecsukása"
+            aria-expanded="true"
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+
+          <img src="{% static 'images/logo2.png' %}" alt="Arany Fakanál Étterem" class="logo">
+
+          <nav class="menu">
+            <span class="menu-group-label">Napi működés</span>
+            <a
+              href="#"
+              data-target="dashboard-section"
+              class="active"
+              data-nav-label="Dashboard"
+              aria-label="Dashboard"
+              ><i class="fa-solid fa-gauge-high"></i>
+              <span class="link-text">Dashboard</span></a
+            >
+            <a
+              href="#"
+              data-target="orders-section"
+              data-nav-label="Rendelések"
+              aria-label="Rendelések"
+              ><i class="fa-solid fa-cart-shopping"></i>
+              <span class="link-text">Rendelések</span
+              ><span
+                class="nav-badge hidden"
+                id="sidebar-orders-badge"
+                aria-label="kezeletlen rendelések"
+              ></span
+            ></a>
+            <a
+              href="#"
+              data-target="bookings-section"
+              data-nav-label="Foglalások"
+              aria-label="Foglalások"
+              ><i class="fa-solid fa-calendar-check"></i>
+              <span class="link-text">Foglalások</span
+              ><span
+                class="nav-badge hidden"
+                id="sidebar-bookings-badge"
+                aria-label="kezeletlen foglalások"
+              ></span
+            ></a>
+            <a
+              href="#"
+              data-target="messages-section"
+              data-nav-label="Üzenetek"
+              aria-label="Üzenetek"
+              ><i class="fa-solid fa-comments"></i>
+              <span class="link-text">Üzenetek</span
+              ><span
+                class="nav-badge hidden"
+                id="sidebar-msg-badge"
+                aria-label="olvasatlan üzenetek"
+              ></span
+            ></a>
+
+            <span class="menu-group-label">Tartalom és beállítások</span>
+            <a
+              href="#"
+              data-target="menu-section"
+              data-nav-label="Menük kezelése"
+              aria-label="Menük kezelése"
+              ><i class="fa-solid fa-utensils"></i>
+              <span class="link-text">Menük kezelése</span></a
+            >
+            <a
+              href="#"
+              data-target="settings-section"
+              data-nav-label="Beállítások"
+              aria-label="Beállítások"
+              ><i class="fa-solid fa-gear"></i>
+              <span class="link-text">Beállítások</span></a
+            >
+
+            <span class="menu-group-label">Navigáció</span>
+            <a href="/" data-nav-label="Főoldal" aria-label="Főoldal">
+              <i class="fa-solid fa-house"></i>
+              <span class="link-text">Főoldal</span>
+            </a>
+          </nav>
+        </div>
+
+        <button class="admin-logout-btn" data-nav-label="Kijelentkezés" aria-label="Kijelentkezés">
+          <i class="fa-solid fa-power-off"></i>
+          <span class="link-text">Kijelentkezés</span>
+        </button>
+      </aside>
+
+      <!-- mobil sidebar-drawer háttér-overlay -->
+      <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+      <!-- ================= KIJELENTKEZÉS MEGERŐSÍTÉS ================= -->
+      <div
+        class="modal modal-hidden"
+        id="logoutModal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="logoutTitle"
+      >
+        <div class="login-box">
+          <button class="close-modal" id="logoutCancel">✕</button>
+          <div class="login-header">
+            <img src="{% static 'images/logo2.png' %}" alt="Arany Fakanál" class="login-logo">
+            <h2 id="logoutTitle">Kijelentkezés</h2>
+            <div class="divider"></div>
+          </div>
+          <p class="logout-text">Biztosan ki szeretnél jelentkezni?</p>
+          <div class="logout-actions">
+            <button class="cancel-btn" id="logoutCancelBtn">Mégse</button>
+            <button class="btn-gold" id="logoutConfirmBtn">
+              Kijelentkezés
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MAIN -->
+      <main class="main">
+        <!-- ================= TOPBAR (állandó, minden szekcióhoz) ================= -->
+        <div class="topbar">
+          <div class="topbar-left-group">
+            <button
+              class="mobile-sidebar-toggle"
+              id="mobileSidebarToggle"
+              title="Menü megnyitása"
+              aria-label="Menü megnyitása"
+              aria-expanded="false"
+            >
+              <i class="fa-solid fa-bars"></i>
+            </button>
+            <div class="topbar-left">
+              <h1 id="pageTitle">Dashboard</h1>
+              <div class="topbar-updated-row">
+                <span class="topbar-updated" id="topbarUpdated"
+                  >Frissítve: --:--</span
+                >
+                <button class="refresh-btn" id="refreshBtn" title="Frissítés">
+                  <i class="fa-solid fa-rotate-right"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="topbar-actions">
+            <div class="profile-chip">
+              <div class="profile-avatar" id="profileAvatar">A</div>
+              <div class="profile-info">
+                <span class="profile-name" id="profileName">Admin</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= DASHBOARD ================= -->
+        <section id="dashboard-section" class="section active">
+          <div class="dash-grid">
+            <!-- ===================================================== -->
+            <!-- KPI SÁV -->
+            <!-- ===================================================== -->
+
+            <div class="kpi-row dash-kpi-strip">
+              <div class="kpi-card">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span class="kpi-label">Mai rendelések</span>
+                <span class="kpi-value" id="stat-total-orders">0</span>
+              </div>
+
+              <div class="kpi-card">
+                <i class="fa-solid fa-fire"></i>
+                <span class="kpi-label">Aktív rendelések</span>
+                <span class="kpi-value" id="stat-active-orders">0</span>
+              </div>
+
+              <div class="kpi-card">
+                <i class="fa-solid fa-motorcycle"></i>
+                <span class="kpi-label">Kiszállítás alatt</span>
+                <span class="kpi-value" id="stat-delivery-orders">0</span>
+              </div>
+
+              <div class="kpi-card">
+                <i class="fa-solid fa-calendar-day"></i>
+                <span class="kpi-label">Mai foglalások</span>
+                <span class="kpi-value" id="stat-total-bookings">0</span>
+              </div>
+
+              <div class="kpi-card">
+                <i class="fa-solid fa-comments"></i>
+                <span class="kpi-label">Üzenetek</span>
+                <span class="kpi-value" id="stat-messages">0</span>
+              </div>
+
+              <div
+                class="kpi-card"
+                id="kpi-todos"
+                role="button"
+                tabindex="0"
+                aria-label="Ugrás a kezeletlen teendőkhöz"
+              >
+                <i class="fa-solid fa-list-check"></i>
+                <span class="kpi-label">Teendők</span>
+                <span class="kpi-value" id="stat-todos">0</span>
+              </div>
+            </div>
+
+            <!-- ===================================================== -->
+            <!-- TEENDŐK + MAI FOGLALÁSOK -->
+            <!-- ===================================================== -->
+
+            <div class="dash-card dash-todos">
+              <div class="dash-card-header">
+                <h3>
+                  <i class="fa-solid fa-cart-shopping"></i> Kezeletlen
+                  rendelések
+                </h3>
+              </div>
+              <div class="dash-card-body scroll-zone" id="todo-orders-list">
+                <!-- JS tölti -->
+              </div>
+            </div>
+
+            <div class="dash-card dash-todos">
+              <div class="dash-card-header">
+                <h3>
+                  <i class="fa-solid fa-calendar-check"></i> Kezeletlen
+                  foglalások
+                </h3>
+              </div>
+              <div class="dash-card-body scroll-zone" id="todo-bookings-list">
+                <!-- JS tölti -->
+              </div>
+            </div>
+
+            <div class="dash-card dash-agenda">
+              <div class="dash-card-header">
+                <h3><i class="fa-solid fa-calendar-day"></i> Mai foglalások</h3>
+              </div>
+              <div class="dash-card-body scroll-zone" id="agenda-list">
+                <!-- JS tölti -->
+              </div>
+            </div>
+
+            <!-- ===================================================== -->
+            <!-- HETI TREND + LEGNÉPSZERŰBB TÉTELEK -->
+            <!-- ===================================================== -->
+
+            <div class="dash-card dash-trend">
+              <div class="dash-card-header">
+                <h3>
+                  <i class="fa-solid fa-chart-column"></i> Heti rendelés-trend
+                </h3>
+              </div>
+              <div class="dash-card-body" id="trend-chart">
+                <!-- JS tölti -->
+              </div>
+            </div>
+
+            <div class="dash-card dash-top-items">
+              <div class="dash-card-header">
+                <h3>
+                  <i class="fa-solid fa-ranking-star"></i> Legnépszerűbb menük
+                </h3>
+              </div>
+              <div class="dash-card-body" id="top-items-list">
+                <!-- JS tölti -->
+              </div>
+            </div>
+
+            <!-- ===================================================== -->
+            <!-- ÜZENETEK + GYORSMŰVELETEK -->
+            <!-- ===================================================== -->
+
+            <div class="dash-card dash-messages">
+              <div class="dash-card-header">
+                <h3><i class="fa-solid fa-comments"></i> Legutóbbi üzenetek</h3>
+              </div>
+              <div class="dash-card-body" id="messages-preview-list">
+                <!-- JS tölti -->
+              </div>
+            </div>
+
+            <div class="dash-card dash-quick-actions">
+              <div class="dash-card-header">
+                <h3><i class="fa-solid fa-bolt"></i> Gyorsműveletek</h3>
+              </div>
+              <div class="dash-card-body dash-quick-actions-body">
+                <button class="quick-action-btn" data-target="bookings-section">
+                  <i class="fa-solid fa-calendar-check"></i> Foglalások kezelése
+                </button>
+                <button class="quick-action-btn" data-target="orders-section">
+                  <i class="fa-solid fa-cart-shopping"></i> Rendelések kezelése
+                </button>
+                <button class="quick-action-btn" data-target="menu-section">
+                  <i class="fa-solid fa-utensils"></i> Menük kezelése
+                </button>
+                <button class="quick-action-btn" data-target="messages-section">
+                  <i class="fa-solid fa-comments"></i> Üzenetek megnyitása
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= RENDELÉSEK ================= -->
+        <section id="orders-section" class="section">
+          <!-- A KPI-sor önálló, a táblázat-kártyától független elem —
+               ugyanaz a minta, mint a Dashboard/Üzenetek lapon. -->
+          <div class="orders-kpi-row dash-kpi-strip">
+            <button
+              type="button"
+              class="orders-kpi"
+              data-filter="problem"
+              aria-pressed="false"
+            >
+              <span class="orders-kpi-icon-wrap"
+                ><i class="fa-solid fa-triangle-exclamation"></i
+              ></span>
+              <span class="orders-kpi-text">
+                <span class="orders-kpi-value" id="kpi-orders-problem"
+                  >0</span
+                >
+                <span class="orders-kpi-label">Lekésett</span>
+              </span>
+            </button>
+            <button
+              type="button"
+              class="orders-kpi"
+              data-filter="new"
+              aria-pressed="false"
+            >
+              <span class="orders-kpi-icon-wrap"
+                ><i class="fa-solid fa-fire"></i
+              ></span>
+              <span class="orders-kpi-text">
+                <span class="orders-kpi-value" id="kpi-orders-new"
+                  >0</span
+                >
+                <span class="orders-kpi-label">Friss</span>
+              </span>
+            </button>
+            <button
+              type="button"
+              class="orders-kpi"
+              data-filter="preparing"
+              aria-pressed="false"
+            >
+              <span class="orders-kpi-icon-wrap"
+                ><i class="fa-solid fa-fire-burner"></i
+              ></span>
+              <span class="orders-kpi-text">
+                <span class="orders-kpi-value" id="kpi-orders-preparing"
+                  >0</span
+                >
+                <span class="orders-kpi-label">Készül</span>
+              </span>
+            </button>
+            <button
+              type="button"
+              class="orders-kpi"
+              data-filter="delivery"
+              aria-pressed="false"
+            >
+              <span class="orders-kpi-icon-wrap"
+                ><i class="fa-solid fa-motorcycle"></i
+              ></span>
+              <span class="orders-kpi-text">
+                <span class="orders-kpi-value" id="kpi-orders-delivery"
+                  >0</span
+                >
+                <span class="orders-kpi-label">Kiszállítás</span>
+              </span>
+            </button>
+            <button
+              type="button"
+              class="orders-kpi"
+              data-filter="done"
+              aria-pressed="false"
+            >
+              <span class="orders-kpi-icon-wrap"
+                ><i class="fa-solid fa-circle-check"></i
+              ></span>
+              <span class="orders-kpi-text">
+                <span class="orders-kpi-value" id="kpi-orders-done"
+                  >0</span
+                >
+                <span class="orders-kpi-label">Lezárt</span>
+              </span>
+            </button>
+          </div>
+
+          <section class="table-card">
+            <div class="table-header">
+              <div class="table-actions">
+                <label for="searchInput" class="visually-hidden"
+                  >Rendelések keresése</label
+                >
+                <div class="search-wrap">
+                  <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                  <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Keresés..."
+                    aria-label="Rendelések keresése"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="scroll-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th data-sort="name" class="sortable">
+                      Név <span class="sort-icon">↕</span>
+                    </th>
+                    <th>Kapcsolat</th>
+                    <th data-sort="menu" class="sortable">
+                      Rendelés <span class="sort-icon">↕</span>
+                    </th>
+                    <th data-sort="delivery" class="sortable">
+                      Kiszállítás <span class="sort-icon">↕</span>
+                    </th>
+                    <th data-sort="time" class="sortable">
+                      Rend. idő <span class="sort-icon">↕</span>
+                    </th>
+                    <th data-sort="status" class="sortable">
+                      Státusz <span class="sort-icon">↕</span>
+                    </th>
+                    <th>Művelet</th>
+                  </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                  <!-- orders.js renderel majd -->
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </section>
+
+        <div id="editModal" class="modal hidden">
+          <div class="modal-box">
+            <h2>Rendelés szerkesztése</h2>
+
+            <label for="editName">Név</label>
+            <input type="text" id="editName" />
+
+            <label for="editPhone">Telefonszám</label>
+            <input type="text" id="editPhone" />
+
+            <label for="editAddress">Cím</label>
+            <input type="text" id="editAddress" />
+
+            <label for="editOrderLines"
+              >Rendelés — <span id="editDeliveryDateLabel"></span
+            ></label>
+            <p class="field-hint">
+              A kiszállítás napja nem módosítható. Az A és B menü darabszáma
+              igen.
+            </p>
+            <div id="editOrderLines" class="order-edit-lines"></div>
+
+            <div style="display: flex; gap: 10px; margin-top: 15px">
+              <button onclick="saveEdit()" class="login-btn">Mentés</button>
+              <button onclick="closeEditModal()" class="cancel-btn">
+                Mégse
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Törlés megerősítő modal -->
+        <div
+          id="deleteConfirmModal"
+          class="modal hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="deleteConfirmTitle"
+        >
+          <div class="modal-box confirm-box">
+            <div class="confirm-icon">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h2 id="deleteConfirmTitle">Rendelés törlése</h2>
+            <p class="confirm-text">
+              Biztosan törölni szeretnéd ezt a rendelést? A művelet nem vonható
+              vissza.
+            </p>
+            <div style="display: flex; gap: 10px; margin-top: 8px">
+              <button
+                id="deleteConfirmCancel"
+                class="cancel-btn"
+                style="flex: 1"
+              >
+                Mégse
+              </button>
+              <button id="deleteConfirmOk" class="btn-danger" style="flex: 1">
+                Törlés
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= MENÜ KEZELÉS ================= -->
+        <section id="menu-section" class="section">
+          <main class="content">
+            <div class="tabs">
+              <button class="tab-btn active" data-target="heti-menu">
+                Heti menü szerkesztés
+              </button>
+              <button class="tab-btn" data-target="etelek">
+                Ételek kezelése
+              </button>
+            </div>
+
+            <div class="tab-content"></div>
+          </main>
+
+          <div
+            id="modal-overlay"
+            class="modal hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="foodModalTitle"
+          >
+            <div class="modal-box">
+              <h3 class="modal-title" id="foodModalTitle">Új Étel Hozzáadása</h3>
+
+              <p>
+                <strong>Kategória:</strong> <span id="modal-cat-name"></span>
+              </p>
+
+              <div class="modal-grid">
+                <div class="form-group modal-full-col">
+                  <label for="food-name">Étel neve</label>
+                  <input
+                    type="text"
+                    id="food-name"
+                    placeholder="Pl. Rántott sajt"
+                  />
+                </div>
+
+                <div class="form-group modal-full-col">
+                  <label for="food-desc">Leírás</label>
+                  <textarea id="food-desc" placeholder="Rövid leírás..."></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label for="food-price">Ár (Ft)</label>
+                  <input type="number" id="food-price" placeholder="pl. 2490" />
+                </div>
+
+                <div class="form-group">
+                  <label for="food-available">Elérhetőség</label>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="food-available" checked />
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-switch-text">Elérhető</span>
+                  </label>
+                </div>
+
+                <div class="form-group modal-full-col">
+                  <label>Allergének</label>
+                  <div class="allergen-checklist" id="allergenChecklist"></div>
+                </div>
+              </div>
+
+              <div class="modal-actions">
+                <button type="button" id="save-food" class="save-btn">Mentés</button>
+                <button type="button" id="close-modal" class="cancel-btn">Mégse</button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= NAPI MENÜ MODAL (hozzáadás/szerkesztés) ================= -->
+        <div
+          id="day-menu-modal-overlay"
+          class="modal hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="dayMenuModalTitle"
+        >
+          <div class="modal-box">
+            <h3 class="modal-title" id="dayMenuModalTitle">Hétfő menüje</h3>
+
+            <div class="modal-grid">
+              <div class="form-group modal-full-col day-menu-shared-price">
+                <label for="day-menu-ar">Napi menü ár (A és B)</label>
+                <input type="number" id="day-menu-ar" placeholder="pl. 2890" />
+                <small class="field-hint">Ez az ár mindkét menüre érvényes.</small>
+              </div>
+
+              <div class="form-group modal-full-col modal-section-label">A Menü</div>
+
+              {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-a-leves" label="Leves" category="soup" %}
+              {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-a-foetel" label="Főétel" category="main" %}
+              {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-a-desszert" label="Desszert" category="dessert" %}
+
+              <div class="form-group modal-full-col modal-section-label">B Menü</div>
+
+              {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-b-leves" label="Leves" category="soup" %}
+              {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-b-foetel" label="Főétel" category="main" %}
+              {% include "dashboard/partials/weekly-menu-combobox.html" with base_id="day-b-desszert" label="Desszert" category="dessert" %}
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" id="save-day-menu" class="save-btn">Mentés</button>
+              <button type="button" id="close-day-menu-modal" class="cancel-btn">Mégse</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= NAPI MENÜ TÖRLÉS MEGERŐSÍTŐ MODAL ================= -->
+        <div
+          id="dayMenuDeleteConfirmModal"
+          class="modal hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="dayMenuDeleteConfirmTitle"
+        >
+          <div class="confirm-box">
+            <div class="confirm-icon">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="confirm-text">
+              <p class="confirm-title" id="dayMenuDeleteConfirmTitle">Napi menü törlése</p>
+              <p class="confirm-body" id="dayMenuDeleteConfirmBody">
+                Biztosan törlöd ennek a napnak a menüjét? Ez a művelet nem
+                vonható vissza.
+              </p>
+            </div>
+            <div class="confirm-actions">
+              <button
+                type="button"
+                class="cancel-btn"
+                id="dayMenuDeleteConfirmCancel"
+              >
+                Mégsem
+              </button>
+              <button
+                type="button"
+                class="btn-danger"
+                id="dayMenuDeleteConfirmOk"
+              >
+                Törlés
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= ÉTEL TÖRLÉS MEGERŐSÍTŐ MODAL ================= -->
+        <div
+          id="menuDeleteConfirmModal"
+          class="modal hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="menuDeleteConfirmTitle"
+        >
+          <div class="confirm-box">
+            <div class="confirm-icon">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="confirm-text">
+              <p class="confirm-title" id="menuDeleteConfirmTitle">Étel törlése</p>
+              <p class="confirm-body">
+                Biztosan törölni szeretnéd ezt az ételt? Ez a művelet nem
+                vonható vissza.
+              </p>
+            </div>
+            <div class="confirm-actions">
+              <button
+                type="button"
+                class="cancel-btn"
+                id="menuDeleteConfirmCancel"
+              >
+                Mégsem
+              </button>
+              <button
+                type="button"
+                class="btn-danger"
+                id="menuDeleteConfirmOk"
+              >
+                Törlés
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= KATEGÓRIA TÖRLÉS MEGERŐSÍTŐ MODAL ================= -->
+        <div
+          id="categoryDeleteConfirmModal"
+          class="modal hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="categoryDeleteConfirmTitle"
+        >
+          <div class="confirm-box">
+            <div class="confirm-icon">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="confirm-text">
+              <p class="confirm-title" id="categoryDeleteConfirmTitle">Kategória törlése</p>
+              <p class="confirm-body" id="categoryDeleteConfirmBody">
+                Biztosan törölni szeretnéd ezt a kategóriát?
+              </p>
+            </div>
+            <div class="confirm-actions">
+              <button
+                type="button"
+                class="cancel-btn"
+                id="categoryDeleteConfirmCancel"
+              >
+                Mégsem
+              </button>
+              <button
+                type="button"
+                class="btn-danger"
+                id="categoryDeleteConfirmOk"
+              >
+                Törlés
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= KATEGÓRIA MODAL (hozzáadás/átnevezés) ================= -->
+        <div
+          id="category-modal-overlay"
+          class="modal hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="categoryModalTitle"
+        >
+          <div class="modal-box">
+            <h3 class="modal-title" id="categoryModalTitle">Új kategória</h3>
+
+            <div class="modal-grid">
+              <div class="form-group modal-full-col">
+                <label for="category-name">Kategória neve</label>
+                <input
+                  type="text"
+                  id="category-name"
+                  placeholder="Pl. Saláták"
+                />
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" id="save-category" class="save-btn">Mentés</button>
+              <button type="button" id="close-category-modal" class="cancel-btn">Mégse</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= FOGLALÁSOK ================= -->
+        <section id="bookings-section" class="section">
+          <!-- A KPI-sor önálló, a táblázat-kártyától független elem —
+               ugyanaz a minta, mint a Dashboard/Üzenetek lapon. -->
+          <div class="bookings-kpi-row dash-kpi-strip" id="bookingsKpiRow">
+            <button
+              type="button"
+              class="bookings-kpi"
+              data-filter="new"
+              aria-pressed="false"
+            >
+              <span class="bookings-kpi-icon-wrap"
+                ><i class="fa-solid fa-fire"></i
+              ></span>
+              <span class="bookings-kpi-text">
+                <span class="bookings-kpi-value" id="kpi-bookings-new"
+                  >0</span
+                >
+                <span class="bookings-kpi-label">Új</span>
+              </span>
+              <span
+                class="bookings-kpi-dot hidden"
+                id="kpi-bookings-new-dot"
+              ></span>
+            </button>
+            <button
+              type="button"
+              class="bookings-kpi"
+              data-filter="confirmed"
+              aria-pressed="false"
+            >
+              <span class="bookings-kpi-icon-wrap"
+                ><i class="fa-solid fa-circle-check"></i
+              ></span>
+              <span class="bookings-kpi-text">
+                <span class="bookings-kpi-value" id="kpi-bookings-confirmed"
+                  >0</span
+                >
+                <span class="bookings-kpi-label">Visszaigazolt</span>
+              </span>
+            </button>
+            <button
+              type="button"
+              class="bookings-kpi"
+              data-filter="cancelled"
+              aria-pressed="false"
+            >
+              <span class="bookings-kpi-icon-wrap"
+                ><i class="fa-solid fa-ban"></i
+              ></span>
+              <span class="bookings-kpi-text">
+                <span class="bookings-kpi-value" id="kpi-bookings-cancelled"
+                  >0</span
+                >
+                <span class="bookings-kpi-label">Lemondva</span>
+              </span>
+            </button>
+            <button
+              type="button"
+              class="bookings-kpi"
+              data-filter="done"
+              aria-pressed="false"
+            >
+              <span class="bookings-kpi-icon-wrap"
+                ><i class="fa-solid fa-flag-checkered"></i
+              ></span>
+              <span class="bookings-kpi-text">
+                <span class="bookings-kpi-value" id="kpi-bookings-done"
+                  >0</span
+                >
+                <span class="bookings-kpi-label">Teljesítve</span>
+              </span>
+            </button>
+          </div>
+
+          <div class="table-card">
+            <div class="table-header">
+              <!-- Kereső -->
+              <div class="table-actions">
+                <div class="search-wrap">
+                  <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                  <label for="bookingSearch" class="visually-hidden"
+                    >Foglalások keresése</label
+                  >
+                  <input
+                    type="text"
+                    id="bookingSearch"
+                    placeholder="Keresés..."
+                    aria-label="Foglalások keresése"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="scroll-table">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="sortable" data-col="name">
+                      Vendég <span class="booking-sort-icon">↕</span>
+                    </th>
+                    <th>Kapcsolat</th>
+                    <th class="sortable" data-col="occasion">
+                      Részletek <span class="booking-sort-icon">↕</span>
+                    </th>
+                    <th class="sortable" data-col="eventDateTime">
+                      Időpont <span class="booking-sort-icon">↕</span>
+                    </th>
+                    <th>Megjegyzés</th>
+                    <th class="sortable" data-col="status">
+                      Státusz <span class="booking-sort-icon">↕</span>
+                    </th>
+                    <th>Műveletek</th>
+                  </tr>
+                </thead>
+                <tbody id="bookingTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= FOGLALÁS SZERKESZTŐ MODAL ================= -->
+        <div
+          id="bookingModal"
+          class="modal hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="bookingModalTitle"
+        >
+          <div class="modal-box">
+            <h3 class="modal-title" id="bookingModalTitle">
+              Foglalás szerkesztése
+            </h3>
+
+            <div class="modal-grid">
+              <div class="form-group">
+                <label for="m-name">Vendég neve</label>
+                <input type="text" id="m-name" />
+              </div>
+              <div class="form-group">
+                <label for="m-email">E-mail cím</label>
+                <input type="email" id="m-email" />
+              </div>
+              <div class="form-group">
+                <label for="m-phone">Telefonszám</label>
+                <input type="tel" id="m-phone" />
+              </div>
+              <div class="form-group">
+                <label for="m-occasion">Alkalom</label>
+                <select id="m-occasion">
+                  <option value="">—</option>
+                  <option value="csaladi">Családi összejövetel</option>
+                  <option value="uzleti">Üzleti ebéd / vacsora</option>
+                  <option value="szulinap">Születésnap</option>
+                  <option value="evfordulo">Évforduló</option>
+                  <option value="egyeb">Egyéb</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="m-date">Dátum</label>
+                <input type="date" id="m-date" />
+              </div>
+              <div class="form-group">
+                <label>Érkezés időpontja</label>
+                <div
+                  class="time-stepper"
+                  role="group"
+                  aria-label="Érkezés időpontja"
+                >
+                  <button
+                    type="button"
+                    id="time-prev"
+                    aria-label="Korábbi időpont"
+                  >
+                    ◀
+                  </button>
+                  <span id="time-display" aria-live="polite">11:00</span>
+                  <button
+                    type="button"
+                    id="time-next"
+                    aria-label="Későbbi időpont"
+                  >
+                    ▶
+                  </button>
+                </div>
+                <input type="hidden" id="m-time" />
+              </div>
+              <div class="form-group">
+                <label for="m-guests">Személyek száma</label>
+                <input type="number" id="m-guests" min="1" />
+              </div>
+              <div class="form-group modal-full-col">
+                <label for="m-note">Megjegyzés</label>
+                <textarea id="m-note" rows="3"></textarea>
+              </div>
+            </div>
+
+            <div class="modal-actions">
+              <button type="button" class="save-btn" id="bookingModalSaveBtn">
+                Mentés
+              </button>
+              <button
+                type="button"
+                class="cancel-btn"
+                id="bookingModalCancelBtn"
+              >
+                Mégsem
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= FOGLALÁS TÖRLÉS MEGERŐSÍTŐ MODAL ================= -->
+        <div
+          id="bookingDeleteConfirmModal"
+          class="modal hidden"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div class="confirm-box">
+            <div class="confirm-icon">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="confirm-text">
+              <p class="confirm-title">Foglalás törlése</p>
+              <p class="confirm-body">
+                Biztosan törölni szeretnéd ezt a foglalást? Ez a művelet nem
+                vonható vissza.
+              </p>
+            </div>
+            <div class="confirm-actions">
+              <button
+                type="button"
+                class="cancel-btn"
+                id="bookingDeleteConfirmCancel"
+              >
+                Mégsem
+              </button>
+              <button
+                type="button"
+                class="btn-danger"
+                id="bookingDeleteConfirmOk"
+              >
+                Törlés
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div
+          id="messageDeleteConfirmModal"
+          class="modal hidden"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div class="confirm-box">
+            <div class="confirm-icon">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="confirm-text">
+              <p class="confirm-title">Üzenet törlése</p>
+              <p class="confirm-body">
+                Biztosan törölni szeretnéd ezt az üzenetet? Ez a művelet nem
+                vonható vissza.
+              </p>
+            </div>
+            <div class="confirm-actions">
+              <button
+                type="button"
+                class="cancel-btn"
+                id="messageDeleteConfirmCancel"
+              >
+                Mégsem
+              </button>
+              <button
+                type="button"
+                class="btn-danger"
+                id="messageDeleteConfirmOk"
+              >
+                Törlés
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ================= ÜZENETEK ================= -->
+        <section id="messages-section" class="section">
+          <div class="msg-wrapper">
+            <div class="msg-toolbar">
+              <div
+                class="msg-archive-tabs"
+                role="tablist"
+                aria-label="Üzenetek szűrése archiválás szerint"
+              >
+                <button
+                  type="button"
+                  class="msg-archive-tab active"
+                  data-archive="active"
+                  role="tab"
+                  aria-selected="true"
+                >
+                  Aktív
+                </button>
+                <button
+                  type="button"
+                  class="msg-archive-tab"
+                  data-archive="archived"
+                  role="tab"
+                  aria-selected="false"
+                >
+                  Archivált
+                </button>
+              </div>
+
+              <div class="search-wrap">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input
+                  type="text"
+                  id="messagesSearch"
+                  placeholder="Keresés..."
+                  aria-label="Üzenetek keresése"
+                />
+              </div>
+
+              <button
+                type="button"
+                id="messagesSortBtn"
+                class="msg-sort-btn"
+                data-sort="newest"
+                aria-label="Rendezés: legújabb / legrégebbi"
+              >
+                <i class="fa-solid fa-arrow-down-wide-short"></i>
+                <span id="messagesSortLabel">Legújabb</span>
+              </button>
+            </div>
+
+            <div class="msg-kpi-row dash-kpi-strip" id="messagesKpiRow">
+              <button
+                type="button"
+                class="msg-kpi"
+                data-filter="unread"
+                aria-pressed="false"
+              >
+                <span class="msg-kpi-icon-wrap"
+                  ><i class="fa-solid fa-envelope"></i
+                ></span>
+                <span class="msg-kpi-text">
+                  <span class="msg-kpi-value" id="kpi-messages-unread">0</span>
+                  <span class="msg-kpi-label">Olvasatlan</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                class="msg-kpi"
+                data-filter="Foglalás"
+                aria-pressed="false"
+              >
+                <span class="msg-kpi-icon-wrap"
+                  ><i class="fa-solid fa-calendar-check"></i
+                ></span>
+                <span class="msg-kpi-text">
+                  <span class="msg-kpi-value" id="kpi-messages-foglalas"
+                    >0</span
+                  >
+                  <span class="msg-kpi-label">Foglalás</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                class="msg-kpi"
+                data-filter="Visszajelzés"
+                aria-pressed="false"
+              >
+                <span class="msg-kpi-icon-wrap"
+                  ><i class="fa-solid fa-star"></i
+                ></span>
+                <span class="msg-kpi-text">
+                  <span class="msg-kpi-value" id="kpi-messages-visszajelzes"
+                    >0</span
+                  >
+                  <span class="msg-kpi-label">Visszajelzés</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                class="msg-kpi"
+                data-filter="Általános kérdés"
+                aria-pressed="false"
+              >
+                <span class="msg-kpi-icon-wrap"
+                  ><i class="fa-solid fa-circle-question"></i
+                ></span>
+                <span class="msg-kpi-text">
+                  <span class="msg-kpi-value" id="kpi-messages-altalanos"
+                    >0</span
+                  >
+                  <span class="msg-kpi-label">Általános</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                class="msg-kpi"
+                data-filter="Egyéb"
+                aria-pressed="false"
+              >
+                <span class="msg-kpi-icon-wrap"
+                  ><i class="fa-solid fa-ellipsis"></i
+                ></span>
+                <span class="msg-kpi-text">
+                  <span class="msg-kpi-value" id="kpi-messages-egyeb">0</span>
+                  <span class="msg-kpi-label">Egyéb</span>
+                </span>
+              </button>
+            </div>
+
+            <div class="msg-split">
+              <div class="msg-list" id="messagesList"></div>
+              <div class="msg-detail" id="messagesDetail"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ================= BEÁLLÍTÁSOK ================= -->
+        <section id="settings-section" class="section">
+          <div class="table-card">
+            <p>Rendelések és foglalások időkezelési szabályai, valamint az étterem nyitvatartása</p>
+
+            <div class="settings-wrapper">
+              <div class="settings-block">
+                <h3>Rendelések (perc alapú limitek)</h3>
+                <div class="settings-grid">
+                  <div class="setting-row">
+                    <div class="setting-row-main">
+                      <label>Új rendelés</label>
+                      <div class="input-wrapper">
+                        <input type="number" id="limit-new" value="30" />
+                        <span>perc</span>
+                      </div>
+                    </div>
+                    <small class="helper-text"
+                      >Beérkezéstől számított időkeret</small
+                    >
+                  </div>
+
+                  <div class="setting-row">
+                    <div class="setting-row-main">
+                      <label>Elfogadva</label>
+                      <div class="input-wrapper">
+                        <input type="number" id="limit-accepted" value="45" />
+                        <span>perc</span>
+                      </div>
+                    </div>
+                    <small class="helper-text"
+                      >Visszaigazolásig engedélyezett idő</small
+                    >
+                  </div>
+
+                  <div class="setting-row">
+                    <div class="setting-row-main">
+                      <label>Készül</label>
+                      <div class="input-wrapper">
+                        <input type="number" id="limit-preparing" value="60" />
+                        <span>perc</span>
+                      </div>
+                    </div>
+                    <small class="helper-text"
+                      >Elkészítési folyamat időkorlátja</small
+                    >
+                  </div>
+
+                  <div class="setting-row">
+                    <div class="setting-row-main">
+                      <label>Kiszállítás alatt</label>
+                      <div class="input-wrapper">
+                        <input type="number" id="limit-delivery" value="90" />
+                        <span>perc</span>
+                      </div>
+                    </div>
+                    <small class="helper-text"
+                      >Maximális szállítási időtartam</small
+                    >
+                  </div>
+                </div>
+                <button class="save-menu-btn" onclick="saveStatusLimits()">
+                  Rendelési beállítások mentése
+                </button>
+              </div>
+
+              <div class="settings-block">
+                <h3>Foglalások (szabályok)</h3>
+                <div class="settings-grid">
+                  <div class="setting-row">
+                    <div class="setting-row-main">
+                      <label>Új foglalás - Figyelmeztetés</label>
+                      <div class="input-wrapper">
+                        <input
+                          type="number"
+                          id="booking-warn-minutes"
+                          value="60"
+                        />
+                        <span>perc</span>
+                      </div>
+                    </div>
+                    <small class="helper-text"
+                      >Ekkor jelenik meg az első figyelmeztetés</small
+                    >
+                  </div>
+
+                  <div class="setting-row">
+                    <div class="setting-row-main">
+                      <label>Új foglalás - Probléma</label>
+                      <div class="input-wrapper">
+                        <input
+                          type="number"
+                          id="booking-problem-minutes"
+                          value="180"
+                        />
+                        <span>perc</span>
+                      </div>
+                    </div>
+                    <small class="helper-text">Kritikus késedelem ideje</small>
+                  </div>
+
+                  <div class="setting-row">
+                    <div class="setting-row-main">
+                      <label>Visszaigazolt - Közelgő</label>
+                      <div class="input-wrapper">
+                        <input
+                          type="number"
+                          id="booking-warn-hours"
+                          value="24"
+                        />
+                        <span>óra</span>
+                      </div>
+                    </div>
+                    <small class="helper-text"
+                      >Foglalás előtti "közelgő" riasztás</small
+                    >
+                  </div>
+                </div>
+                <button class="save-menu-btn" onclick="saveBookingsRules()">
+                  Foglalási szabályok mentése
+                </button>
+              </div>
+            </div>
+
+            <div class="settings-block settings-block-wide">
+              <h3>Nyitvatartás</h3>
+              <div class="hours-grid">
+                <div class="hours-row">
+                  <span class="hours-day-label">Hétfő</span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="hours-monday-closed" onchange="updateHoursRowDisabledState('monday')" />
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-switch-text">Zárva</span>
+                  </label>
+                  <div class="hours-time-fields">
+                    <input type="time" id="hours-monday-open" />
+                    <span>–</span>
+                    <input type="time" id="hours-monday-close" />
+                  </div>
+                </div>
+
+                <div class="hours-row">
+                  <span class="hours-day-label">Kedd</span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="hours-tuesday-closed" onchange="updateHoursRowDisabledState('tuesday')" />
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-switch-text">Zárva</span>
+                  </label>
+                  <div class="hours-time-fields">
+                    <input type="time" id="hours-tuesday-open" />
+                    <span>–</span>
+                    <input type="time" id="hours-tuesday-close" />
+                  </div>
+                </div>
+
+                <div class="hours-row">
+                  <span class="hours-day-label">Szerda</span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="hours-wednesday-closed" onchange="updateHoursRowDisabledState('wednesday')" />
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-switch-text">Zárva</span>
+                  </label>
+                  <div class="hours-time-fields">
+                    <input type="time" id="hours-wednesday-open" />
+                    <span>–</span>
+                    <input type="time" id="hours-wednesday-close" />
+                  </div>
+                </div>
+
+                <div class="hours-row">
+                  <span class="hours-day-label">Csütörtök</span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="hours-thursday-closed" onchange="updateHoursRowDisabledState('thursday')" />
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-switch-text">Zárva</span>
+                  </label>
+                  <div class="hours-time-fields">
+                    <input type="time" id="hours-thursday-open" />
+                    <span>–</span>
+                    <input type="time" id="hours-thursday-close" />
+                  </div>
+                </div>
+
+                <div class="hours-row">
+                  <span class="hours-day-label">Péntek</span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="hours-friday-closed" onchange="updateHoursRowDisabledState('friday')" />
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-switch-text">Zárva</span>
+                  </label>
+                  <div class="hours-time-fields">
+                    <input type="time" id="hours-friday-open" />
+                    <span>–</span>
+                    <input type="time" id="hours-friday-close" />
+                  </div>
+                </div>
+
+                <div class="hours-row">
+                  <span class="hours-day-label">Szombat</span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="hours-saturday-closed" onchange="updateHoursRowDisabledState('saturday')" />
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-switch-text">Zárva</span>
+                  </label>
+                  <div class="hours-time-fields">
+                    <input type="time" id="hours-saturday-open" />
+                    <span>–</span>
+                    <input type="time" id="hours-saturday-close" />
+                  </div>
+                </div>
+
+                <div class="hours-row">
+                  <span class="hours-day-label">Vasárnap</span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="hours-sunday-closed" onchange="updateHoursRowDisabledState('sunday')" />
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-switch-text">Zárva</span>
+                  </label>
+                  <div class="hours-time-fields">
+                    <input type="time" id="hours-sunday-open" />
+                    <span>–</span>
+                    <input type="time" id="hours-sunday-close" />
+                  </div>
+                </div>
+              </div>
+              <button class="save-menu-btn" onclick="saveOpeningHours()">
+                Nyitvatartás mentése
+              </button>
+
+              <div class="hours-exceptions">
+                <h4>Eseti kivételek (ünnepnapok stb.)</h4>
+                <small class="helper-text hours-exceptions-helper">A hozzáadott kivételek azonnal mentésre kerülnek, nem kell rá a fenti "Nyitvatartás mentése" gomb.</small>
+                <div class="hours-exception-form">
+                  <input type="date" id="exception-date" />
+                  <input type="text" id="exception-label" placeholder="Pl. Karácsony" />
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="exception-closed" checked onchange="toggleExceptionFormFields()" />
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-switch-text">Zárva</span>
+                  </label>
+                  <div class="hours-time-fields">
+                    <input type="time" id="exception-open" disabled />
+                    <span>–</span>
+                    <input type="time" id="exception-close" disabled />
+                  </div>
+                  <button type="button" class="hours-exception-add-btn" onclick="addOpeningHoursException()">
+                    Hozzáadás
+                  </button>
+                </div>
+                <div class="hours-exceptions-list" id="hoursExceptionsList"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

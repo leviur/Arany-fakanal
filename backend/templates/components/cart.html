@@ -1,0 +1,27 @@
+<!-- CART OVERLAY -->
+<div class="cart-overlay" id="cartOverlay"></div>
+
+<!-- CART DRAWER -->
+<div class="cart-drawer" id="cartDrawer" role="dialog" aria-modal="true" aria-labelledby="cartDrawerTitle" aria-hidden="true">
+
+    <div class="cart-header">
+        <h2 id="cartDrawerTitle">Kosár</h2>
+        <button type="button" class="cart-close" id="closeCart" aria-label="Kosár bezárása">✕</button>
+    </div>
+    <div class="divider" style="margin: 0 0 4px 0;"></div>
+
+    <div class="cart-items" id="cartItems">
+        <!-- Ide generálja a cart.js a tételeket -->
+    </div>
+
+    <div class="cart-footer">
+        <div class="cart-total">
+            <span>Összesen</span>
+            <span class="cart-total-price" id="cartTotalPrice">
+                0 Ft
+            </span>
+        </div>
+        <button class="btn-gold btn-full" id="checkoutBtn">Rendelés beküldése</button>
+    </div>
+
+</div>

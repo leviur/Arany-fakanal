@@ -1,0 +1,525 @@
+{% extends "base.html" %}
+{% block title %}Asztalfoglalás – Arany Fakanál{% endblock %}
+{% load static %}
+
+{% block css %}
+  <link rel="stylesheet" href="{% static 'css/asztalfoglalas.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-overlay"></div>
+      <img src="{% static 'images/konyha.png' %}" alt="Étterem" class="hero-img" />
+      <div class="hero-content">
+        <p class="hero-label">Arany Fakanál Étterem</p>
+        <h1 class="hero-title">Asztalfoglalás</h1>
+        <p class="hero-sub">Foglaljon asztalt néhány másodperc alatt</p>
+      </div>
+    </section>
+    <!-- FOGLALÁS FORM -->
+    <main class="booking-main">
+      <div class="booking-card">
+        <div class="booking-header">
+          <h2>Foglalási adatok</h2>
+          <p>
+            Töltse ki az alábbi mezőket és visszaigazolást küldünk emailben.
+          </p>
+        </div>
+
+        <form class="booking-form" id="bookingForm" novalidate onsubmit="handleSubmit(event)">
+          <!-- Sor 1: Név + Email -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="booking-name">Teljes név <span class="req">*</span></label>
+              <input
+                type="text"
+                id="booking-name"
+                placeholder="Pl. Kiss János"
+                autocomplete="name"
+              />
+            </div>
+            <div class="form-group">
+              <label for="booking-email">Email cím <span class="req">*</span></label>
+              <input
+                type="email"
+                id="booking-email"
+                placeholder="pelda@email.hu"
+                autocomplete="email"
+              />
+            </div>
+          </div>
+
+          <!-- Sor 2: Telefon + Alkalom -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="booking-phone">Telefonszám <span class="req">*</span></label>
+              <input
+                type="tel"
+                id="booking-phone"
+                placeholder="+36 30 123 4567"
+                autocomplete="tel"
+              />
+            </div>
+            <div class="form-group">
+              <label for="occasion">Alkalom <span class="req">*</span></label>
+              <select id="occasion">
+                <option value="">Válasszon alkalmat…</option>
+                <option value="csaladi">Családi összejövetel</option>
+                <option value="uzleti">Üzleti ebéd / vacsora</option>
+                <option value="szulinap">Születésnap</option>
+                <option value="evfordulo">Évforduló</option>
+                <option value="egyeb">Egyéb</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Sor 3: Dátum + Időpont + Személyek -->
+          <div class="form-row form-row--three">
+            <div class="form-group">
+              <label for="date">Dátum <span class="req">*</span></label>
+              <input type="date" id="date" />
+            </div>
+            <div class="form-group">
+              <label for="time">Időpont <span class="req">*</span></label>
+              <select id="time">
+                <option value="">Válasszon dátumot először…</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="guests"
+                >Személyek száma <span class="req">*</span></label
+              >
+              <div class="stepper">
+                <button
+                  type="button"
+                  class="step-btn"
+                  onclick="changeGuests(-1)"
+                >
+                  −
+                </button>
+                <span id="guest-count">2</span>
+                <button
+                  type="button"
+                  class="step-btn"
+                  onclick="changeGuests(1)"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Megjegyzés -->
+          <div class="form-group form-group--full">
+            <label for="note">Megjegyzés</label>
+            <textarea
+              id="note"
+              rows="3"
+              placeholder="Pl. allergének, különleges kérések, asztal elhelyezése…"
+            ></textarea>
+          </div>
+
+          {% include "components/privacy-consent.html" with checkbox_id="booking-privacy" %}
+
+          <button type="submit" class="submit-btn">
+            <span>Foglalás elküldése</span>
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+          </button>
+        </form>
+      </div>
+
+      <!-- INFó SÁV -->
+      <div class="info-strip">
+        <!-- Cím -->
+        <div class="info-item">
+          <div class="info-icon">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path d="M12 21s-8-7.5-8-12a8 8 0 1 1 16 0c0 4.5-8 12-8 12z" />
+              <circle cx="12" cy="9" r="2.5" />
+            </svg>
+          </div>
+          <strong>Cím</strong>
+          <p>6720 Szilváskút<br />Szőlősliget major 1.</p>
+        </div>
+
+        <!-- Elérhetőség -->
+        <div class="info-item">
+          <div class="info-icon">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <path
+                d="M22 16.92v3a2 2 0 0 1-2.18 2A19.86 19.86 0 0 1 3.09 4.18 2 2 0 0 1 5.09 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L9.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"
+              />
+            </svg>
+          </div>
+          <strong>Elérhetőség</strong>
+          <p>+36 30 123 4567<br />info@aranyfakanal.hu</p>
+          <div class="info-socials">
+            <a href="#" aria-label="Instagram">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <rect x="2" y="2" width="20" height="20" rx="5" />
+                <circle cx="12" cy="12" r="4" />
+                <circle
+                  cx="17.5"
+                  cy="6.5"
+                  r="0.8"
+                  fill="currentColor"
+                  stroke="none"
+                />
+              </svg>
+            </a>
+            <a href="#" aria-label="Facebook">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <path
+                  d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"
+                />
+              </svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Nyitvatartás -->
+        <div class="info-item">
+          <div class="info-icon">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </div>
+          <strong>Nyitvatartás</strong>
+          <div class="hours" id="public-opening-hours"></div>
+          <div
+            id="public-opening-exceptions"
+            class="public-opening-exceptions"
+            data-heading="Közelgő eltérések"
+            hidden
+          ></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- VISSZA LINK -->
+    <footer class="page-footer">
+      <a href="/" class="back-link">← Vissza a főoldalra</a>
+      <p>&copy; 2020 Arany Fakanál Étterem – Minden jog fenntartva.</p>
+    </footer>
+
+  {% endblock %}
+
+  {% block scripts %}
+    <script src="{% static 'js/booking-form-prefill.js' %}?v=1"></script>
+    <script>
+    function getCSRFToken() {
+      const name = "csrftoken=";
+      const cookies = document.cookie.split(";");
+
+      for (let c of cookies) {
+        c = c.trim();
+        if (c.startsWith(name)) {
+          return c.substring(name.length);
+        }
+      }
+      return "";
+    }
+    </script>
+    <script>
+      // dupla foglalás védelem
+      let guests = 2;
+      const DEFAULT_GUEST_COUNT = 2;
+      const submitBtnDefaultHtml = document.querySelector(".submit-btn")?.innerHTML;
+
+      const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+
+      // bejelentkezve: már lefoglalt nap+idő párok
+      let activeReservationSlots = null;
+
+      function formatTimeSlot(timeStr) {
+        if (!timeStr) return "";
+        return String(timeStr).slice(0, 5);
+      }
+
+      function reservationSlotKey(date, time) {
+        // levágja a másodpercet (20:00:00 → 20:00)
+        return `${date}|${formatTimeSlot(time)}`;
+      }
+
+      async function refreshActiveReservationSlots() {
+        const user = await window.checkAuthSession?.();
+        if (!user?.id) {
+          activeReservationSlots = null;
+          return null;
+        }
+
+        const slots = new Set();
+        let page = 1;
+        let hasMore = true;
+
+        while (hasMore) {
+          const response = await apiRequest(
+            `/api/guest-portal/reservations/?scope=active&page=${page}&page_size=50`,
+          );
+          if (!response.ok) {
+            console.warn("Aktív foglalások lekérdezése sikertelen:", response.status);
+            return null;
+          }
+
+          const data = await response.json();
+          for (const reservation of data.results || []) {
+            if (reservation.date && reservation.time) {
+              slots.add(reservationSlotKey(reservation.date, reservation.time));
+            }
+          }
+          hasMore = Boolean(data.next);
+          page += 1;
+        }
+
+        activeReservationSlots = slots;
+        return slots;
+      }
+
+      function formatReservationConflictMessage(date, time) {
+        // hibaüzenet formátuma
+        const [year, month, day] = date.split("-").map(Number);
+        const months = [
+          "jan.", "feb.", "már.", "ápr.", "máj.", "jún.",
+          "júl.", "aug.", "szept.", "okt.", "nov.", "dec.",
+        ];
+        const dateLabel = `${months[month - 1]} ${day}.`;
+        return `${dateLabel} ${formatTimeSlot(time)} — már foglaltál erre az időpontra.`;
+      }
+
+      function changeGuests(delta) {
+        guests = Math.max(1, Math.min(20, guests + delta));
+        document.getElementById("guest-count").textContent = guests;
+      }
+
+      // Sikeres küldés után: ürítés + vendégszám alapérték; bejelentkezve profil újratöltése
+      function resetBookingForm() {
+        const form = document.getElementById("bookingForm");
+        const btn = form?.querySelector(".submit-btn");
+
+        form?.reset();
+
+        guests = DEFAULT_GUEST_COUNT;
+        document.getElementById("guest-count").textContent = guests;
+        OpeningHours.populateTimeSelect(document.getElementById("time"), "");
+
+        if (btn) {
+          btn.innerHTML = submitBtnDefaultHtml || "<span>Foglalás elküldése</span>";
+          btn.style.background = "";
+          btn.disabled = false;
+        }
+
+        window.checkAuthSession?.().then((user) => {
+          window.prefillBookingFormFromUser?.(user);
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        const dateEl = document.getElementById("date");
+        if (dateEl) {
+          dateEl.min = new Date().toISOString().split("T")[0];
+        }
+
+        const user = await window.checkAuthSession?.();
+
+        if (user?.id) {
+          await refreshActiveReservationSlots();
+        }
+
+        try {
+          await OpeningHours.fetchOpeningHours();
+          OpeningHours.renderWeeklyHours(
+            document.getElementById("public-opening-hours"),
+            { abbrev: true },
+          );
+          OpeningHours.renderUpcomingExceptions(
+            document.getElementById("public-opening-exceptions"),
+            { daysAhead: 90 },
+          );
+        } catch (err) {
+          console.error("Nyitvatartás betöltése sikertelen:", err);
+        }
+
+        document.getElementById("date")?.addEventListener("change", (e) => {
+          OpeningHours.populateTimeSelect(document.getElementById("time"), e.target.value);
+        });
+      });
+
+      function validateBookingForm() {
+        const name = document.getElementById("booking-name").value.trim();
+        const email = document.getElementById("booking-email").value.trim();
+        const phone = document.getElementById("booking-phone").value.trim();
+        const occasion = document.getElementById("occasion").value;
+        const date = document.getElementById("date").value;
+        const time = document.getElementById("time").value;
+        const notes = document.getElementById("note").value.trim();
+        const today = document.getElementById("date").min;
+
+        if (!name) {
+          return "Kérjük, adja meg a teljes nevét!";
+        }
+        if (!email) {
+          return "Kérjük, adja meg az e-mail címét!";
+        }
+        if (!EMAIL_RE.test(email)) {
+          return "Érvénytelen e-mail cím. Használjon formátumot: pelda@email.hu";
+        }
+        if (!phone) {
+          return "Kérjük, adja meg a telefonszámát!";
+        }
+        if (!occasion) {
+          return "Kérjük, válasszon alkalmat!";
+        }
+        if (!date) {
+          return "Kérjük, válasszon dátumot!";
+        }
+        if (date < today) {
+          return "A foglalás dátuma nem lehet múltbeli!";
+        }
+        if (!time) {
+          return "Kérjük, válasszon időpontot!";
+        }
+        if (time === "Ezen a napon zárva vagyunk") {
+          return "Ezen a napon zárva vagyunk, válassz másik dátumot!";
+        }
+        if (!document.getElementById("booking-privacy")?.checked) {
+          return "Az adatkezelési tájékoztató elfogadása kötelező.";
+        }
+
+        return {
+          guest_name: name,
+          guest_email: email,
+          guest_phone: phone,
+          occasion,
+          date,
+          time,
+          guest_count: guests,
+          notes,
+        };
+      }
+
+      function formatReservationError(err) {
+        if (typeof err === "string") return err;
+        if (err?.detail) return err.detail;
+
+        if (Array.isArray(err?.non_field_errors) && err.non_field_errors.length) {
+          return String(err.non_field_errors[0]);
+        }
+
+        const fieldMessages = {
+          guest_name: "Kérjük, adja meg a teljes nevét!",
+          guest_email: "Érvénytelen e-mail cím. Használjon formátumot: pelda@email.hu",
+          guest_phone: "Kérjük, adja meg a telefonszámát!",
+          occasion: "Kérjük, válasszon alkalmat!",
+          date: "Kérjük, válasszon érvényes dátumot!",
+          time: "Kérjük, válasszon időpontot!",
+          guest_count: "Kérjük, adja meg a személyek számát!",
+        };
+
+        for (const [field, errors] of Object.entries(err || {})) {
+          if (!Array.isArray(errors) || !errors.length) continue;
+          const msg = String(errors[0]).toLowerCase();
+          if (field === "guest_email" && msg.includes("blank")) {
+            return "Kérjük, adja meg az e-mail címét!";
+          }
+          return fieldMessages[field] || String(errors[0]);
+        }
+
+        return "Hiba történt a foglalás elküldésekor!";
+      }
+
+      async function handleSubmit(e) {
+        e.preventDefault();
+
+        const btn = e.target.querySelector(".submit-btn");
+        const validation = validateBookingForm(); //űrlap validálás (név, email, dátum, idő…)
+
+        if (typeof validation === "string") {
+          window.showToast?.(validation, "error");
+          return;
+        }
+
+        // ha már van aktív foglalás erre a slotra, felesleges POST
+        if (activeReservationSlots?.has(reservationSlotKey(validation.date, validation.time))) {
+          window.showToast?.(
+            formatReservationConflictMessage(validation.date, validation.time),
+            "error",
+          );
+          return;
+        }
+
+        try {
+          btn.disabled = true;
+          btn.innerHTML = "Küldés...";
+
+          const res = await fetch("/api/reservations/create/", {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": getCSRFToken(),
+            },
+            body: JSON.stringify(validation),
+          });
+
+          if (!res.ok) {
+            const err = await res.json();
+            throw err;
+          }
+
+          btn.innerHTML = "✓ Foglalás sikeres!";
+          btn.style.background = "#4CAF50";
+          window.showToast?.("Foglalás sikeresen elküldve! Hamarosan visszaigazolunk.", "success");
+
+          await refreshActiveReservationSlots();
+
+          // Rövid sikerjelzés, majd űrlap ürítése (dupla küldés elkerülése)
+          setTimeout(resetBookingForm, 2500);
+
+        } catch (err) {
+          console.error(err);
+          window.showToast?.(formatReservationError(err), "error");
+          btn.innerHTML = submitBtnDefaultHtml || "<span>Foglalás elküldése</span>";
+          btn.style.background = "";
+          btn.disabled = false;
+        }
+      }
+    </script>
+{% endblock %}
+

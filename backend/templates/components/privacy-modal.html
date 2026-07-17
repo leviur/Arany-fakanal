@@ -1,0 +1,125 @@
+<!--
+  Adatkezelési tájékoztató — modal tartalom.
+
+  Ezt a `privacy-modal.js` kezeli:
+  - nyitás: `[data-open-privacy-modal]` gombok (privacy-consent.html)
+  - wrapper: `#privacyModal` (overlay kattintásra zár)
+  - zárás: `#closePrivacyModal` (X gomb), illetve ESC
+  - elfogadás: `#privacyModalAccept` ("Megértettem") → checkbox bepipál + zárás
+-->
+
+<div
+  class="modal privacy-modal"
+  id="privacyModal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="privacyModalTitle"
+  aria-hidden="true"
+  hidden
+>
+  <div class="privacy-modal-box">
+    <button
+      type="button"
+      class="privacy-modal-close"
+      id="closePrivacyModal"
+      aria-label="Bezárás"
+    >
+      ✕
+    </button>
+
+    <h2 id="privacyModalTitle" class="privacy-modal-title">Adatkezelési tájékoztató</h2>
+    <p class="privacy-modal-updated">Hatályos: 2026. július 6.</p>
+
+    <div class="privacy-modal-body">
+      <section>
+        <h3>1. Az adatkezelő</h3>
+        <p>
+          <strong>Név:</strong> Arany Fakanál Étterem<br />
+          <strong>Székhely:</strong> Szilváskút<br />
+          <strong>E-mail:</strong>
+          <a href="mailto:info@aranyfakanal.hu">info@aranyfakanal.hu</a><br />
+          <strong>Telefon:</strong> +36 30 123 4567
+        </p>
+      </section>
+
+      <section>
+        <h3>2. Kezelt személyes adatok</h3>
+        <p>Weboldalunkon az alábbi adatokat kezelhetjük:</p>
+        <ul>
+          <li><strong>Kapcsolatfelvétel:</strong> név, e-mail cím, tárgy, üzenet szövege, üzenet típusa</li>
+          <li><strong>Asztalfoglalás:</strong> név, e-mail, telefonszám, foglalás időpontja, létszám, alkalom, megjegyzés</li>
+          <li><strong>Online rendelés:</strong> név, e-mail, telefonszám, szállítási cím, rendelés tartalma</li>
+          <li><strong>Regisztráció:</strong> név, e-mail, telefonszám, szállítási cím</li>
+          <li><strong>Technikai adatok:</strong> munkamenet-azonosító (bejelentkezéshez), naplózási adatok</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>3. Az adatkezelés célja</h3>
+        <ul>
+          <li>kapcsolatfelvételi üzenetek megválaszolása</li>
+          <li>asztalfoglalások kezelése és visszaigazolása</li>
+          <li>ételrendelések teljesítése</li>
+          <li>felhasználói fiók működtetése és azonosítás</li>
+          <li>ügyfélszolgálati és panaszkezelési kötelezettségek teljesítése</li>
+          <li>weboldal biztonságos működtetése</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>4. Jogalap</h3>
+        <ul>
+          <li><strong>GDPR 6. cikk (1) a):</strong> az érintett hozzájárulása (pl. kapcsolatfelvétel, regisztráció)</li>
+          <li><strong>GDPR 6. cikk (1) b):</strong> szerződés teljesítése (rendelés, foglalás)</li>
+          <li><strong>GDPR 6. cikk (1) f):</strong> jogos érdek (biztonság, visszaélések megelőzése)</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>5. Adatmegőrzés</h3>
+        <p>
+          Az adatokat csak a szükséges ideig őrizzük meg: kapcsolati üzenetek legfeljebb
+          <strong>2 évig</strong>, teljesített rendelések és számlázási adatok a jogszabályban
+          előírt ideig, felhasználói fiók adatai a fiók fennállásáig, illetve törlési kérelemig.
+        </p>
+      </section>
+
+      <section>
+        <h3>6. Adattovábbítás, adatfeldolgozók</h3>
+        <p>
+          Személyes adatait harmadik félnek csak jogszabályi kötelezettség vagy a szolgáltatás
+          technikai működtetése (pl. tárhelyszolgáltató) esetén továbbítjuk, megfelelő szerződéses
+          garanciák mellett. Adatait az Európai Gazdasági Térségen kívülre nem továbbítjuk.
+        </p>
+      </section>
+
+      <section>
+        <h3>7. Az érintett jogai</h3>
+        <p>Ön jogosult:</p>
+        <ul>
+          <li>tájékoztatást kérni kezelt adatairól</li>
+          <li>hozzáférést, helyesbítést, törlést kérni</li>
+          <li>az adatkezelés korlátozását kérni</li>
+          <li>tiltakozni az adatkezelés ellen</li>
+          <li>hozzájárulását bármikor visszavonni</li>
+          <li>panaszt tenni a Nemzeti Adatvédelmi és Információszabadság Hatóságnál (NAIH)</li>
+        </ul>
+      </section>
+
+      <section>
+        <h3>8. Kapcsolatfelvétel adatvédelmi ügyben</h3>
+        <p>
+          Kérdés vagy kérelem esetén írjon az
+          <a href="mailto:info@aranyfakanal.hu">info@aranyfakanal.hu</a>
+          címre. Kérését legkésőbb 30 napon belül megválaszoljuk.
+        </p>
+      </section>
+    </div>
+
+    <div class="privacy-modal-actions">
+      <button type="button" class="btn-gold" id="privacyModalAccept">
+        Megértettem
+      </button>
+    </div>
+  </div>
+</div>

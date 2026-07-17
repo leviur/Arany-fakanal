@@ -1,0 +1,1256 @@
+[
+{
+  "model": "orders.order",
+  "pk": 2,
+  "fields": {
+    "user": 2,
+    "delivery_address": "Teszt utca 1",
+    "total_price": "4500.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 3,
+  "fields": {
+    "user": 2,
+    "delivery_address": "4000 Tesztfalva, Teszt utca 2",
+    "total_price": "3000.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 5,
+  "fields": {
+    "user": 6,
+    "delivery_address": "2103 Bozsok, Kosuuth utca 10",
+    "total_price": "3000.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 6,
+  "fields": {
+    "user": 6,
+    "delivery_address": "2103 Bozsok, Kosuuth utca 10",
+    "total_price": "1500.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 7,
+  "fields": {
+    "user": 6,
+    "delivery_address": "2103 Bozsok, Kosuuth utca 10",
+    "total_price": "1500.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 8,
+  "fields": {
+    "user": 6,
+    "delivery_address": "2103 Bozsok, Kosuuth utca 10",
+    "total_price": "1500.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 9,
+  "fields": {
+    "user": 7,
+    "delivery_address": "1234 Tesztfalva, Teszt utca 2",
+    "total_price": "7500.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 10,
+  "fields": {
+    "user": 8,
+    "delivery_address": "4024 Debrecen, Péterfia utca 24",
+    "total_price": "7500.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 11,
+  "fields": {
+    "user": 9,
+    "delivery_address": "4564 Kunszenmiklós, Apostol  pál 2",
+    "total_price": "4500.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 12,
+  "fields": {
+    "user": 10,
+    "delivery_address": "4024 Debrecen,Kosuth utca 20",
+    "total_price": "1500.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 13,
+  "fields": {
+    "user": 3,
+    "delivery_address": "4024 Debrecen, Thomas Mann utca23",
+    "total_price": "3000.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 14,
+  "fields": {
+    "user": 3,
+    "delivery_address": "4024 Debrecen, Thomas Mann utca23",
+    "total_price": "1500.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 16,
+  "fields": {
+    "user": 3,
+    "delivery_address": "4024 Debrecen, Kossuth utca 20",
+    "total_price": "13500.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 17,
+  "fields": {
+    "user": 3,
+    "delivery_address": "4024 Debrecen, Thomas Mann utca 23",
+    "total_price": "4500.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 18,
+  "fields": {
+    "user": 3,
+    "delivery_address": "4024 Debrecen, Thomas Mann utca 23",
+    "total_price": "6000.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 19,
+  "fields": {
+    "user": 3,
+    "delivery_address": "4024 Debrecen, Thomas Mann utca 23",
+    "total_price": "3000.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 20,
+  "fields": {
+    "user": 3,
+    "delivery_address": "4024 Debrecen, Thomas Mann utca 23",
+    "total_price": "1500.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 21,
+  "fields": {
+    "user": 3,
+    "delivery_address": "4024 Debrecen, Thomas Mann utca 23",
+    "total_price": "4500.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 22,
+  "fields": {
+    "user": 3,
+    "delivery_address": "4024 Debrecen, Thomas Mann utca 23",
+    "total_price": "4500.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 23,
+  "fields": {
+    "user": 3,
+    "delivery_address": "4024 Debrecen, Thomas Mann utca 23",
+    "total_price": "3000.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 24,
+  "fields": {
+    "user": 3,
+    "delivery_address": "4024 Debrecen, Thomas Mann utca 23",
+    "total_price": "4500.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 25,
+  "fields": {
+    "user": 3,
+    "delivery_address": "4024 Debrecen, Thomas Mann utca 23",
+    "total_price": "3000.00"
+  }
+},
+{
+  "model": "orders.order",
+  "pk": 26,
+  "fields": {
+    "user": 3,
+    "delivery_address": "4024 Debrecen, Thomas Mann utca 23",
+    "total_price": "6000.00"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 2,
+  "fields": {
+    "order": 2,
+    "weekly_menu": 1,
+    "delivery_date": "2026-07-06",
+    "created_at": "2026-07-03T18:02:15.340Z",
+    "quantity": 2,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 3,
+  "fields": {
+    "order": 2,
+    "weekly_menu": 2,
+    "delivery_date": "2026-07-06",
+    "created_at": "2026-07-03T18:02:15.340Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 5,
+  "fields": {
+    "order": 3,
+    "weekly_menu": 1,
+    "delivery_date": "2026-07-06",
+    "created_at": "2026-07-03T19:48:57.667Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 6,
+  "fields": {
+    "order": 3,
+    "weekly_menu": 4,
+    "delivery_date": "2026-07-07",
+    "created_at": "2026-07-03T19:48:57.782Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 10,
+  "fields": {
+    "order": 5,
+    "weekly_menu": 3,
+    "delivery_date": "2026-07-07",
+    "created_at": "2026-07-05T11:54:36.076Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 11,
+  "fields": {
+    "order": 5,
+    "weekly_menu": 4,
+    "delivery_date": "2026-07-07",
+    "created_at": "2026-07-05T11:54:36.240Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 12,
+  "fields": {
+    "order": 6,
+    "weekly_menu": 9,
+    "delivery_date": "2026-07-10",
+    "created_at": "2026-07-05T11:56:20.270Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 13,
+  "fields": {
+    "order": 7,
+    "weekly_menu": 3,
+    "delivery_date": "2026-07-07",
+    "created_at": "2026-07-05T12:36:44.246Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 14,
+  "fields": {
+    "order": 8,
+    "weekly_menu": 1,
+    "delivery_date": "2026-07-06",
+    "created_at": "2026-07-05T12:38:34.132Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "cancelled"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 15,
+  "fields": {
+    "order": 9,
+    "weekly_menu": 1,
+    "delivery_date": "2026-07-06",
+    "created_at": "2026-07-05T13:42:09.505Z",
+    "quantity": 2,
+    "unit_price": "1500.00",
+    "status": "cancelled"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 16,
+  "fields": {
+    "order": 9,
+    "weekly_menu": 4,
+    "delivery_date": "2026-07-07",
+    "created_at": "2026-07-05T13:42:09.642Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 17,
+  "fields": {
+    "order": 9,
+    "weekly_menu": 5,
+    "delivery_date": "2026-07-08",
+    "created_at": "2026-07-05T13:42:09.805Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 18,
+  "fields": {
+    "order": 9,
+    "weekly_menu": 9,
+    "delivery_date": "2026-07-10",
+    "created_at": "2026-07-05T13:42:09.967Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 19,
+  "fields": {
+    "order": 10,
+    "weekly_menu": 1,
+    "delivery_date": "2026-07-06",
+    "created_at": "2026-07-05T18:05:19.395Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 20,
+  "fields": {
+    "order": 10,
+    "weekly_menu": 3,
+    "delivery_date": "2026-07-07",
+    "created_at": "2026-07-05T18:05:19.678Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 21,
+  "fields": {
+    "order": 10,
+    "weekly_menu": 4,
+    "delivery_date": "2026-07-07",
+    "created_at": "2026-07-05T18:05:19.928Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 22,
+  "fields": {
+    "order": 10,
+    "weekly_menu": 5,
+    "delivery_date": "2026-07-08",
+    "created_at": "2026-07-05T18:05:20.203Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 23,
+  "fields": {
+    "order": 10,
+    "weekly_menu": 10,
+    "delivery_date": "2026-07-10",
+    "created_at": "2026-07-05T18:05:20.436Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 24,
+  "fields": {
+    "order": 11,
+    "weekly_menu": 5,
+    "delivery_date": "2026-07-08",
+    "created_at": "2026-07-07T20:33:15.783Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 25,
+  "fields": {
+    "order": 11,
+    "weekly_menu": 7,
+    "delivery_date": "2026-07-09",
+    "created_at": "2026-07-07T20:33:16.050Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 26,
+  "fields": {
+    "order": 11,
+    "weekly_menu": 10,
+    "delivery_date": "2026-07-10",
+    "created_at": "2026-07-07T20:33:16.333Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 28,
+  "fields": {
+    "order": 12,
+    "weekly_menu": 10,
+    "delivery_date": "2026-07-10",
+    "created_at": "2026-07-08T15:49:34.746Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 29,
+  "fields": {
+    "order": 13,
+    "weekly_menu": 9,
+    "delivery_date": "2026-07-10",
+    "created_at": "2026-07-09T20:34:15.888Z",
+    "quantity": 2,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 30,
+  "fields": {
+    "order": 14,
+    "weekly_menu": 10,
+    "delivery_date": "2026-07-10",
+    "created_at": "2026-07-09T20:38:44.390Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 33,
+  "fields": {
+    "order": 16,
+    "weekly_menu": 13,
+    "delivery_date": "2026-07-13",
+    "created_at": "2026-07-10T21:16:30.993Z",
+    "quantity": 2,
+    "unit_price": "1500.00",
+    "status": "confirmed"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 36,
+  "fields": {
+    "order": 16,
+    "weekly_menu": 16,
+    "delivery_date": "2026-07-14",
+    "created_at": "2026-07-10T21:16:31.818Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "confirmed"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 37,
+  "fields": {
+    "order": 16,
+    "weekly_menu": 17,
+    "delivery_date": "2026-07-15",
+    "created_at": "2026-07-10T21:16:32.068Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "new"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 38,
+  "fields": {
+    "order": 16,
+    "weekly_menu": 18,
+    "delivery_date": "2026-07-15",
+    "created_at": "2026-07-10T21:16:32.327Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "new"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 39,
+  "fields": {
+    "order": 16,
+    "weekly_menu": 19,
+    "delivery_date": "2026-07-16",
+    "created_at": "2026-07-10T21:16:32.559Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "new"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 40,
+  "fields": {
+    "order": 16,
+    "weekly_menu": 20,
+    "delivery_date": "2026-07-16",
+    "created_at": "2026-07-10T21:16:32.801Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "new"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 42,
+  "fields": {
+    "order": 16,
+    "weekly_menu": 22,
+    "delivery_date": "2026-07-17",
+    "created_at": "2026-07-10T21:16:33.302Z",
+    "quantity": 2,
+    "unit_price": "1500.00",
+    "status": "new"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 43,
+  "fields": {
+    "order": 17,
+    "weekly_menu": 1,
+    "delivery_date": "2026-07-06",
+    "created_at": "2026-07-06T08:30:00Z",
+    "quantity": 2,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 44,
+  "fields": {
+    "order": 17,
+    "weekly_menu": 2,
+    "delivery_date": "2026-07-06",
+    "created_at": "2026-07-06T08:30:00Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 45,
+  "fields": {
+    "order": 18,
+    "weekly_menu": 3,
+    "delivery_date": "2026-07-07",
+    "created_at": "2026-07-07T08:30:00Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 46,
+  "fields": {
+    "order": 18,
+    "weekly_menu": 4,
+    "delivery_date": "2026-07-07",
+    "created_at": "2026-07-07T08:30:00Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 47,
+  "fields": {
+    "order": 18,
+    "weekly_menu": 5,
+    "delivery_date": "2026-07-08",
+    "created_at": "2026-07-08T08:30:00Z",
+    "quantity": 2,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 48,
+  "fields": {
+    "order": 19,
+    "weekly_menu": 7,
+    "delivery_date": "2026-07-09",
+    "created_at": "2026-07-09T08:30:00Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 49,
+  "fields": {
+    "order": 19,
+    "weekly_menu": 12,
+    "delivery_date": "2026-07-09",
+    "created_at": "2026-07-09T08:30:00Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 50,
+  "fields": {
+    "order": 20,
+    "weekly_menu": 1,
+    "delivery_date": "2026-07-06",
+    "created_at": "2026-07-06T09:00:00Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 51,
+  "fields": {
+    "order": 21,
+    "weekly_menu": 3,
+    "delivery_date": "2026-07-07",
+    "created_at": "2026-07-07T09:00:00Z",
+    "quantity": 2,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 52,
+  "fields": {
+    "order": 21,
+    "weekly_menu": 4,
+    "delivery_date": "2026-07-07",
+    "created_at": "2026-07-07T09:00:00Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 53,
+  "fields": {
+    "order": 22,
+    "weekly_menu": 5,
+    "delivery_date": "2026-07-08",
+    "created_at": "2026-07-08T09:00:00Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 54,
+  "fields": {
+    "order": 22,
+    "weekly_menu": 6,
+    "delivery_date": "2026-07-08",
+    "created_at": "2026-07-08T09:00:00Z",
+    "quantity": 2,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 55,
+  "fields": {
+    "order": 23,
+    "weekly_menu": 7,
+    "delivery_date": "2026-07-09",
+    "created_at": "2026-07-09T09:00:00Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 56,
+  "fields": {
+    "order": 23,
+    "weekly_menu": 12,
+    "delivery_date": "2026-07-09",
+    "created_at": "2026-07-09T09:00:00Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 57,
+  "fields": {
+    "order": 24,
+    "weekly_menu": 9,
+    "delivery_date": "2026-07-10",
+    "created_at": "2026-07-10T09:00:00Z",
+    "quantity": 3,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 58,
+  "fields": {
+    "order": 25,
+    "weekly_menu": 1,
+    "delivery_date": "2026-07-06",
+    "created_at": "2026-07-06T09:00:00Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 59,
+  "fields": {
+    "order": 25,
+    "weekly_menu": 4,
+    "delivery_date": "2026-07-07",
+    "created_at": "2026-07-07T09:00:00Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 60,
+  "fields": {
+    "order": 26,
+    "weekly_menu": 5,
+    "delivery_date": "2026-07-08",
+    "created_at": "2026-07-08T09:00:00Z",
+    "quantity": 2,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 61,
+  "fields": {
+    "order": 26,
+    "weekly_menu": 7,
+    "delivery_date": "2026-07-09",
+    "created_at": "2026-07-09T09:00:00Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "orders.orderitem",
+  "pk": 62,
+  "fields": {
+    "order": 26,
+    "weekly_menu": 10,
+    "delivery_date": "2026-07-10",
+    "created_at": "2026-07-10T09:00:00Z",
+    "quantity": 1,
+    "unit_price": "1500.00",
+    "status": "delivered"
+  }
+},
+{
+  "model": "reservations.reservation",
+  "pk": 2,
+  "fields": {
+    "occasion": "uzleti",
+    "user": null,
+    "guest_name": "Hatfaludy Károly",
+    "guest_email": "hatfaludy@freemail.hu",
+    "guest_phone": "+3670789456",
+    "date": "2026-07-12",
+    "time": "19:00:00",
+    "guest_count": 10,
+    "status": "cancelled",
+    "notes": "Csendes asztalt kérünk.",
+    "created_at": "2026-07-04T22:08:02.245Z"
+  }
+},
+{
+  "model": "reservations.reservation",
+  "pk": 4,
+  "fields": {
+    "occasion": "egyeb",
+    "user": null,
+    "guest_name": "Vad Levente",
+    "guest_email": "levi_ur@yahoo.com",
+    "guest_phone": "+36309200284",
+    "date": "2026-08-02",
+    "time": "11:30:00",
+    "guest_count": 2,
+    "status": "done",
+    "notes": "",
+    "created_at": "2026-07-04T22:16:18.517Z"
+  }
+},
+{
+  "model": "reservations.reservation",
+  "pk": 6,
+  "fields": {
+    "occasion": "csaladi",
+    "user": null,
+    "guest_name": "Teszt Elekné",
+    "guest_email": "tesztelekne@gmail.com",
+    "guest_phone": "+3620123456",
+    "date": "2026-08-02",
+    "time": "18:00:00",
+    "guest_count": 20,
+    "status": "pending",
+    "notes": "",
+    "created_at": "2026-07-05T13:39:45.090Z"
+  }
+},
+{
+  "model": "reservations.reservation",
+  "pk": 7,
+  "fields": {
+    "occasion": "szulinap",
+    "user": 6,
+    "guest_name": "Nagy Anna",
+    "guest_email": "nagyanna@gmail.com",
+    "guest_phone": "0620456123",
+    "date": "2026-07-11",
+    "time": "20:00:00",
+    "guest_count": 2,
+    "status": "done",
+    "notes": "",
+    "created_at": "2026-07-05T14:20:16.816Z"
+  }
+},
+{
+  "model": "reservations.reservation",
+  "pk": 8,
+  "fields": {
+    "occasion": "uzleti",
+    "user": 6,
+    "guest_name": "Nagy Anna",
+    "guest_email": "nagyanna@gmail.com",
+    "guest_phone": "0620456123",
+    "date": "2026-07-14",
+    "time": "13:00:00",
+    "guest_count": 2,
+    "status": "pending",
+    "notes": "",
+    "created_at": "2026-07-05T14:28:40.175Z"
+  }
+},
+{
+  "model": "reservations.reservation",
+  "pk": 9,
+  "fields": {
+    "occasion": "evfordulo",
+    "user": 6,
+    "guest_name": "Nagy Anna",
+    "guest_email": "nagyanna@gmail.com",
+    "guest_phone": "0620456123",
+    "date": "2026-08-04",
+    "time": "18:00:00",
+    "guest_count": 2,
+    "status": "cancelled",
+    "notes": "",
+    "created_at": "2026-07-05T14:33:54.615Z"
+  }
+},
+{
+  "model": "reservations.reservation",
+  "pk": 10,
+  "fields": {
+    "occasion": "csaladi",
+    "user": 1,
+    "guest_name": "Teszt Elek",
+    "guest_email": "teszt@example.hu",
+    "guest_phone": "06301234567",
+    "date": "2026-07-06",
+    "time": "17:00:00",
+    "guest_count": 2,
+    "status": "done",
+    "notes": "",
+    "created_at": "2026-07-05T17:19:48.464Z"
+  }
+},
+{
+  "model": "reservations.reservation",
+  "pk": 11,
+  "fields": {
+    "occasion": "evfordulo",
+    "user": null,
+    "guest_name": "Kiss Barbara",
+    "guest_email": "kissbarbara@gmail.com",
+    "guest_phone": "+20456321",
+    "date": "2026-07-17",
+    "time": "17:00:00",
+    "guest_count": 4,
+    "status": "pending",
+    "notes": "Az asztal elhelyezése legyen úgy megoldva, hogy a tájat lehessen nézni.",
+    "created_at": "2026-07-05T18:02:17.838Z"
+  }
+},
+{
+  "model": "reservations.reservation",
+  "pk": 12,
+  "fields": {
+    "occasion": "egyeb",
+    "user": null,
+    "guest_name": "Sándor Hanna",
+    "guest_email": "sandorhanna@gmail.com",
+    "guest_phone": "+36706541893",
+    "date": "2026-07-13",
+    "time": "22:00:00",
+    "guest_count": 2,
+    "status": "pending",
+    "notes": "Romantikus vacsora miatt foglalok asztalt.",
+    "created_at": "2026-07-05T20:54:39.941Z"
+  }
+},
+{
+  "model": "reservations.reservation",
+  "pk": 13,
+  "fields": {
+    "occasion": "csaladi",
+    "user": 9,
+    "guest_name": "Szécsi Attila",
+    "guest_email": "szecsiattila@gmail.com",
+    "guest_phone": "0620123546",
+    "date": "2026-07-08",
+    "time": "20:00:00",
+    "guest_count": 2,
+    "status": "done",
+    "notes": "",
+    "created_at": "2026-07-07T20:28:52.928Z"
+  }
+},
+{
+  "model": "reservations.reservation",
+  "pk": 14,
+  "fields": {
+    "occasion": "evfordulo",
+    "user": 10,
+    "guest_name": "Nagy Áron",
+    "guest_email": "nagyaron@gmail.com",
+    "guest_phone": "0620123654",
+    "date": "2026-07-11",
+    "time": "20:00:00",
+    "guest_count": 2,
+    "status": "done",
+    "notes": "",
+    "created_at": "2026-07-08T15:54:02.268Z"
+  }
+},
+{
+  "model": "reservations.reservation",
+  "pk": 15,
+  "fields": {
+    "occasion": "csaladi",
+    "user": 3,
+    "guest_name": "Kiss Anna",
+    "guest_email": "kissanna@gmail.com",
+    "guest_phone": "12345678",
+    "date": "2026-07-09",
+    "time": "20:00:00",
+    "guest_count": 2,
+    "status": "done",
+    "notes": "",
+    "created_at": "2026-07-09T20:42:28.287Z"
+  }
+},
+{
+  "model": "reservations.reservation",
+  "pk": 16,
+  "fields": {
+    "occasion": "csaladi",
+    "user": 3,
+    "guest_name": "Kiss Anna",
+    "guest_email": "kissanna@gmail.com",
+    "guest_phone": "12345678",
+    "date": "2026-07-04",
+    "time": "18:30:00",
+    "guest_count": 4,
+    "status": "done",
+    "notes": "Születésnap volt, köszönjük a finom vacsorát!",
+    "created_at": "2026-07-04T07:00:00Z"
+  }
+},
+{
+  "model": "reservations.reservation",
+  "pk": 17,
+  "fields": {
+    "occasion": "evfordulo",
+    "user": 3,
+    "guest_name": "Kiss Anna",
+    "guest_email": "kissanna@gmail.com",
+    "guest_phone": "12345678",
+    "date": "2026-07-07",
+    "time": "19:00:00",
+    "guest_count": 2,
+    "status": "cancelled",
+    "notes": "Utolsó pillanatban lemondtuk.",
+    "created_at": "2026-07-07T07:00:00Z"
+  }
+},
+{
+  "model": "reservations.reservation",
+  "pk": 18,
+  "fields": {
+    "occasion": "egyeb",
+    "user": 3,
+    "guest_name": "Kiss Anna",
+    "guest_email": "kissanna@gmail.com",
+    "guest_phone": "12345678",
+    "date": "2026-07-19",
+    "time": "20:00:00",
+    "guest_count": 4,
+    "status": "confirmed",
+    "notes": "Kérünk csendes asztalt az ablak mellett.",
+    "created_at": "2026-07-18T07:00:00Z"
+  }
+},
+{
+  "model": "reservations.reservation",
+  "pk": 19,
+  "fields": {
+    "occasion": "uzleti",
+    "user": 3,
+    "guest_name": "Kiss Anna",
+    "guest_email": "kissanna@gmail.com",
+    "guest_phone": "12345678",
+    "date": "2026-07-11",
+    "time": "12:30:00",
+    "guest_count": 6,
+    "status": "cancelled",
+    "notes": "Üzleti ebéd, fix menü kérése.",
+    "created_at": "2026-07-11T07:00:00Z"
+  }
+},
+{
+  "model": "contact.contactmessage",
+  "pk": 2,
+  "fields": {
+    "name": "Kiss Aranka",
+    "email": "kissaranka@gmail.com",
+    "subject": "",
+    "message": "Tisztelt Arany Fakanál Étterem!\n\nAzt szeretném kérdezni, hogy házi kedvencet vihetek magammal, ha vacsorázni szeretnék? Válaszukat előre is köszönöm!\n\nTisztelettel,\nKis Aranka",
+    "message_type": "Általános kérdés",
+    "status": "read",
+    "archived": false,
+    "created_at": "2026-07-06T17:57:54.269Z"
+  }
+},
+{
+  "model": "contact.contactmessage",
+  "pk": 3,
+  "fields": {
+    "name": "Szécsi Attila",
+    "email": "szecsiattila@gmail.com",
+    "subject": "",
+    "message": "Foglaltam asztalt Önöknél holnap estére (2026.07.08-a 20 órára), de nem kaptam visszajelzést. Feltudnának hívni?",
+    "message_type": "Foglalás",
+    "status": "read",
+    "archived": false,
+    "created_at": "2026-07-07T20:31:04.076Z"
+  }
+},
+{
+  "model": "contact.contactmessage",
+  "pk": 4,
+  "fields": {
+    "name": "Nagy Áron",
+    "email": "nagyaron@gmail.com",
+    "subject": "",
+    "message": "Mikor történik a kiszállítás?",
+    "message_type": "Foglalás",
+    "status": "read",
+    "archived": false,
+    "created_at": "2026-07-08T15:52:50.585Z"
+  }
+},
+{
+  "model": "contact.contactmessage",
+  "pk": 5,
+  "fields": {
+    "name": "Kiss Anna",
+    "email": "kissanna@gmail.com",
+    "subject": "panasz",
+    "message": "Tisztelt Címzett!\n\nFoglaltam asztalt erre a hétvégére, de nem kaptam visszajelzést. Megtennék, hogy tájékoztatnak a foglalásomról? \nElőre is köszönöm!\nTisztelettel,\nKiss Anna",
+    "message_type": "Foglalás",
+    "status": "read",
+    "archived": false,
+    "created_at": "2026-07-09T20:27:04.584Z"
+  }
+},
+{
+  "model": "contact.contactmessage",
+  "pk": 6,
+  "fields": {
+    "name": "Kiss Anna",
+    "email": "kissanna@gmail.com",
+    "subject": "",
+    "message": "Tisztelt Címzett!\n\nMegkaptam válaszukat!\nKöszönöm,\nKiss Anna",
+    "message_type": "Foglalás",
+    "status": "new",
+    "archived": false,
+    "created_at": "2026-07-09T20:29:18.929Z"
+  }
+},
+{
+  "model": "contact.contactmessage",
+  "pk": 7,
+  "fields": {
+    "name": "Kiss Anna",
+    "email": "kissanna@gmail.com",
+    "subject": "",
+    "message": "Hangos zenét tudnak szolgáltatni?",
+    "message_type": "Általános kérdés",
+    "status": "new",
+    "archived": false,
+    "created_at": "2026-07-10T18:47:43.141Z"
+  }
+},
+{
+  "model": "contact.contactmessage",
+  "pk": 8,
+  "fields": {
+    "name": "Kiss Anna",
+    "email": "kissanna@gmail.com",
+    "subject": "",
+    "message": "3 hét múlva szeretnék foglalni. Lehet ennyire előre?",
+    "message_type": "Foglalás",
+    "status": "new",
+    "archived": false,
+    "created_at": "2026-07-10T19:43:06.313Z"
+  }
+},
+{
+  "model": "contact.contactmessage",
+  "pk": 11,
+  "fields": {
+    "name": "Kiss Anna",
+    "email": "kissanna@gmail.com",
+    "subject": "",
+    "message": "A j??lius 9-i foglal??somr??l szeretn??k ??rdekl??dni.",
+    "message_type": "Foglal??s",
+    "status": "read",
+    "archived": true,
+    "created_at": "2026-07-08T12:15:00Z"
+  }
+}
+]

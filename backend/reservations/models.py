@@ -8,7 +8,23 @@ class Reservation(models.Model):
         ('pending', 'Pending'),
         ('confirmed', 'Confirmed'),
         ('cancelled', 'Cancelled'),
+        ('done', 'Done'),
     ]
+
+    OCCASION_CHOICES = [
+        ('csaladi', 'Családi összejövetel'),
+        ('uzleti', 'Üzleti ebéd / vacsora'),
+        ('szulinap', 'Születésnap'),
+        ('evfordulo', 'Évforduló'),
+        ('egyeb', 'Egyéb'),
+    ]
+
+    occasion = models.CharField(
+        max_length=20,
+        choices=OCCASION_CHOICES,
+        blank=True,
+        null=True
+    )
 
     user = models.ForeignKey(
         User,

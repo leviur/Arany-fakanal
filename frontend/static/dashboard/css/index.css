@@ -1,0 +1,1380 @@
+/* ================= RESET ================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* ================= VARIABLES ================= */
+:root {
+  --bg-dark: #2d221b;
+  --gold: #c5a059;
+  --gold-light: #f4e8d1;
+  --gold-dark: #b8924e;
+  --gold-soft: rgba(197, 160, 89, 0.15);
+  --gold-hover: rgba(197, 160, 89, 0.25);
+  --text-dark: #333;
+  --text-light: #777;
+  --row-warning-background: #fff8e6;
+  --row-problem: #ffe5e5;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  --shadow-hard: 0 10px 25px rgba(0, 0, 0, 0.15);
+  --radius: 14px;
+}
+
+/* ================= BASE ================= */
+body {
+  font-family: "Inter", sans-serif;
+  background: #f5efe6;
+  color: var(--text-dark);
+}
+
+h1, h2, h3 {
+  font-family: "Playfair Display", serif;
+}
+
+/* ================= LOGO ================= */
+.logo {
+  width: 150px !important;
+  height: auto !important;
+  display: block;
+  margin: 0 auto 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(200, 155, 99, 0.15);
+}
+
+/* ================= LAYOUT ================= */
+.dashboard {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+  position: relative;
+  width: 280px;
+  background: var(--bg-dark);
+  color: white;
+  padding: 30px 22px;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  text-align: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  will-change: width;
+  transition: width 280ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.sidebar.collapsed {
+  padding-left: 12px;
+  padding-right: 12px;
+  overflow: visible;
+}
+
+.sidebar.collapsed .menu {
+  overflow: visible;
+}
+
+/* ================= SIDEBAR TOGGLE (X <-> hamburger) ================= */
+.sidebar-toggle {
+  position: absolute;
+  top: 36px;
+  right: 8px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid rgba(200, 155, 99, 0.35);
+  border-radius: 50%;
+  background: var(--bg-dark);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease-out;
+}
+
+.sidebar-toggle:hover {
+  background: rgba(200, 155, 99, 0.12);
+  border-color: rgba(200, 155, 99, 0.5);
+}
+
+.sidebar-toggle:active {
+  transform: scale(0.96);
+}
+
+.sidebar-toggle span {
+  display: block;
+  width: 14px;
+  height: 2px;
+  background: var(--gold);
+  border-radius: 2px;
+  transition: transform 220ms cubic-bezier(0.23, 1, 0.32, 1), opacity 150ms ease-out;
+}
+
+/* alapból (kinyitva) = X, mert a gomb most a bezárást jelenti */
+.sidebar-toggle span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.sidebar-toggle span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.sidebar-toggle span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* összecsukva = hamburger, mert a gomb most a kinyitást jelenti */
+.sidebar.collapsed .sidebar-toggle span:nth-child(1),
+.sidebar.collapsed .sidebar-toggle span:nth-child(3) {
+  transform: translateY(0) rotate(0);
+}
+
+.sidebar.collapsed .sidebar-toggle span:nth-child(2) {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.sidebar.collapsed .sidebar-toggle {
+  right: auto;
+  left: 50%;
+  margin-left: -16px;
+}
+
+/* ================= COLLAPSED STATE ================= */
+.sidebar.collapsed {
+  width: 84px;
+}
+
+.sidebar.collapsed .logo {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.menu-group-label {
+  max-height: 40px;
+  overflow: hidden;
+  transition: opacity 150ms ease, max-height 200ms ease, padding 200ms ease, margin 200ms ease, border-color 200ms ease;
+}
+
+.sidebar.collapsed .menu-group-label {
+  opacity: 0;
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-top: 0;
+  border-color: transparent;
+  pointer-events: none;
+}
+
+.sidebar.collapsed .menu a::after {
+  /* összecsukva: aláhúzás helyett címke-tooltip (csak ikon látszik) */
+  content: attr(data-nav-label);
+  left: calc(100% + 10px);
+  bottom: auto;
+  top: 50%;
+  transform: translateY(-50%);
+  width: auto;
+  height: auto;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(30, 22, 16, 0.96);
+  border: 1px solid rgba(200, 155, 99, 0.35);
+  color: #eee;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+  z-index: 20;
+}
+
+.sidebar.collapsed .menu a:hover::after,
+.sidebar.collapsed .menu a:focus-visible::after {
+  width: auto;
+  opacity: 1;
+}
+
+.sidebar.collapsed .admin-logout-btn {
+  position: relative;
+  gap: 0;
+}
+
+.sidebar.collapsed .admin-logout-btn::after {
+  content: attr(data-nav-label);
+  position: absolute;
+  left: calc(100% + 10px);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(30, 22, 16, 0.96);
+  border: 1px solid rgba(200, 155, 99, 0.35);
+  color: #eee;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 120ms ease;
+  z-index: 20;
+}
+
+.sidebar.collapsed .admin-logout-btn:hover::after,
+.sidebar.collapsed .admin-logout-btn:focus-visible::after {
+  opacity: 1;
+}
+
+.sidebar.collapsed .menu a,
+.sidebar.collapsed .admin-logout-btn {
+  gap: 0;
+}
+
+.sidebar-top {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sidebar-top h2 {
+  font-family: "Playfair Display", serif;
+  font-size: 2rem;
+  color: var(--gold);
+  margin-bottom: 5px;
+}
+
+.sidebar-top p {
+  color: #c8b8a7;
+  margin-bottom: 40px;
+  font-size: 14px;
+}
+
+/* ================= MENU ================= */
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.menu::-webkit-scrollbar-thumb {
+  background: rgba(200, 155, 99, 0.3);
+  border-radius: 10px;
+}
+
+.menu a {
+  position: relative;
+  padding: 14px 18px;
+  border-radius: 14px;
+  color: #eee;
+  text-decoration: none;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms ease-out;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sidebar.collapsed .menu a {
+  gap: 0;
+}
+
+.menu a:active {
+  transform: scale(0.98);
+}
+
+.link-text {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 160px;
+  opacity: 1;
+  transition: max-width 200ms ease, opacity 120ms ease;
+}
+
+.sidebar.collapsed .link-text {
+  max-width: 0;
+  opacity: 0;
+  transition: max-width 200ms ease, opacity 80ms ease;
+}
+
+.sidebar.collapsed .menu-group-label,
+.sidebar.collapsed .logo {
+  transition: opacity 100ms ease;
+}
+
+.menu a i {
+  width: 18px;
+  text-align: center;
+  color: var(--gold);
+  font-size: 15px;
+  transition: transform 150ms ease-out;
+}
+
+.menu a:hover i {
+  transform: translateX(1px);
+}
+
+/* ================= MENU GROUP LABELS ================= */
+.menu-group-label {
+  display: block;
+  text-align: left;
+  padding: 24px 18px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(200, 155, 99, 0.55);
+  border-top: 1px solid rgba(200, 155, 99, 0.15);
+  margin-top: 6px;
+}
+
+.menu-group-label:first-child {
+  border-top: none;
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.menu a:hover {
+  color: #fff;
+  background: rgba(200, 155, 99, 0.08);
+}
+
+.menu a.active {
+  color: #fff;
+  background: rgba(200, 155, 99, 0.18);
+  text-shadow: 0 0 10px rgba(200, 155, 99, 0.25);
+}
+
+/* underline effect */
+.menu a::after {
+  content: "";
+  position: absolute;
+  left: 18px;
+  bottom: 8px;
+  width: 0;
+  height: 2px;
+  background: var(--gold);
+  transition: width 200ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.menu a:hover::after,
+.menu a.active::after {
+  width: calc(100% - 36px);
+}
+
+/* ================= LOGOUT BUTTON ================= */
+.admin-logout-btn {
+  margin-top: 10px;
+  flex-shrink: 0;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(200, 155, 99, 0.3);
+  background: transparent;
+  color: rgba(238, 238, 238, 0.7);
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.admin-logout-btn i {
+  color: var(--gold);
+}
+
+.admin-logout-btn {
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease-out;
+}
+
+.sidebar.collapsed .admin-logout-btn {
+  gap: 0;
+}
+
+.admin-logout-btn:hover {
+  background: rgba(200, 155, 99, 0.12);
+  border-color: rgba(200, 155, 99, 0.5);
+  color: #fff;
+}
+
+.admin-logout-btn:active {
+  transform: scale(0.98);
+}
+
+/* ================= MAIN ================= */
+.main {
+  flex: 1;
+  padding: 24px;
+  contain: layout style;
+  min-width: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* ================= TOPBAR ================= */
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.topbar h1 {
+  font-family: "Playfair Display", serif;
+  font-size: 34px;
+}
+
+.topbar-left {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.topbar-left-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+/* mobil hamburger — csak a sidebar off-canvas töréspontja alatt jelenik meg */
+.mobile-sidebar-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(200, 155, 99, 0.35);
+  background: #fff;
+  color: #5a4a42;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.mobile-sidebar-toggle:hover {
+  background: rgba(200, 155, 99, 0.12);
+  border-color: rgba(200, 155, 99, 0.5);
+}
+
+.mobile-sidebar-toggle:active {
+  transform: scale(0.96);
+}
+
+/* sötét háttér-overlay a mobil sidebar-drawer mögött */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 14, 10, 0.5);
+  z-index: 290;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 220ms ease;
+}
+
+.sidebar-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.topbar h1 {
+  line-height: 1.1;
+}
+
+.topbar-updated-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.topbar-updated {
+  font-size: 12px;
+  color: #a08a78;
+  transition: opacity 150ms ease;
+}
+
+.topbar-updated.flash {
+  opacity: 0.4;
+}
+
+.refresh-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  min-width: 28px;
+  min-height: 28px;
+  border: none;
+  background: transparent;
+  color: #a08a78;
+  font-size: 11px;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  opacity: 0.6;
+  transition: opacity 160ms ease, color 160ms ease, background-color 160ms ease, transform 160ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .refresh-btn:hover {
+    opacity: 1;
+    color: var(--gold);
+    background: rgba(200, 155, 99, 0.12);
+  }
+}
+
+.refresh-btn:active {
+  transform: scale(0.92);
+}
+
+.refresh-btn i {
+  display: block;
+  transition: transform 500ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .refresh-btn i {
+    transition: none;
+  }
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+/* ================= PROFILE CHIP ================= */
+.profile-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  padding: 8px 18px 8px 8px;
+  border-radius: 50px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+}
+
+.profile-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold), #8b5e3c);
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+  text-align: left;
+}
+
+.profile-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: #2d221b;
+}
+
+.profile-role {
+  font-size: 12px;
+  color: #999;
+}
+
+/* ================= LAPTOP / ALACSONYABB MAGASSÁGÚ KIJELZŐK ================= */
+@media (max-height: 850px) {
+  .sidebar {
+    padding: 18px 22px;
+  }
+
+  .sidebar-top h2 {
+    font-size: 1.5rem;
+    margin-bottom: 2px;
+  }
+
+  .sidebar-top p {
+    margin-bottom: 18px;
+    font-size: 12px;
+  }
+
+  .menu {
+    gap: 4px;
+  }
+
+  .menu a {
+    padding: 10px 18px;
+  }
+
+  .menu-group-label {
+    padding: 14px 18px 4px;
+  }
+
+  .admin-logout-btn {
+    padding: 10px;
+  }
+}
+
+/* ================= MOBIL SIDEBAR: OFF-CANVAS DRAWER (< 768px) ================= */
+@media (max-width: 768px) {
+  .mobile-sidebar-toggle {
+    display: flex;
+  }
+
+  /* a .collapsed (asztali ikon-csík) szélesség-hatását felülírjuk —
+     mobilon a drawer mindig teljes 280px-en, kibontva jelenik meg */
+  .sidebar,
+  .sidebar.collapsed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    z-index: 300;
+    transform: translateX(-100%);
+    transition: transform 240ms cubic-bezier(0.23, 1, 0.32, 1);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.35);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-toggle {
+    display: none;
+  }
+}
+
+/* ================= KESKENY KIJELZŐK (pl. iPhone SE) — TOPBAR ================= */
+@media (max-width: 480px) {
+  .topbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .topbar h1 {
+    font-size: 22px;
+  }
+
+  .profile-chip {
+    padding: 6px;
+    gap: 0;
+  }
+
+  .profile-info {
+    display: none;
+  }
+}
+
+/* ================= STATUS ================= */
+.status-select, .booking-status-select {
+  width: 100%;
+  max-width: 18vh;
+  padding: 5px 6px;
+  font-size: 11px;
+
+  border-radius: 8px;
+  border: 2px solid var(--gold);
+  background: #fff;
+  color: #2d221b;
+  font-weight: 600;
+}
+
+.status-select:hover, .booking-status-select:hover {
+  background-color: #efdcd9;
+  border-color: var(--gold);
+}
+
+.status-select:focus, .booking-status-select:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 2px rgba(200, 155, 99, 0.2);
+}
+
+.status-new {
+  background: #fff3cd;
+  color: #856404;}
+.status-confirmed {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+.status-cancelled {
+  background: #f8d7da;
+  color: #721c24;
+}
+.status-done {
+  background: #d4edda;
+  color: #155724;
+}
+.status-pending {
+  background: #fff3cd;
+  color: #856404;
+}
+.status-accepted {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+.status-preparing {
+  background: #ffe5b4;
+  color: #8a4b08;
+}
+.status-delivery {
+  background: #e2d6ff;
+  color: #5a35a5;
+}
+.status-failed {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/* ================= MODAL ================= */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+  backdrop-filter: blur(5px);
+  padding: 24px;
+  overflow-y: auto;
+}
+
+.modal-hidden { display: none !important; }
+
+/* ================= LOGOUT MODAL (login modal stílusa) ================= */
+.modal {
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.modal.open {
+  opacity: 1;
+}
+
+.login-box {
+  background: #fff;
+  border-radius: 20px;
+  padding: 40px 36px 32px;
+  width: 100%;
+  max-width: 380px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--gold-soft);
+  transform: scale(0.96);
+  opacity: 0;
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), opacity 150ms ease-out;
+}
+
+.modal.open .login-box {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.login-logo {
+  height: 54px;
+  width: auto;
+  margin-bottom: 14px;
+}
+
+.login-header h2 {
+  font-family: var(--font-main, "Playfair Display", serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 12px;
+}
+
+.close-modal {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: none;
+  border-radius: 50%;
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--text-light);
+  transition: color 160ms ease, background-color 160ms ease;
+}
+
+.close-modal:hover {
+  color: var(--gold);
+  background: var(--gold-soft);
+}
+
+.logout-text {
+  text-align: center;
+  color: var(--text-dark);
+  margin-bottom: 24px;
+}
+
+.logout-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.logout-actions .cancel-btn,
+.logout-actions .btn-gold {
+  flex: 1;
+}
+
+.btn-gold {
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+  font-family: var(--font-main, "Playfair Display", serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--gold);
+  border: none;
+  border-radius: 8px;
+  padding: 14px 20px;
+  cursor: pointer;
+  transition: background-color 160ms ease, box-shadow 160ms ease, transform 160ms ease-out;
+}
+
+.btn-gold:hover {
+  background: var(--gold-dark);
+  box-shadow: var(--shadow-hover, 0 10px 25px rgba(197, 160, 89, 0.35));
+}
+
+.btn-gold:active {
+  transform: scale(0.97);
+}
+
+/* "Mégse" legyen halványabb a logout dialógusban - kevésbé versenyezzen a fő akcióval */
+#logoutModal .cancel-btn {
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: var(--text-light);
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease-out;
+}
+
+#logoutModal .cancel-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.2);
+  color: var(--text-dark);
+}
+
+#logoutModal .cancel-btn:active {
+  transform: scale(0.97);
+}
+
+/* "Kijelentkezés" CTA itt kevésbé legyen hívogató, mint a login modal-é */
+#logoutModal .btn-gold {
+  background: var(--bg-dark);
+}
+
+#logoutModal .btn-gold:hover {
+  background: #1a130d;
+  box-shadow: none;
+}
+
+/* Tartalom-stagger nyitáskor */
+#logoutModal .login-logo,
+#logoutModal .login-header h2,
+#logoutModal .divider,
+#logoutModal .logout-text,
+#logoutModal .logout-actions {
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 200ms ease-out, transform 200ms ease-out;
+}
+
+#logoutModal.open .login-logo       { transition-delay: 0ms; }
+#logoutModal.open .login-header h2  { transition-delay: 30ms; }
+#logoutModal.open .divider           { transition-delay: 50ms; }
+#logoutModal.open .logout-text      { transition-delay: 60ms; }
+#logoutModal.open .logout-actions   { transition-delay: 90ms; }
+
+#logoutModal.open .login-logo,
+#logoutModal.open .login-header h2,
+#logoutModal.open .divider,
+#logoutModal.open .logout-text,
+#logoutModal.open .logout-actions {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-box,
+  #logoutModal .login-logo,
+  #logoutModal .login-header h2,
+  #logoutModal .divider,
+  #logoutModal .logout-text,
+  #logoutModal .logout-actions {
+    transform: none;
+  }
+}
+
+#modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    display: flex; justify-content: center; align-items: center; z-index: 1000;
+}
+
+.modal-content {
+  width: 90%;
+  max-width: 600px;
+  background: #fff;
+  border: 1px solid rgba(200, 155, 99, 0.2);
+  border-radius: 20px;
+  padding: 30px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  max-height: 90vh;
+  overflow-y: auto;
+
+  box-shadow: 0 20px 50px rgba(45, 34, 27, 0.18);
+}
+
+.modal-content h2 {
+  margin-bottom: 15px;
+  margin-top: 5px;
+  color: #2c241e;
+}
+
+.modal-content label { 
+  font-weight: bold;
+  color: #2c241e;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.modal-content input, .modal-content textarea {
+    padding: 12px;
+    border: 1px solid #eaddcc;
+    border-radius: 6px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modal-content p {
+  margin-bottom: 10px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.modal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.modal-grid label {
+  font-weight: bold;
+  color: #2c241e;
+  margin-bottom: 4px;
+}
+
+.modal-grid input, 
+.modal-grid textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #efe6d9;
+  border-radius: 10px;
+  background: #fcfbf9;
+  box-sizing: border-box;
+}
+
+.modal-grid .full {
+  grid-column: span 2;
+}
+
+.modal-grid textarea {
+  height: 80px;
+  resize: none;
+}
+
+/* Akció gombok */
+.modal-actions {
+  margin-top: 25px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.modal-box {
+  width: 100%;
+  max-width: 360px;
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  background: #fff;
+  border: 1px solid rgba(200, 155, 99, 0.2);
+  border-radius: 20px;
+  padding: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 20px 50px rgba(45, 34, 27, 0.18);
+  transform: scale(0.96);
+  opacity: 0;
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), opacity 150ms ease-out;
+}
+
+.modal.open .modal-box {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.modal-box label {
+  font-weight: bold;
+  color: #2c241e;
+}
+
+.modal-box .field-hint {
+  margin: -4px 0 8px;
+  font-size: 11px;
+  color: #888;
+  font-weight: normal;
+}
+
+/* Rendelés szerkesztő — A/B menü darabszám (nap fix) */
+#editModal .order-edit-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+#editModal .order-edit-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: #f3f0ea;
+}
+
+#editModal .order-edit-line-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d221b;
+}
+
+#editModal .order-edit-stepper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#editModal .order-edit-step-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(200, 155, 99, 0.2);
+  color: #8b5e3c;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+
+#editModal .order-edit-step-btn:hover {
+  background: rgba(200, 155, 99, 0.35);
+}
+
+#editModal .order-edit-qty {
+  min-width: 24px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d221b;
+  font-variant-numeric: tabular-nums;
+}
+
+
+.modal-box input {
+  padding: 14px;
+  border: none;
+  border-radius: 12px;
+  background: #f3f0ea;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+
+/* ================= BUTTONS (MODAL miatt) ================= */
+.login-btn,
+.save-btn {
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, var(--gold), #8b5e3c);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 160ms ease, transform 160ms ease-out;
+}
+
+.login-btn:hover, .save-btn:hover { opacity: 0.9; }
+.login-btn:active, .save-btn:active { transform: scale(0.97); }
+
+.cancel-btn {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(200, 155, 99, 0.5);
+  background: transparent;
+  color: #8b5e3c;
+  cursor: pointer;
+  transition: background 150ms ease, transform 120ms ease;
+}
+
+.cancel-btn:hover { background: rgba(200, 155, 99, 0.08); }
+.cancel-btn:active { transform: scale(0.97); }
+
+.btn-danger {
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(135deg, #e05a4f, #b93c3c);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 150ms ease, transform 120ms ease;
+}
+
+.btn-danger:hover { filter: brightness(1.05); }
+.btn-danger:active { transform: scale(0.97); }
+
+/* ================= CONFIRM MODAL ================= */
+.confirm-box {
+  background: #fff;
+  border: 1px solid rgba(200, 155, 99, 0.2);
+  border-radius: 20px;
+  padding: 28px 24px;
+  max-width: 360px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(45, 34, 27, 0.18);
+  transform: scale(0.96);
+  opacity: 0;
+  transition: transform 200ms cubic-bezier(0.23, 1, 0.32, 1), opacity 150ms ease-out;
+}
+
+.modal.open .confirm-box {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.confirm-box .confirm-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #fde8e8;
+  color: #c0392b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.confirm-title {
+  font-family: "Playfair Display", serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #2d221b;
+  margin: 0;
+}
+
+.confirm-body {
+  font-size: 13px;
+  color: #6b5d52;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  width: 100%;
+  margin-top: 4px;
+}
+
+/* ================= SECTION SYSTEM ================= */
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Nyitott modal mellett a háttér ne görgethető legyen */
+html.modal-scroll-locked,
+html.modal-scroll-locked body {
+  overflow: hidden;
+}
+
+html.modal-scroll-locked .dashboard .main {
+  overflow: hidden !important;
+}
+
+html.modal-scroll-locked .dashboard .main .scroll-table,
+html.modal-scroll-locked .dashboard .main .table-wrapper,
+html.modal-scroll-locked .dashboard .main .msg-split,
+html.modal-scroll-locked .dashboard .main .content {
+  overflow: hidden !important;
+}
+
+/* ================= ORDERS FIXED LAYOUT ================= */
+/* Rendelések / Foglalások / Üzenetek oldalakon csak a belső panel görget */
+.main.orders-layout,
+.main.bookings-layout,
+.main.messages-layout {
+  contain: none;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.main.orders-layout #orders-section.active,
+.main.bookings-layout #bookings-section.active,
+.main.messages-layout #messages-section.active {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-x: clip;
+}
+
+#orders-section .dash-kpi-strip,
+#bookings-section .dash-kpi-strip {
+  flex-shrink: 0;
+}
+
+.main.orders-layout #orders-section.active .table-card,
+.main.bookings-layout #bookings-section.active .table-card,
+.main.messages-layout #messages-section.active .msg-wrapper {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+}
+
+.main.orders-layout #orders-section.active .scroll-table,
+.main.bookings-layout #bookings-section.active .scroll-table {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.main.messages-layout #messages-section.active .msg-split {
+  flex: 1;
+  min-height: 0;
+}
+
+#dashboard-section {
+  min-width: 0;
+  overflow-x: clip;
+}
+
+html, body {
+  overflow-x: clip;
+}
+
+/* ================= AKADÁLYMENTESSÉG - VIZUÁLISAN REJTETT CIMKÉK ================= */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.modal-full-col {
+  grid-column: span 2;
+}
+
+/* ================= NAV BADGE (sidebar értesítő jelzők) ================= */
+.nav-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 50px;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.nav-badge.hidden {
+  display: none !important;
+}
+
+

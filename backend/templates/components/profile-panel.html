@@ -1,0 +1,44 @@
+{# Guest Portal navbar menü — body szinten (mobil sheet + desktop dropdown) #}
+<div class="profile-menu-overlay" id="profileMenuOverlay" hidden></div>
+
+<div
+  class="profile-panel"
+  id="profileDropdown"
+  role="menu"
+  aria-label="Vendégközpont menü"
+  hidden
+>
+  <div class="profile-panel-handle" aria-hidden="true"></div>
+
+  <div class="profile-panel-header">
+    <div class="profile-panel-avatar" id="profilePanelAvatar" aria-hidden="true">?</div>
+    <div class="profile-panel-user">
+      <span class="profile-panel-name" id="profilePanelName">Felhasználó</span>
+      <span class="profile-panel-email" id="profilePanelEmail">email@pelda.hu</span>
+    </div>
+    <button
+      type="button"
+      class="profile-panel-close"
+      id="profilePanelClose"
+      aria-label="Menü bezárása"
+    >
+      <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+    </button>
+  </div>
+
+  <div class="profile-panel-actions">
+    <a href="/guest-portal/" class="profile-panel-item" id="guestPortalLink" role="menuitem">
+      <i class="fa-regular fa-user profile-panel-item-icon" id="guestPortalLinkIcon" aria-hidden="true"></i>
+      <span id="guestPortalLinkLabel">Vendégközpont</span>
+    </a>
+    <button
+      type="button"
+      class="profile-panel-item profile-panel-item--logout"
+      id="profileLogoutBtn"
+      role="menuitem"
+    >
+      <i class="fa-solid fa-right-from-bracket profile-panel-item-icon" aria-hidden="true"></i>
+      <span>Kijelentkezés</span>
+    </button>
+  </div>
+</div>

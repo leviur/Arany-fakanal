@@ -1,0 +1,41 @@
+{# Heti menü legördülő — category: soup | main | dessert (WeeklyMenuItem.category) #}
+{# Rejtett *-id = WeeklyMenuItem.id (FK mentéskor). Kiválasztáskor chip, gépeléskor kereső. #}
+<div class="form-group">
+  <label for="{{ base_id }}-input">{{ label }}</label>
+  <div class="wm-combobox" data-category="{{ category }}">
+    <div class="wm-combobox-control">
+      {# Chip: kiválasztott tétel — átnevezés (✎) és leválasztás (×), nem katalógus-törlés #}
+{# Legördülő sor mellett: 👁‍🗨 elrejtés / 👁 visszaállítás (is_available toggle) #}
+      <div class="wm-combobox-chip hidden" id="{{ base_id }}-chip" aria-live="polite">
+        <span class="wm-combobox-chip-label" id="{{ base_id }}-chip-label"></span>
+        <button
+          type="button"
+          class="wm-combobox-chip-btn wm-combobox-chip-rename"
+          data-base-id="{{ base_id }}"
+          aria-label="Átnevezés"
+          title="Átnevezés"
+        >
+          <i class="fa-solid fa-pen" aria-hidden="true"></i>
+        </button>
+        <button
+          type="button"
+          class="wm-combobox-chip-btn wm-combobox-chip-clear"
+          data-base-id="{{ base_id }}"
+          aria-label="Leválasztás"
+          title="Leválasztás"
+        >
+          <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+      </div>
+      <input
+        type="text"
+        id="{{ base_id }}-input"
+        class="wm-combobox-input"
+        placeholder="Keresés vagy válassz…"
+        autocomplete="off"
+      />
+      <input type="hidden" id="{{ base_id }}-id" />
+    </div>
+    <ul id="{{ base_id }}-dropdown" class="wm-combobox-dropdown hidden" role="listbox"></ul>
+  </div>
+</div>

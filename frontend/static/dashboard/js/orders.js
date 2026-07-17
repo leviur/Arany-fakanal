@@ -1,0 +1,868 @@
+/* Dashboard rendelések.
+   appData.orders[] = egy rendelés; a táblázat sor = egy kiszállítási nap (expandOrdersToRows).
+   Státusz az OrderItem-en van — módosításkor item_ids megy a PATCH/DELETE body-ban. */
+
+// DB státusz → magyar felirat
+const STATUS_FROM_API = {
+  new: "Új",
+  confirmed: "Elfogadva",
+  preparing: "Készül",
+  ready: "Kiszállítás alatt",
+  delivered: "Kézbesítve",
+  cancelled: "Sikertelen kézbesítés",
+};
+
+// magyar felirat → DB kulcs
+const STATUS_TO_API = {
+  "Új": "new",
+  "Elfogadva": "confirmed",
+  "Készül": "preparing",
+  "Kiszállítás alatt": "ready",
+  "Kézbesítve": "delivered",
+  "Sikertelen kézbesítés": "cancelled",
+};
+
+function itemStatusLabel(apiStatus) {
+  return STATUS_FROM_API[apiStatus] || apiStatus || "Új";
+}
+
+function formatOrderDate(isoDate) {
+  return window.formatHuDate?.(isoDate) ?? isoDate ?? "";
+}
+
+function formatOrderDateTime(isoString) {
+  return window.formatHuDateTime?.(isoString) ?? "";
+}
+
+// összes tétel státusza — ha nem egyforma, „Eltérő”
+function getOrderStatusFromItems(items) {
+  if (!items?.length) return "Új";
+  const statuses = items.map((item) => item.status || "Új");
+  const first = statuses[0];
+  return statuses.every((s) => s === first) ? first : "Eltérő";
+}
+
+// backend JSON → memória formátum
+function mapApiOrderToDashboard(apiOrder) {
+  const items = (apiOrder.items || []).map((item) => ({
+    id: item.id,
+    day: item.day,
+    menu: item.menu,
+    menu_type: item.menu_type,
+    qty: item.quantity,
+    delivery_date: item.delivery_date,
+    status: itemStatusLabel(item.status),
+  }));
+
+  return {
+    id: String(apiOrder.id),
+    name: apiOrder.customer_name || "",
+    phone: apiOrder.customer_phone || "",
+    address: apiOrder.delivery_address || "",
+    items,
+    status: getOrderStatusFromItems(items),
+    createdAt: formatOrderDateTime(apiOrder.created_at),
+  };
+}
+
+async function loadOrdersFromApi() {
+  // GET /api/orders/
+  const response = await fetch("/api/orders/", {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error(`Orders API hiba: ${response.status}`);
+  }
+
+  const data = await response.json();
+  window.appData = window.appData || {};
+  window.appData.orders = data.map(mapApiOrderToDashboard);
+
+  console.log("Rendelések betöltve API-ból:", window.appData.orders);
+  return window.appData.orders;
+}
+
+window.loadOrdersFromApi = loadOrdersFromApi;
+
+const STATUS_OPTIONS = [
+  "Új",
+  "Elfogadva",
+  "Készül",
+  "Kiszállítás alatt",
+  "Kézbesítve",
+  "Sikertelen kézbesítés"
+];
+
+const STATUS_BADGE_CLASS = {
+  "Új":                    "status-new",
+  "Elfogadva":             "status-accepted",
+  "Készül":                "status-preparing",
+  "Kiszállítás alatt":     "status-delivery",
+  "Kézbesítve":            "status-done",
+  "Sikertelen kézbesítés": "status-failed"
+};
+
+let activeOrdersKpiFilter = null;
+let editingOrderId = null;
+let editingItemIds = null;
+let editingDeliveryDate = null;
+let editingLineQty = { A: 0, B: 0 };
+let sortColumn = null;
+let sortDir = 1;
+let ordersInitialRendered = false;
+
+function getOrderItemsText(orderOrItems) {
+  const items = Array.isArray(orderOrItems)
+    ? orderOrItems
+    : orderOrItems?.items || [];
+
+  return items
+    .map((item) => `${item.day} ${item.menu} × ${item.qty}`)
+    .join(" ");
+}
+
+function groupItemsByDeliveryDate(items = []) {
+  // ugyanaz a nap → egy táblázat-sor
+  const groups = new Map();
+
+  items.forEach((item) => {
+    const key = item.delivery_date || "";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  });
+
+  return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b));
+}
+
+function getRowStatusFromItems(items) {
+  // eltérő A/B státusz esetén ne hazudjunk egyetlen badge-dzsel
+  if (!items?.length) return "Új";
+  const statuses = items.map((item) => item.status || "Új");
+  const first = statuses[0];
+  return statuses.every((s) => s === first) ? first : "Eltérő";
+}
+
+// data-item-ids string → szám tömb
+function parseItemIds(value) {
+  if (!value) return [];
+  return String(value)
+    .split(",")
+    .map((id) => Number(id.trim()))
+    .filter((id) => Number.isFinite(id) && id > 0);
+}
+
+// PATCH/DELETE után: appData + táblázat (+ opcionálisan főoldal)
+function applyOrderUpdate(apiOrder, { refreshDashboard = false } = {}) {
+  window.appData = window.appData || {};
+  window.appData.orders = window.appData.orders || [];
+
+  const orderId = String(apiOrder.id);
+  const mapped = mapApiOrderToDashboard(apiOrder);
+  const index = window.appData.orders.findIndex((o) => o.id === orderId);
+
+  if (index !== -1) {
+    window.appData.orders[index] = mapped;
+  } else {
+    window.appData.orders.push(mapped);
+  }
+
+  renderOrders();
+  filterOrders();
+
+  if (refreshDashboard) {
+    window.refreshDashboard?.();
+  }
+}
+
+// utolsó tétel is kiment → 204, kiesik appData-ból
+function removeOrder(orderId, { refreshDashboard = false } = {}) {
+  const id = String(orderId);
+  const index = window.appData.orders.findIndex((o) => o.id === id);
+
+  if (index !== -1) {
+    window.appData.orders.splice(index, 1);
+  }
+
+  renderOrders();
+  filterOrders();
+
+  if (refreshDashboard) {
+    window.refreshDashboard?.();
+  }
+}
+
+async function setRowStatus(order, itemIds, statusLabel) {
+  // PATCH .../items/status/
+  const apiStatus = STATUS_TO_API[statusLabel];
+  if (!apiStatus || !itemIds?.length) return;
+
+  try {
+    const response = await apiRequest(`/api/orders/${order.id}/items/status/`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        item_ids: itemIds,
+        status: apiStatus,
+      }),
+    });
+
+    if (!response.ok) {
+      const message = await readApiErrorMessage(response, "Státusz frissítés sikertelen");
+      window.showToast?.(message, "error");
+      return;
+    }
+
+    const updatedOrder = await response.json();
+    applyOrderUpdate(updatedOrder, { refreshDashboard: true });
+  } catch (err) {
+    console.error("Státusz frissítés sikertelen:", err);
+    window.showToast?.("Státusz frissítés sikertelen", "error");
+  }
+}
+
+// egy rendelés → annyi sor, ahány külön kiszállítási napja van
+function expandOrdersToRows(orders) {
+  const rows = [];
+
+  orders.forEach((order, groupIndex) => {
+    const groups = groupItemsByDeliveryDate(order.items);
+    const groupCount = groups.length;
+
+    groups.forEach(([deliveryDate, items], index) => {
+      const itemIds = items.map((item) => item.id);
+      rows.push({
+        order,
+        deliveryDate,
+        items,
+        itemIds,
+        groupIndex,
+        isFirst: index === 0,
+        isLast: index === groupCount - 1,
+        isOnly: groupCount === 1,
+        rowStatus: getRowStatusFromItems(items),
+      });
+    });
+  });
+
+  return rows;
+}
+
+// kézbesítve / sikertelen = nem teendő
+const TERMINAL_ROW_STATUSES = new Set(["Kézbesítve", "Sikertelen kézbesítés"]);
+
+// főoldali teendőlista hívja
+function getUnhandledOrderRows() {
+  return expandOrdersToRows(window.appData?.orders || []).filter((row) => {
+    const status = (row.rowStatus || "").trim();
+    return status && !TERMINAL_ROW_STATUSES.has(status);
+  });
+}
+
+window.getUnhandledOrderRows = getUnhandledOrderRows;
+window.formatOrderDate = formatOrderDate;
+
+function isProblemRow(row) {
+  return isProblemOrder({
+    status: row.rowStatus,
+    createdAt: row.order.createdAt,
+  });
+}
+
+window.isProblemRow = isProblemRow;
+
+function formatOrderItemsHtml(items = []) {
+  return items
+    .map(
+      (item) => `
+        <div class="order-line">
+          <span class="order-line-day">${item.day}</span>
+          <span class="order-line-menu">${item.menu}</span>
+          <span class="qty-chip">× ${item.qty}</span>
+        </div>`,
+    )
+    .join("");
+}
+
+function formatSingleDeliveryHtml(deliveryDate) {
+  return `
+    <div class="delivery-line">
+      <i class="fa-regular fa-calendar"></i>
+      ${formatOrderDate(deliveryDate)}
+    </div>`;
+}
+
+function updateOrdersKpis() {
+  // soronként számol, nem rendelésenként
+  const rows = expandOrdersToRows(window.appData?.orders || []);
+
+  let problem = 0, fresh = 0, preparing = 0, delivery = 0, done = 0;
+
+  rows.forEach((row) => {
+    const status = (row.rowStatus || "").trim();
+    if (isProblemRow(row)) problem++;
+    if (status === "Új") fresh++;
+    if (status === "Készül") preparing++;
+    if (status === "Kiszállítás alatt") delivery++;
+    if (status === "Kézbesítve" || status === "Sikertelen kézbesítés") done++;
+  });
+
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  };
+
+  setVal("kpi-orders-problem",   problem);
+  setVal("kpi-orders-new",       fresh);
+  setVal("kpi-orders-preparing", preparing);
+  setVal("kpi-orders-delivery",  delivery);
+  setVal("kpi-orders-done",      done);
+}
+
+// felső chip szűrő
+function matchesOrdersKpiFilter(row) {
+  if (!activeOrdersKpiFilter) return true;
+  const status = (row.rowStatus || "").trim();
+  switch (activeOrdersKpiFilter) {
+    case "problem":  return isProblemRow(row);
+    case "new":      return status === "Új";
+    case "preparing":return status === "Készül";
+    case "delivery": return status === "Kiszállítás alatt";
+    case "done":     return status === "Kézbesítve" || status === "Sikertelen kézbesítés";
+    default:         return true;
+  }
+}
+
+function renderOrders(animate) {
+  const tbody = document.getElementById("ordersTableBody");
+  if (!tbody) return;
+
+  closeStatusPopover();
+
+  const kpiRow = document.querySelector("#orders-section .orders-kpi-row");
+
+  const drawTable = () => {
+    let orders = [...(window.appData?.orders || [])];
+    let rows = expandOrdersToRows(orders);
+
+    if (sortColumn) {
+      rows.sort((a, b) => {
+        let va, vb;
+        switch (sortColumn) {
+          case "name":
+            va = a.order.name.toLowerCase();
+            vb = b.order.name.toLowerCase();
+            break;
+          case "menu":
+            va = getOrderItemsText(a.items).toLowerCase();
+            vb = getOrderItemsText(b.items).toLowerCase();
+            break;
+          case "delivery":
+            va = a.deliveryDate;
+            vb = b.deliveryDate;
+            break;
+          case "time":
+            va = a.order.createdAt;
+            vb = b.order.createdAt;
+            break;
+          case "status":
+            va = a.rowStatus;
+            vb = b.rowStatus;
+            break;
+          default:
+            return 0;
+        }
+
+        if (va < vb) return -sortDir;
+        if (va > vb) return sortDir;
+
+        if (a.order.id !== b.order.id) return a.order.id.localeCompare(b.order.id);
+        return a.deliveryDate.localeCompare(b.deliveryDate);
+      });
+    }
+
+    tbody.innerHTML = ordersRowsHtml(rows);
+    filterOrders(); // új tbody után kell, mert csak display-t állít
+  };
+
+  // frissítés gomb: fade; első betöltés: azonnal
+  if (animate && ordersInitialRendered) {
+    if (kpiRow) fadeRender(kpiRow, updateOrdersKpis);
+    else updateOrdersKpis();
+    fadeRender(tbody, drawTable);
+  } else {
+    updateOrdersKpis();
+    drawTable();
+    ordersInitialRendered = true;
+  }
+}
+
+function ordersRowsHtml(rows) {
+  return rows.map((row) => {
+    const o = row.order;
+    const relTime = relativeTime(o.createdAt);
+    const badgeCls = STATUS_BADGE_CLASS[row.rowStatus] || "";
+    const itemIdsAttr = row.itemIds.join(",");
+
+    // több napos rendelés: összetartozó sorok színe/formája
+    const groupPosClass = row.isOnly
+      ? "order-group-only"
+      : row.isFirst
+        ? "order-group-first"
+        : row.isLast
+          ? "order-group-last"
+          : "order-group-middle";
+    const groupToneClass = row.groupIndex % 2 === 0 ? "order-group-even" : "order-group-odd";
+    const problemClass = isProblemRow(row) ? "row-problem" : "";
+
+    return `
+    <tr
+      data-id="${o.id}"
+      data-item-ids="${itemIdsAttr}"
+      data-delivery-date="${row.deliveryDate}"
+      class="order-group-row ${groupPosClass} ${groupToneClass} ${problemClass}"
+    >
+      <td data-label="Név" class="cell-primary">
+        <div class="cell-vcenter">${o.name}</div>
+      </td>
+      <td data-label="Kapcsolat" class="cell-contact">
+        <div class="cell-vcenter cell-contact-inner">
+          <span class="contact-phone">${o.phone}</span>
+          <span class="contact-addr">${o.address}</span>
+        </div>
+      </td>
+      <td data-label="Rendelés" class="cell-order-items">
+        <div class="cell-vcenter">
+          <div class="order-lines">${formatOrderItemsHtml(row.items)}</div>
+        </div>
+      </td>
+      <td data-label="Kiszállítás" class="cell-delivery-dates">
+        <div class="cell-vcenter">
+          ${formatSingleDeliveryHtml(row.deliveryDate)}
+        </div>
+      </td>
+      <td data-label="Rend. idő" class="order-time">
+        <div class="cell-vcenter order-time-inner">
+          <span class="time-rel" title="${o.createdAt}">${relTime}</span>
+          <span class="time-abs">${o.createdAt}</span>
+        </div>
+      </td>
+      <td data-label="Státusz" class="cell-status">
+        <div class="cell-vcenter">
+          <button class="status-badge ${badgeCls}"
+                  data-order-id="${o.id}"
+                  data-item-ids="${itemIdsAttr}"
+                  aria-label="Státusz módosítása">
+            ${row.rowStatus}
+          </button>
+        </div>
+      </td>
+      <td data-label="Műveletek" class="cell-actions-wrap">
+        <div class="cell-vcenter cell-actions">
+          <button class="action-btn edit-btn" aria-label="Rendelés szerkesztése">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button class="action-btn orders-delete-btn" aria-label="Rendelés törlése">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </td>
+    </tr>`;
+  }).join("");
+}
+
+function closeStatusPopover() {
+  const el = document.getElementById("status-popover");
+  if (el) el.remove();
+}
+
+// badge katt — ugyanarra megint katt → bezár
+function openStatusPopover(badge) {
+  const orderId = badge.dataset.orderId;
+  const itemIds = parseItemIds(badge.dataset.itemIds);
+  const order = window.appData?.orders.find(o => o.id === orderId);
+  if (!order || !itemIds.length) return;
+
+  const rowKey = `${orderId}:${itemIds.join("-")}`;
+
+  const existing = document.getElementById("status-popover");
+  if (existing && existing.dataset.forRow === rowKey) {
+    closeStatusPopover();
+    return;
+  }
+  closeStatusPopover();
+
+  const rowItems = order.items.filter((item) => itemIds.includes(item.id));
+  const currentStatus = getRowStatusFromItems(rowItems);
+  const rect = badge.getBoundingClientRect();
+  const popover = document.createElement("div");
+  popover.id = "status-popover";
+  popover.dataset.forRow = rowKey;
+  popover.setAttribute("role", "listbox");
+  popover.setAttribute("aria-label", "Státusz kiválasztása");
+  popover.style.top = `${rect.bottom + 4}px`;
+  popover.style.left = `${rect.left}px`;
+
+  popover.innerHTML = STATUS_OPTIONS.map(s => {
+    const cls = STATUS_BADGE_CLASS[s] || "";
+    const isCurrent = s === currentStatus;
+    return `<button class="status-popover-option ${cls}${isCurrent ? " current" : ""}"
+                    data-status="${s}"
+                    data-order-id="${orderId}"
+                    data-item-ids="${itemIds.join(",")}"
+                    role="option"
+                    aria-selected="${isCurrent}">${s}</button>`;
+  }).join("");
+
+  document.body.appendChild(popover);
+
+  requestAnimationFrame(() => {
+    const pr = popover.getBoundingClientRect();
+    // ne lógjon ki a képernyőről
+    if (pr.right > window.innerWidth - 8) {
+      popover.style.left = `${window.innerWidth - pr.width - 8}px`;
+    }
+    if (pr.bottom > window.innerHeight - 8) {
+      popover.style.top  = `${rect.top - pr.height - 4}px`;
+    }
+  });
+}
+
+// beállítások fül: rendelési SLA űrlap
+function loadStatusLimits() {
+  SlaRules.applyOrderLimitsToForm();
+}
+
+window.loadStatusLimits = loadStatusLimits;
+
+function saveStatusLimits() {
+  saveStatusLimitsAsync();
+}
+
+async function saveStatusLimitsAsync() {
+  try {
+    await SlaRules.saveSlaRules({
+      status_limits: SlaRules.readOrderLimitsFromForm(),
+    });
+    refreshDashboard();
+    window.showToast?.("Rendelési beállítások mentve!", "success");
+  } catch (err) {
+    console.error("Rendelési SLA mentése sikertelen:", err);
+    const message = typeof parseApiError === "function"
+      ? parseApiError(err, "Rendelési beállítások mentése sikertelen")
+      : "Rendelési beállítások mentése sikertelen";
+    window.showToast?.(message, "error");
+  }
+}
+
+function renderEditMenuQtyStepper(menuType, qty) {
+  return `
+    <div class="order-edit-stepper" data-menu-type="${menuType}">
+      <button type="button" class="order-edit-step-btn" data-action="dec" aria-label="Kevesebb">−</button>
+      <span class="order-edit-qty" id="editQty${menuType}">${qty}</span>
+      <button type="button" class="order-edit-step-btn" data-action="inc" aria-label="Több">+</button>
+    </div>`;
+}
+
+function renderEditOrderLines(deliveryDate, rowItems) {
+  const label = document.getElementById("editDeliveryDateLabel");
+  const container = document.getElementById("editOrderLines");
+  if (!container) return;
+
+  editingLineQty = {
+    A: rowItems.find((item) => item.menu_type === "A")?.qty ?? 0,
+    B: rowItems.find((item) => item.menu_type === "B")?.qty ?? 0,
+  };
+
+  if (label) {
+    label.textContent = formatOrderDate(deliveryDate);
+  }
+
+  container.innerHTML = `
+    <div class="order-edit-line">
+      <span class="order-edit-line-label">A menü</span>
+      ${renderEditMenuQtyStepper("A", editingLineQty.A)}
+    </div>
+    <div class="order-edit-line">
+      <span class="order-edit-line-label">B menü</span>
+      ${renderEditMenuQtyStepper("B", editingLineQty.B)}
+    </div>`;
+}
+
+function changeEditMenuQty(menuType, delta) {
+  if (!editingLineQty) return;
+  editingLineQty[menuType] = Math.max(0, Math.min(20, editingLineQty[menuType] + delta));
+  const qtyEl = document.getElementById(`editQty${menuType}`);
+  if (qtyEl) qtyEl.textContent = editingLineQty[menuType];
+}
+
+function openEditModal(orderId, itemIds) {
+  // név/cím az egész rendelésre; A/B qty csak erre a napra
+  editingOrderId = orderId;
+  editingItemIds = itemIds;
+  const order = window.appData?.orders.find(o => o.id === orderId);
+  if (!order) return;
+
+  const rowItems = order.items.filter((item) => itemIds.includes(item.id));
+  editingDeliveryDate = rowItems[0]?.delivery_date ?? null;
+
+  document.getElementById("editName").value = order.name;
+  document.getElementById("editPhone").value = order.phone;
+  document.getElementById("editAddress").value = order.address;
+
+  if (editingDeliveryDate) {
+    renderEditOrderLines(editingDeliveryDate, rowItems);
+  }
+
+  const modal = document.getElementById("editModal");
+  modal.classList.remove("hidden");
+  requestAnimationFrame(() => modal.classList.add("open"));
+}
+
+async function saveEdit() {
+  if (!editingOrderId) return;
+
+  if (!editingDeliveryDate) {
+    window.showToast?.("Hiányzik a kiszállítási nap.", "error");
+    return;
+  }
+
+  if (editingLineQty.A + editingLineQty.B < 1) {
+    window.showToast?.("Legalább egy menüből rendeljen legalább 1 darabot.", "error");
+    return;
+  }
+
+  const payload = {
+    customer_name: document.getElementById("editName").value.trim(),
+    customer_phone: document.getElementById("editPhone").value.trim(),
+    delivery_address: document.getElementById("editAddress").value.trim(),
+    delivery_date: editingDeliveryDate,
+    item_lines: [
+      { menu_type: "A", quantity: editingLineQty.A },
+      { menu_type: "B", quantity: editingLineQty.B },
+    ],
+  };
+
+  try {
+    const response = await apiRequest(`/api/orders/${editingOrderId}/`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const message = await readApiErrorMessage(response, "Hiba mentés közben");
+      window.showToast?.(message, "error");
+      return;
+    }
+
+    const updatedOrder = await response.json();
+
+    closeEditModal();
+    applyOrderUpdate(updatedOrder, { refreshDashboard: true });
+    window.showToast?.("Rendelés mentve", "success");
+  } catch (err) {
+    console.error("Rendelés mentés sikertelen:", err);
+    window.showToast?.("Hiba mentés közben", "error");
+  }
+}
+
+window.saveEdit = saveEdit;
+
+function closeEditModal() {
+  const modal = document.getElementById("editModal");
+  modal.classList.remove("open");
+  setTimeout(() => modal.classList.add("hidden"), 150);
+  editingOrderId = null;
+  editingItemIds = null;
+  editingDeliveryDate = null;
+  editingLineQty = { A: 0, B: 0 };
+}
+
+window.closeEditModal = closeEditModal;
+
+let pendingDeleteId = null;
+let pendingDeleteItemIds = null;
+
+function openDeleteConfirm(orderId, itemIds) {
+  pendingDeleteId = orderId;
+  pendingDeleteItemIds = itemIds;
+  const modal = document.getElementById("deleteConfirmModal");
+  modal.classList.remove("hidden");
+  requestAnimationFrame(() => modal.classList.add("open"));
+}
+
+function closeDeleteConfirm() {
+  const modal = document.getElementById("deleteConfirmModal");
+  modal.classList.remove("open");
+  setTimeout(() => modal.classList.add("hidden"), 150);
+  pendingDeleteId = null;
+  pendingDeleteItemIds = null;
+}
+
+async function confirmDelete() {
+  if (!pendingDeleteId || !pendingDeleteItemIds?.length) return;
+
+  const orderId = pendingDeleteId;
+
+  try {
+    const response = await apiRequest(
+      `/api/orders/${orderId}/items/delete/`,
+      {
+        method: "DELETE",
+        body: JSON.stringify({
+          item_ids: pendingDeleteItemIds,
+        }),
+      }
+    );
+
+    if (!response.ok && response.status !== 204) {
+      const message = await readApiErrorMessage(response, "Törlés sikertelen");
+      window.showToast?.(message, "error");
+      return;
+    }
+
+    closeDeleteConfirm();
+
+    if (response.status === 204) {
+      removeOrder(orderId, { refreshDashboard: true }); // nem maradt tétel
+    } else {
+      const updatedOrder = await response.json();
+      applyOrderUpdate(updatedOrder, { refreshDashboard: true });
+    }
+
+    window.showToast?.("Rendelés törölve", "deleted");
+  } catch (err) {
+    console.error("Törlés sikertelen:", err);
+    window.showToast?.("Törlés sikertelen", "error");
+  }
+}
+
+document.getElementById("deleteConfirmOk")?.addEventListener("click", confirmDelete);
+document.getElementById("deleteConfirmCancel")?.addEventListener("click", closeDeleteConfirm);
+document.getElementById("deleteConfirmModal")?.addEventListener("click", (e) => {
+  if (e.target.id === "deleteConfirmModal") closeDeleteConfirm();
+});
+
+// +/- gombok a szerkesztő modalban
+document.getElementById("editModal")?.addEventListener("click", (e) => {
+  const btn = e.target.closest(".order-edit-step-btn");
+  if (!btn) return;
+  const stepper = btn.closest(".order-edit-stepper");
+  if (!stepper) return;
+  const menuType = stepper.dataset.menuType;
+  const delta = btn.dataset.action === "inc" ? 1 : -1;
+  changeEditMenuQty(menuType, delta);
+});
+
+window.filterOrders = function () {
+  const search = (document.getElementById("searchInput")?.value || "").toLowerCase().trim();
+
+  document.querySelectorAll("#orders-section tbody tr").forEach(row => {
+    const id = row.dataset.id;
+    const itemIds = parseItemIds(row.dataset.itemIds);
+    const deliveryDate = row.dataset.deliveryDate;
+    const order = window.appData?.orders.find(o => o.id === id);
+
+    if (!order || !itemIds.length) {
+      row.style.display = "none";
+      return;
+    }
+
+    const items = order.items.filter((item) => itemIds.includes(item.id));
+    const rowData = {
+      order,
+      deliveryDate,
+      items,
+      itemIds,
+      rowStatus: getRowStatusFromItems(items),
+    };
+
+    const haystack = `${order.name} ${order.phone} ${order.address} ${getOrderItemsText(items)} ${deliveryDate} ${formatOrderDate(deliveryDate)}`.toLowerCase();
+    const matchesSearch = search === "" || haystack.includes(search);
+    const matchesKpi = matchesOrdersKpiFilter(rowData);
+
+    row.style.display = (matchesSearch && matchesKpi) ? "" : "none";
+  });
+};
+
+document.addEventListener("input", (e) => {
+  if (e.target.id === "searchInput") filterOrders();
+});
+
+window.addEventListener("scroll", closeStatusPopover, { passive: true });
+
+document.addEventListener("click", (e) => {
+
+  if (e.target.closest("#status-popover")) {
+    const option = e.target.closest(".status-popover-option");
+    if (option) {
+      const orderId = option.dataset.orderId;
+      const itemIds = parseItemIds(option.dataset.itemIds);
+      const newStatus = option.dataset.status;
+      const order = window.appData?.orders.find(o => o.id === orderId);
+      if (order) {
+        setRowStatus(order, itemIds, newStatus);
+      }
+      closeStatusPopover();
+    }
+    return;
+  }
+
+  closeStatusPopover();
+
+  const badge = e.target.closest(".status-badge");
+  if (badge) {
+    openStatusPopover(badge);
+    return;
+  }
+
+  const editBtn = e.target.closest(".edit-btn");
+  if (editBtn) {
+    const row = editBtn.closest("tr");
+    if (row) openEditModal(row.dataset.id, parseItemIds(row.dataset.itemIds));
+    return;
+  }
+
+  const deleteBtn = e.target.closest(".orders-delete-btn");
+  if (deleteBtn) {
+    const row = deleteBtn.closest("tr");
+    const id = row?.dataset.id;
+    const itemIds = parseItemIds(row?.dataset.itemIds);
+    if (!id || !itemIds.length) return;
+    openDeleteConfirm(id, itemIds);
+    return;
+  }
+
+  const kpiBtn = e.target.closest("#orders-section .orders-kpi");
+  if (kpiBtn) {
+    const filter = kpiBtn.dataset.filter;
+    activeOrdersKpiFilter = activeOrdersKpiFilter === filter ? null : filter;
+    document.querySelectorAll("#orders-section .orders-kpi").forEach(btn => {
+      const isActive = btn.dataset.filter === activeOrdersKpiFilter;
+      btn.classList.toggle("active", isActive);
+      btn.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+    filterOrders();
+    return;
+  }
+
+  const sortTh = e.target.closest("#orders-section th.sortable");
+  if (sortTh) {
+    const col = sortTh.dataset.sort;
+    if (sortColumn === col) {
+      sortDir = -sortDir;
+    } else {
+      sortColumn = col;
+      sortDir    = 1;
+    }
+    document.querySelectorAll("#orders-section th.sortable").forEach(th => {
+      const icon = th.querySelector(".sort-icon");
+      if (!icon) return;
+      const isActive = th.dataset.sort === sortColumn;
+      th.classList.toggle("sort-active", isActive);
+      icon.textContent = isActive ? (sortDir === 1 ? "↑" : "↓") : "↕";
+    });
+    renderOrders();
+    filterOrders();
+    return;
+  }
+});

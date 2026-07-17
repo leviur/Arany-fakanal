@@ -1,0 +1,96 @@
+/* =========================================================
+   KPI chip-csík — közös minta (Dashboard, Rendelések,
+   Foglalások, Üzenetek)
+
+   Csak az elrendezést adja: 1 sor + vízszintes görgetés.
+   Chip kinézet (méret, kétsoros szám+felirat): section CSS-ek.
+   ========================================================= */
+
+.main {
+  container-type: inline-size;
+  container-name: dashboard-main;
+}
+
+.dash-kpi-strip {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: 10px;
+  min-width: 0;
+  max-width: 100%;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(200, 155, 99, 0.4) transparent;
+  padding: 10px 0 6px;
+}
+
+.dash-kpi-strip::-webkit-scrollbar {
+  height: 4px;
+}
+
+.dash-kpi-strip::-webkit-scrollbar-thumb {
+  background: rgba(200, 155, 99, 0.4);
+  border-radius: 999px;
+}
+
+.dash-kpi-strip > * {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+/* Széles nézetben minden KPI-sáv chip-je egyenletesen kitölti a sort */
+@container dashboard-main (min-width: 960px) {
+  .dash-kpi-strip {
+    overflow-x: visible;
+  }
+
+  .dash-kpi-strip > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+}
+
+/* Dashboard: teljes szélesség a rácson belül */
+.dash-grid > .dash-kpi-strip {
+  grid-column: 1 / -1;
+}
+
+/*
+ * Dashboard .kpi-card — ugyanaz a kétsoros minta, mint orders-kpi:
+ * bal ikon, jobb felső: szám, jobb alsó: felirat
+ */
+.dash-kpi-strip .kpi-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  row-gap: 2px;
+  align-items: center;
+  padding: 16px 18px;
+}
+
+.dash-kpi-strip .kpi-card i {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  width: 36px;
+  height: 36px;
+  font-size: 15px;
+  margin-bottom: 0;
+}
+
+.dash-kpi-strip .kpi-card .kpi-value {
+  grid-column: 2;
+  grid-row: 1;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.dash-kpi-strip .kpi-card .kpi-label {
+  grid-column: 2;
+  grid-row: 2;
+  white-space: nowrap;
+}

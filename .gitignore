@@ -11,14 +11,12 @@ Terv/
 Thumbs.db
 Desktop.ini
 
-# Claude Code & skill tooling
-.claude/
-taste-skill/
-
 
 # Python
 __pycache__/
 *.pyc
 
-# Django
-db.sqlite3
+
+venv
+*/venv
+**/venv

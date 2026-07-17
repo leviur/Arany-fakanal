@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Étlap – Arany Fakanál{% endblock %}
+
+{% block css %}
+  <link rel="stylesheet" href="{% static 'css/etlap.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+    <div class="page">
+      <!-- KERET SARKOK -->
+      <div class="corner corner-tl">❧</div>
+      <div class="corner corner-tr">❧</div>
+      <div class="corner corner-bl">❧</div>
+      <div class="corner corner-br">❧</div>
+
+      <!-- VÍZSZINTES DÍSZÍTŐ VONALAK -->
+      <div class="border-line top"></div>
+      <div class="border-line bottom"></div>
+
+      <!-- FEJLÉC -->
+      <header class="menu-header">
+        <h1 class="restaurant-name">Arany Fakanál Étterem</h1>
+        <p class="slogan">Ízek, amelyek hazahoznak</p>
+        <div class="gold-divider"></div>
+        <h2 class="menu-year">Étlapunk - 2026</h2>
+
+        <!-- KATEGÓRIA NAVIGÁCIÓ -->
+        <nav class="cat-nav">
+         
+        </nav>
+        <div class="cat-underline"></div>
+      </header>
+
+      <!-- ÉTLAP TARTALOM -->
+      <main class="menu-content">
+        <!-- ELŐÉTELEK -->
+        <section class="menu-section" id="eloetelek">
+          <h3 class="section-title">ELŐÉTELEK</h3>
+          <div class="section-rule"></div>
+
+          
+        </section>
+
+        <!-- LEVESEK -->
+        <section class="menu-section" id="levesek">
+          <h3 class="section-title">LEVESEK</h3>
+          <div class="section-rule"></div>
+
+          
+        </section>
+
+        <!-- FŐÉTELEK -->
+        <section class="menu-section" id="haletelek-szarnyasok">
+          <h3 class="section-title">Halételek & Szárnyasok</h3>
+          <div class="section-rule"></div>
+
+          
+        </section>
+
+        <!-- Hagyományos Rántott & Töltött Húsok -->
+        <section class="menu-section" id="hagyomanyos-rantott-toltott-husok">
+          <h3 class="section-title">Hagyományos Rántott & Töltött Húsok</h3>
+          <div class="section-rule"></div>
+
+        </section>
+
+        <!-- Szaftos & Kemencés Sültek -->
+        <section class="menu-section" id="szaftos-kemences-sultek">
+          <h3 class="section-title">Szaftos & Kemencés Sültek</h3>
+          <div class="section-rule"></div>
+
+        </section>
+
+        <!-- Egytálételek -->
+        <section class="menu-section" id="egytaletelek">
+          <h3 class="section-title">Egytálételek</h3>
+          <div class="section-rule"></div>
+
+        </section>
+
+        <!-- DESSZERTEK -->
+        <section class="menu-section" id="desszertek">
+          <h3 class="section-title">DESSZERTEK</h3>
+          <div class="section-rule"></div>
+
+          
+        </section>
+
+        <!-- ITALOK -->
+        <section class="menu-section" id="italok">
+          <h3 class="section-title">ITALOK</h3>
+          <div class="section-rule"></div>
+
+          
+        </section>
+      </main>
+
+      <div id="allergen-section"></div>
+
+      <!-- LÁBLÉC -->
+      <footer class="menu-footer">
+        <div class="gold-divider"></div>
+
+        <p class="footer-thanks">Köszönjük, hogy minket választott!</p>
+        <p class="footer-info">
+          Az árak forintban értendők és az ÁFA-t tartalmazzák.
+          <br />
+          Árainkra 12% felszolgálási díjat számítunk fel.
+          <br />
+          Allergiás kérések esetén kérjük, értesítse felszolgálóinkat.
+        </p>
+        <p class="footer-copy">&copy; 2020 Arany Fakanál Étterem</p>
+      </footer>
+    </div>
+    <footer class="page-footer">
+      <a href="/" class="back-link">← Vissza a főoldalra</a>
+      <p>&copy; 2020 Arany Fakanál Étterem – Minden jog fenntartva.</p>
+    </footer>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="{% static 'js/etlap.js' %}?v=1"></script>
+{% endblock %}
+

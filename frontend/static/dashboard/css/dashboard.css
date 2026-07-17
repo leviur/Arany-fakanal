@@ -969,9 +969,6 @@ html {
   transition: background-color 0.12s ease;
 }
 
-/* MEGJEGYZÉS: a korábbi `transform: translateZ(0)` minden sorból külön
-   stacking contextet csinált, ami a sticky táblázat-fejléc fölé festette
-   a sorokat. Eltávolítva, hogy a sticky thead helyesen takarjon. */
 #bookings-dashboard tr {
   will-change: background-color;
 }

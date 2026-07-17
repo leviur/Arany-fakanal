@@ -50,43 +50,47 @@ function getBookingTodoLevel(booking) {
   return null;
 }
 
-// Felső KPI: mai rendelések száma, aktív, kiszállítás alatt
+const TERMINAL_ORDER_STATUSES = new Set(["Kézbesítve", "Sikertelen kézbesítés"]);
+
+function setKpiValue(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
+function getTodayIsoDate() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+
+// Felső KPI: mai rendelések (leadás napja), aktív + kiszállítás (összes nyitott sor)
 function updateDashboardStats() {
   const orders = window.appData?.orders || [];
+  const rows = typeof expandOrdersToRows === "function"
+    ? expandOrdersToRows(orders)
+    : [];
 
-  //  CSAK MAI RENDELÉSEK
   const todayOrders = orders.filter(o => isToday(o.createdAt));
+  const total = todayOrders.length;
 
-  let total = todayOrders.length;
   let active = 0;
   let delivery = 0;
   let issues = 0;
 
-  todayOrders.forEach(o => {
-    const status = (o.status || "").trim();
-    const minutesAgo = getMinutesFromOrderTime(o.createdAt);
+  rows.forEach((row) => {
+    const status = (row.rowStatus || "").trim();
+    if (!status || TERMINAL_ORDER_STATUSES.has(status)) return;
 
-    if (!status) return;
-
-    // aktív rendelések
-    if (status !== "Kézbesítve" && status !== "Sikertelen kézbesítés") {
-      active++;
-    }
-
-    // kiszállítás alatt
-    if (status === "Kiszállítás alatt") {
-      delivery++;
-    }
-
-    if (isProblemOrder(o)) {
-      issues++;
-    }
+    active++;
+    if (status === "Kiszállítás alatt") delivery++;
   });
 
-  //  UI frissítés
-  document.getElementById("stat-total-orders").textContent = total;
-  document.getElementById("stat-active-orders").textContent = active;
-  document.getElementById("stat-delivery-orders").textContent = delivery;
+  todayOrders.forEach(o => {
+    if (isProblemOrder(o)) issues++;
+  });
+
+  setKpiValue("stat-total-orders", total);
+  setKpiValue("stat-active-orders", active);
+  setKpiValue("stat-delivery-orders", delivery);
 
   console.log("📊 Dashboard frissítve:", {
     total,
@@ -95,16 +99,19 @@ function updateDashboardStats() {
     issues
   });
 }
-// Foglalások KPI (stat-total-bookings) — sidebar badge külön számolódik
+// Mai foglalások KPI — a foglalás dátuma (dateIso), nem az összes foglalás
 function updateBookingDashboardStats() {
-  const bookings = Bookings.getBookings?.() || [];
+  const bookings = window.Bookings?.getBookings?.() || [];
 
-  let total = bookings.length;
+  const todayIso = getTodayIsoDate();
+  const todayBookings = bookings.filter(b => b.dateIso === todayIso);
+
+  let total = todayBookings.length;
   let confirmed = 0;
   let guests = 0;
   let problems = 0;
 
-  bookings.forEach(b => {
+  todayBookings.forEach(b => {
 
     if (b.status === "Visszaigazolt") {
       confirmed++;
@@ -119,7 +126,7 @@ function updateBookingDashboardStats() {
     }
   });
 
-  document.getElementById("stat-total-bookings").textContent = total;
+  setKpiValue("stat-total-bookings", total);
 
   console.log("📊 Booking dashboard:", { total, confirmed, guests, problems });
 }
@@ -204,7 +211,7 @@ function renderOrderTodos() {
     return {
       level: slaProblem ? "problem" : "",
       sortDate: row.deliveryDate || "",
-      name: `#${row.order.id} – ${row.order.name} · ${dateLabel}`,
+      name: `${row.order.name} · ${dateLabel}`,
       reason,
     };
   });
@@ -219,7 +226,7 @@ function renderBookingTodos() {
   if (!container) return;
 
   const todos = [];
-  const bookings = Bookings.getBookings?.() || [];
+  const bookings = window.Bookings?.getBookings?.() || [];
 
   bookings.forEach(b => {
     const sla = getBookingTodoLevel(b);
@@ -271,10 +278,8 @@ function renderAgenda() {
   const container = document.getElementById("agenda-list");
   if (!container) return;
 
-  const bookings = Bookings.getBookings?.() || [];
-
-  const now = new Date();
-  const todayIso = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+  const bookings = window.Bookings?.getBookings?.() || [];
+  const todayIso = getTodayIsoDate();
 
   const todayBookings = bookings
     .filter(b => b.dateIso === todayIso)

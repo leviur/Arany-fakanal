@@ -393,8 +393,7 @@
                 aria-controls="gp-order-row-body-${order.id}"
               >
                 <div class="gp-order-row-main">
-                  <span class="gp-order-row-title">Rendelés #${order.id}</span>
-                  <span class="gp-order-row-summary">${escapeHtml(leadDate)} · ${escapeHtml(summary)}</span>
+                  <span class="gp-order-row-title">${escapeHtml(leadDate)} · ${escapeHtml(summary)}</span>
                 </div>
                 <div class="gp-order-row-meta">
                   <span class="gp-order-row-price">${escapeHtml(formatPrice(order.total_price))}</span>
@@ -420,8 +419,7 @@
                 aria-controls="gp-order-body-${order.id}"
               >
                 <div class="gp-order-card-toggle-main">
-                  <span class="gp-order-card-toggle-title">Rendelés #${order.id}</span>
-                  <span class="gp-order-card-toggle-summary">${escapeHtml(summary)}</span>
+                  <span class="gp-order-card-toggle-title">${escapeHtml(summary)}</span>
                 </div>
                 <div class="gp-order-card-toggle-meta">
                   <span class="gp-order-card-toggle-price">${escapeHtml(formatPrice(order.total_price))}</span>

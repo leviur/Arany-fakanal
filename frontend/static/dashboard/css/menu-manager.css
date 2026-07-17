@@ -5,7 +5,7 @@
 
 .container { display: flex; height: 100vh; background-color: var(--background-color) }
 
-/* ================= FRISSÍTÉS CROSSFADE (mint a többi lapon) ================= */
+/* ================= FRISSÍTÉS CROSSFADE  ================= */
 #menu-section .food-table tbody,
 #menu-section #weeklyMenuBody {
     transition: opacity 150ms ease;
@@ -511,7 +511,6 @@
 }
 
 #day-menu-modal-overlay .modal-grid {
-    /* minmax(0,1fr): a chip/input ne tolja szét a jobb oszlopot */
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 14px;
     margin-top: 0;
@@ -887,8 +886,7 @@
     background: rgba(200, 155, 99, 0.12);
 }
 
-/* a .form-group input globális szabálya (szövegmezőkre szánt padding/border)
-   ráörökölne a checkboxokra is — itt visszaállítjuk a natív megjelenésükhöz közelit */
+
 .allergen-check input[type="checkbox"] {
     width: 16px;
     height: 16px;
@@ -972,10 +970,7 @@
       transform: translateY(0px) scale(0.98);
 }
 
-/* ================= RESZPONZÍV KÖR (< 1200px) =================
-   Ugyanaz az ok és töréspont, mint a Rendeléseken/Foglalásokon: a
-   táblázatok (Étel-lista, Heti menü) több-soros tartalmat hordoznak,
-   ezért laptop-szélességű ablaknál is szűkek lennének sima táblázatként. */
+
 @media (max-width: 1200px) {
   .content {
     height: auto;
@@ -1060,9 +1055,7 @@
     gap: 8px;
   }
 
-  /* a táblázat-oszlopok :nth-child-dal megadott %-os szélessége
-     specifikusabb, mint egy sima "td" szelektor — ugyanazzal a
-     specificitással kell felülírni, lásd Foglalások/Rendelések minta */
+ 
   #menu-section .food-table td:nth-child(n),
   #menu-section .weekly-menu-table td:nth-child(n) {
     width: 100%;
@@ -1105,10 +1098,6 @@
     font-size: 13px;
   }
 
-  /* Szűk kijelzőn (pl. iPhone SE) a sok egymásba ágyazott padding
-     (.content > .content-card > .category-table-area > .table-wrapper >
-     kártya-sor) összesen 200px+-ot evett el 375px-ből, alig hagyva helyet
-     a kártya-nézet szövegének — emiatt tördelt betűnként a hosszú szavakat. */
   .content {
     padding: 10px;
   }

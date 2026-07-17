@@ -213,8 +213,7 @@
             aria-controls="gp-booking-body-${booking.id}"
           >
             <div class="gp-booking-card-toggle-main">
-              <span class="gp-booking-card-toggle-title">Foglalás #${booking.id}</span>
-              <span class="gp-booking-card-toggle-summary">${escapeHtml(bookingSummary(booking))}</span>
+              <span class="gp-booking-card-toggle-title">${escapeHtml(bookingSummary(booking))}</span>
             </div>
             <div class="gp-booking-card-toggle-meta">
               <span class="gp-status-badge ${badgeClass}">${escapeHtml(booking.status_label)}</span>
@@ -241,8 +240,7 @@
             aria-controls="gp-booking-row-body-${booking.id}"
           >
             <div class="gp-booking-row-main">
-              <span class="gp-booking-row-title">Foglalás #${booking.id}</span>
-              <span class="gp-booking-row-summary">${escapeHtml(date)} ${escapeHtml(time)} · ${escapeHtml(booking.status_label)}</span>
+              <span class="gp-booking-row-title">${escapeHtml(date)} ${escapeHtml(time)} · ${escapeHtml(booking.status_label)}</span>
             </div>
             <div class="gp-booking-row-meta">
               <span class="gp-booking-row-guests">${booking.guest_count} fő</span>

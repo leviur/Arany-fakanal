@@ -27,10 +27,7 @@
   gap: 10px;
 }
 
-/* ================= KPI FILTER CHIPS =================
-   Önálló, a .table-card-tól független elem — ugyanaz a minta, mint a
-   Dashboard/Üzenetek lapon, hogy a görgethető chip-csík ne ágyazódjon be
-   több flex-oszlop szintbe a táblázat-kártyán belül. */
+/* ================= KPI FILTER CHIPS ================= */
 
 #bookings-section .bookings-kpi-row {
   flex-shrink: 0;
@@ -42,6 +39,8 @@
   flex-direction: row;
   align-items: center;
   gap: 12px;
+  width: 100%;
+  min-width: 0;
   background: linear-gradient(180deg, #ffffff 0%, #fbf7f2 100%);
   border: 1px solid rgba(200, 155, 99, 0.15);
   border-radius: 16px;
@@ -124,9 +123,6 @@
 /* ================= KERESÉS ================= */
 
 #bookings-section .table-actions {
-  /* a margin-top a KPI-sor és a kereső közötti térköznek készült, amikor
-     még egy kártyán belül voltak — most a KPI-sor önálló elem, a kereső
-     itt az első, ezért ez csak felesleges üres helyet hagyott felül */
   flex-shrink: 0;
   width: 100%;
   display: flex;
@@ -562,19 +558,9 @@
   margin-top: 20px;
 }
 
-/* ================= RESZPONZÍV KÁRTYA NÉZET (< 1200px) =================
-   Az orders.css mintáját követi, ugyanazon az okból és ugyanazon a
-   töréspontnál (1200px): a táblázat oszlopai itt is összetett, több-soros
-   tartalmat hordoznak (e-mail+telefon, alkalom+létszám, dátum+leadás ideje),
-   ezért egy laptop-szélességű ablaknál a sima táblázat már szűk lenne. */
+/* ================= RESZPONZÍV KÁRTYA NÉZET (< 1200px) ================= */
 
 @media (max-width: 1200px) {
-  /* Védőháló: ha a táblázat/kártya-tartalom bármelyik beágyazott szinten
-     megpróbálná tartalom-alapon kitágítani a szülőjét (klasszikus flexbox
-     "automatic minimum size" hiba), itt mindenhol explicit width:100%-ra
-     és overflow-x:hidden-re kényszerítjük — így a KPI-sor saját belső
-     görgetése (overflow-x:auto) tud csak érvényesülni, semmi más nem
-     terjedhet tovább felfelé. */
   #bookings-section .table-card,
   #bookings-section .table-header {
     width: 100%;
@@ -648,10 +634,6 @@
     gap: 8px;
   }
 
-  /* a táblázat-oszlopok öröklött %-os szélessége (lásd fent,
-     "OSZLOPSZÉLESSÉGEK") :nth-child-dal van megadva, ezért specifikusabb,
-     mint egy sima "td" szelektor — itt ugyanazzal a specificitással kell
-     felülírni, különben a kártya-sor megtartja az eredeti, szűk %-ot. */
   #bookings-section td:nth-child(n) {
     width: 100%;
     min-width: 0;
@@ -679,8 +661,6 @@
     display: none;
   }
 
-  /* a Megjegyzés-cella fix 140px-es korlátja kártya-nézetben feloldva —
-     a kártya tényleges szélességéhez igazodjon, ne egy fix számhoz */
   .booking-note-cell {
     max-width: none;
     white-space: normal;

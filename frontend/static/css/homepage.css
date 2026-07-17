@@ -94,7 +94,7 @@ body {
     justify-content: center;
 }
 
-/* Hero: átlátszó + arany keret – jobban illeszkedik a sötét háttérhez */
+/* Hero: átlátszó + arany keret  */
 .hero-actions .btn-gold {
     background: rgba(0, 0, 0, 0.35);
     backdrop-filter: blur(10px);
@@ -154,7 +154,7 @@ body {
     max-width: 180px;
 }
  
-/* Kártya hover – a divider kitágul */
+/* Kártya hover  */
 .card:hover .divider {
     width: 72px;
 }
@@ -180,7 +180,6 @@ body {
     line-height: 0;
 }
 
-/* A hatter1.JPG tetején vékony fekete csík van a fájlban – enyhén levágjuk */
 .story-image img {
     display: block;
     width: 100%;
@@ -540,7 +539,6 @@ body {
  
 /* =========================================
    ASZTALFOGLALÁS CTA
-   (story / atmosphere szekciók mintájára)
 ========================================= */
 .booking-cta {
     padding: 80px 8%;

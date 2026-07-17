@@ -90,7 +90,7 @@
   to   { opacity: 0; transform: translateY(8px) scale(0.96); }
 }
 
-/* Tablet + mobil: teljes szélesség, oldalsó margóval (nem lóg ki) */
+/* Tablet + mobil: teljes szélesség, oldalsó margóval  */
 @media (max-width: 992px) {
   .toast-container {
     left: 16px;

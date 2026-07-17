@@ -422,12 +422,12 @@ h1, h2, h3 {
   padding: 18px 20px 24px;
 }
 
-/* Info banner a panel fejlécében — ne legyen dupla árnyék */
+/* Info banner a panel fejlécében  */
 .gp-section-header .gp-orders-info {
   box-shadow: none;
 }
 
-/* ================= LOGOUT MODAL (ugyanaz a design, mint az admin dashboardon) ================= */
+/* ================= LOGOUT MODAL ================= */
 .modal {
   position: fixed;
   inset: 0;

@@ -231,24 +231,9 @@
 }
 
 .allergens img {
-  /* width: 25px;
-  height: 25px;
-  object-fit: contain; */
   padding: 3px;
-  /* background: #f5f5f5;
-  border: 1px solid #ddd;
-  border-radius: 4px; */
-  transition: transform 0.15s ease;
 }
 
-.allergens img:hover {
-  transform: scale(1.15);
-}
-
-/* .allergen-info {
-  margin-top: 50px;
-  text-align: left;
-} */
 
 .allergen-grid {
   display: flex;

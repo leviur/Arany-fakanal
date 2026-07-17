@@ -1377,7 +1377,4 @@ html, body {
   display: none !important;
 }
 
-/* ================= TOAST ÉRTESÍTŐK =================
-   A stílus közös fájlba lett kiemelve: static/css/toast.css
-   — betöltve a dashboard/index.html <head>-jében. */
 

@@ -749,6 +749,8 @@ const Bookings = (() => {
 
 })();
 
+window.Bookings = Bookings;
+
 
 /* ================= IDŐ STEPPER (nyitvatartás API alapján) ================= */
 let currentTimeSlots = [];

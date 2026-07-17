@@ -477,8 +477,18 @@ function initLogin() {
     loginForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const email = document.getElementById("login-email").value;
+        const email = document.getElementById("login-email").value.trim();
         const password = document.getElementById("login-password").value;
+
+        if (!email) {
+            window.showToast?.("Kérem adja meg az e-mail címet!", "error");
+            return;
+        }
+
+        if (!password) {
+            window.showToast?.("Kérem adja meg a jelszót!", "error");
+            return;
+        }
 
         try {
             const response = await apiRequest("/api/auth/login/", {
@@ -553,16 +563,42 @@ function initLogin() {
     registerForm.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        if (!window.PrivacyModal?.requireAccepted("register-privacy")) {
+        let fullName = document.getElementById("reg-name").value.trim();
+        const email = document.getElementById("reg-email").value.trim();
+        const phone = document.getElementById("reg-phone").value.trim();
+        const address = document.getElementById("reg-address").value.trim();
+        const password = document.getElementById("reg-password").value;
+        const passwordConfirm = document.getElementById("reg-password-confirm").value;
+
+        if (!fullName) {
+            window.showToast?.("Kérem adja meg a teljes nevet!", "error");
             return;
         }
 
-        let fullName = document.getElementById("reg-name").value;
-        const email = document.getElementById("reg-email").value;
-        const phone = document.getElementById("reg-phone").value;
-        const address = document.getElementById("reg-address").value;
-        const password = document.getElementById("reg-password").value;
-        const passwordConfirm = document.getElementById("reg-password-confirm").value;
+        if (!email) {
+            window.showToast?.("Kérem adja meg az e-mail címet!", "error");
+            return;
+        }
+
+        if (!phone) {
+            window.showToast?.("Kérem adja meg a telefonszámot!", "error");
+            return;
+        }
+
+        if (!address) {
+            window.showToast?.("Kérem adja meg a szállítási címet!", "error");
+            return;
+        }
+
+        if (!password) {
+            window.showToast?.("Kérem adja meg a jelszót!", "error");
+            return;
+        }
+
+        if (!passwordConfirm) {
+            window.showToast?.("Kérem erősítse meg a jelszót!", "error");
+            return;
+        }
 
         if (password.length < 8) {
             window.showToast?.("A jelszónak legalább 8 karakter hosszúnak kell lennie!", "error");
@@ -571,6 +607,10 @@ function initLogin() {
 
         if (password !== passwordConfirm) {
             window.showToast?.("A két jelszó nem egyezik!", "error");
+            return;
+        }
+
+        if (!window.PrivacyModal?.requireAccepted("register-privacy")) {
             return;
         }
 

@@ -3,7 +3,6 @@
  * Ez a vendégközpont profil szerkesztő része. A MeView PATCH végpontját hívja.
  * 
  *
- * Áttekintés: backend/guest_portal/ATTEKINTES.md
  * 
  * Html kapcsolat: guest-portal/index.html
  *

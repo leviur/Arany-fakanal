@@ -33,10 +33,7 @@
   color: #2d221b;
 }
 
-/* ================= KPI FILTER CHIPS =================
-   Önálló, a .table-card-tól független elem — ugyanaz a minta, mint a
-   Dashboard/Üzenetek lapon, hogy a görgethető chip-csík ne ágyazódjon be
-   több flex-oszlop szintbe a táblázat-kártyán belül. */
+/* ================= KPI FILTER CHIPS ================= */
 
 #orders-section .orders-kpi-row {
   flex-shrink: 0;
@@ -48,6 +45,8 @@
   flex-direction: row;
   align-items: center;
   gap: 12px;
+  width: 100%;
+  min-width: 0;
   background: linear-gradient(180deg, #ffffff 0%, #fbf7f2 100%);
   border: 1px solid rgba(200, 155, 99, 0.15);
   border-radius: 16px;
@@ -118,9 +117,6 @@
 /* ================= KERESÉS ================= */
 
 #orders-section .table-actions {
-  /* a margin-top a KPI-sor és a kereső közötti térköznek készült, amikor
-     még egy kártyán belül voltak — most a KPI-sor önálló elem, a kereső
-     itt az első, ezért ez csak felesleges üres helyet hagyott felül */
   flex-shrink: 0;
   width: 100%;
   display: flex;
@@ -200,7 +196,6 @@
   font-size: 11px;
   font-weight: 700;
   text-align: left;
-  /* a szegély box-shadow-ként, hogy a sticky fejléccel együtt maradjon */
   box-shadow: inset 0 -2px 0 #2d221b;
   white-space: nowrap;
   position: sticky;
@@ -242,7 +237,6 @@
   vertical-align: middle;
 }
 
-/* Belső wrapper — függőleges középre igazítás flex nélkül a td-n */
 .cell-vcenter {
   display: flex;
   flex-direction: column;
@@ -279,12 +273,10 @@
   box-shadow: inset 3px 0 0 rgba(200, 155, 99, 0.18);
 }
 
-/* Zebra csíkozás — kikapcsolva, helyette order-group-even/odd */
 #orders-section tbody tr:nth-child(even) {
   background: inherit;
 }
 
-/* Sor hover — halvány, dizájnba illő */
 #orders-section tbody tr {
   transition: background 120ms ease;
 }
@@ -531,7 +523,6 @@
   text-align: left;
 }
 
-/* Badge csak a felirat szélességére — a .cell-vcenter flex alapból szétnyújtaná */
 .cell-status .cell-vcenter {
   align-items: flex-start;
   width: fit-content;
@@ -562,15 +553,9 @@
 #orders-section tr.row-warning { background: #fff3f3 !important; }
 #orders-section tr.row-problem { background: #ffe5e5 !important; }
 
-/* ================= RESZPONZÍV KÁRTYA NÉZET (< 1200px) =================
-   1200px-nél indul, nem a szokásos 768px-nél: a táblázat oszlopai összetett,
-   több-soros tartalmat hordoznak (telefon+cím, menü+darabszám, dátum+leadás
-   ideje), ezért egy laptop-szélességű ablaknál (~900-1300px) a sima asztali
-   táblázat már szűk és töredezett — itt a kártya-nézet jobban néz ki. */
+/* ================= RESZPONZÍV KÁRTYA NÉZET (< 1200px) ================= */
 
 @media (max-width: 1200px) {
-  /* Védőháló a táblázat-kártyának, hogy a kártya-nézet sorai ne tágítsák
-     ki a szülőjét tartalom-alapon (klasszikus flexbox hiba). */
   #orders-section .table-card,
   #orders-section .table-header {
     width: 100%;
@@ -605,7 +590,6 @@
     display: none;
   }
 
-  /* Csoport-háttér mobilon is megmarad */
   #orders-section tbody tr:nth-child(even) {
     background: inherit;
   }
@@ -676,11 +660,7 @@
     gap: 8px;
   }
 
-  /* a táblázat-oszlopok öröklött %-os szélessége/min-width-je (lásd fent,
-     "OSZLOPSZÉLESSÉGEK") :nth-child-dal van megadva, ezért specifikusabb,
-     mint egy sima "td" szelektor — itt ugyanazzal a specificitással kell
-     felülírni, különben a kártya-sor megtartja az eredeti, szűk %-ot, és a
-     szöveg betűnként törik a túl szűk helyen. */
+  
   #orders-section td:nth-child(n) {
     width: 100%;
     min-width: 0;
@@ -708,8 +688,6 @@
     display: none;
   }
 
-  /* Kártya-nézetben a kemény pixel-korlátok feloldása — a cella a kártya
-     tényleges szélességéhez igazodjon, ne egy fix számhoz. */
   #orders-section .contact-phone {
     white-space: normal;
     word-break: break-word;

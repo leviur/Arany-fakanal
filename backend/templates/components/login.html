@@ -12,50 +12,50 @@
             <div class="divider"></div>
         </div>
 
-        <form id="loginForm">
+        <form id="loginForm" novalidate>
             <div class="input-group">
                 <i class="fa-regular fa-envelope"></i>
-                <input type="email" id="login-email" placeholder="E-mail cím" required>
+                <input type="email" id="login-email" placeholder="E-mail cím">
             </div>
             <div class="input-group">
                 <i class="fa-solid fa-lock"></i>
-                <input type="password" id="login-password" placeholder="Jelszó" required>
+                <input type="password" id="login-password" placeholder="Jelszó">
             </div>
             <button type="submit" class="btn-gold btn-full">Belépés</button>
         </form>
 
-        <form id="registerForm" style="display:none;">
+        <form id="registerForm" style="display:none;" novalidate>
     
             <div class="input-group">
                 <i class="fa-regular fa-user"></i>
-                <input type="text" id="reg-name" placeholder="Teljes név" required>
+                <input type="text" id="reg-name" placeholder="Teljes név">
             </div>
 
             <div class="input-group">
                 <i class="fa-regular fa-envelope"></i>
-                <input type="email" id="reg-email" placeholder="E-mail cím" required>
+                <input type="email" id="reg-email" placeholder="E-mail cím">
             </div>
 
             <div class="input-group">
                 <i class="fa-solid fa-phone"></i>
-                <input type="tel" id="reg-phone" placeholder="Telefonszám" required>
+                <input type="tel" id="reg-phone" placeholder="Telefonszám">
             </div>
 
             <div class="input-group">
                 <i class="fa-solid fa-location-dot"></i>
                 <input
-                    type="text" id="reg-address" placeholder="Szállítási cím" required>
+                    type="text" id="reg-address" placeholder="Szállítási cím">
             </div>
 
             <div class="input-group">
                 <i class="fa-solid fa-lock"></i>
-                <input type="password" id="reg-password" placeholder="Jelszó" required>
+                <input type="password" id="reg-password" placeholder="Jelszó">
             </div>
 
             <div class="input-group">
                 <i class="fa-solid fa-lock"></i>
                 <input
-                    type="password" id="reg-password-confirm" placeholder="Jelszó megerősítése" required>
+                    type="password" id="reg-password-confirm" placeholder="Jelszó megerősítése">
             </div>
 
             {% include "components/privacy-consent.html" with checkbox_id="register-privacy" %}

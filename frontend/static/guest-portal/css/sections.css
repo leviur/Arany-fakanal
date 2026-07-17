@@ -47,7 +47,7 @@
 }
 
 /* ================= ADATAIM — Account Hub elrendezés ================= */
-/* Profil fejléc + 2 kártya grid + bejelentkezés sáv (A koncepció) */
+/* Profil fejléc + 2 kártya grid + bejelentkezés sáv*/
 
 #guest-portal-account-section .gp-account-hub {
   display: flex;
@@ -56,7 +56,6 @@
   width: 100%;
 }
 
-/* ── Kontextus sáv: reg. dátum — a topbar név/szerepkörét nem ismétli ── */
 #guest-portal-account-section .gp-account-context {
   display: flex;
   align-items: flex-start;
@@ -187,7 +186,6 @@
   gap: 8px;
 }
 
-/* Lakat a label mellett — nem takarja az e-mail szöveget */
 #guest-portal-account-section .gp-field-locked-hint {
   display: inline-flex;
   align-items: center;
@@ -234,7 +232,7 @@
   transition: border-color 160ms ease, box-shadow 160ms ease;
 }
 
-/* Zárolt e-mail mező — halvány háttér, normál padding (lakat a labelen) */
+/* Zárolt e-mail mező — halvány háttér, normál padding  */
 #guest-portal-account-section .input-wrapper--full input:disabled {
   background: #f5f0e8;
   color: var(--text-light, #777);

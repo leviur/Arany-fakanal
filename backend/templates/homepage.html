@@ -763,7 +763,11 @@ function calculateTotal(items){
   // Kosárba helyezés — a központi addItemsToCart() függvényt használja (cart.js)
   async function addDailyMenuToCart(item = null) {
 
-    // 1. ha nincs paraméter → UI-ból olvassuk ki a kiválasztást
+    let menuAChecked = false;
+    let menuBChecked = false;
+    let qtyA = 0;
+    let qtyB = 0;
+
     if (!item) {
 
         const day = document.getElementById("day").value;
@@ -773,11 +777,11 @@ function calculateTotal(items){
             return;
         }
 
-        const menuAChecked = document.getElementById("menuA").checked;
-        const menuBChecked = document.getElementById("menuB").checked;
+        menuAChecked = document.getElementById("menuA").checked;
+        menuBChecked = document.getElementById("menuB").checked;
 
-        const qtyA = parseInt(document.getElementById("qtyA").textContent);
-        const qtyB = parseInt(document.getElementById("qtyB").textContent);
+        qtyA = parseInt(document.getElementById("qtyA").textContent);
+        qtyB = parseInt(document.getElementById("qtyB").textContent);
 
         if (!menuAChecked && !menuBChecked) {
             window.showToast?.("Kérem válasszon legalább egy menüt!", "error");
@@ -793,13 +797,41 @@ function calculateTotal(items){
         );
     }
 
-    // 2. Minden tételhez friss delivery_date számítás (pendingCart esetén is aktuális marad)
     const itemsWithDates = item.items.map((cartItem) => ({
         ...cartItem,
         delivery_date: calculateDeliveryDate(cartItem.day),
     }));
 
-    // 3. tételek hozzáadása — duplikáció esetén figyelmeztetés (cart.js)
+    if (itemsWithDates.length === 0) {
+        const wantsMenu =
+            (menuAChecked && qtyA > 0) || (menuBChecked && qtyB > 0);
+
+        if (wantsMenu) {
+            if (!window.weeklyMenuData?.length) {
+                window.showToast?.(
+                    "Erre a hétre még nincs feltöltve heti menü.",
+                    "error",
+                );
+            } else {
+                window.showToast?.(
+                    "A kiválasztott napra még nincs feltöltve heti menü (A / B menü).",
+                    "error",
+                );
+            }
+        } else if (item.items?.length > 0) {
+            window.showToast?.(
+                "A kiválasztott menü már nem érhető el erre a hétre.",
+                "error",
+            );
+        } else if (menuAChecked || menuBChecked) {
+            window.showToast?.(
+                "Kérem állítson be legalább 1 darabot a kiválasztott menühöz.",
+                "error",
+            );
+        }
+        return;
+    }
+
     if (typeof addItemsToCart === "function") {
         const result = await addItemsToCart(itemsWithDates);
 

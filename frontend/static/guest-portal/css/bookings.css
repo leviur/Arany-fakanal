@@ -15,11 +15,36 @@
 
 /* ── Aktív: kártya ── */
 .gp-booking-card {
-  background: linear-gradient(180deg, #ffffff 0%, #fbf7f2 100%);
+  position: relative;
+  background: #fff;
   border: 1px solid rgba(200, 155, 99, 0.15);
   border-radius: 20px;
-  box-shadow: 0 12px 30px rgba(45, 34, 27, 0.06);
+  box-shadow: 0 2px 8px rgba(45, 34, 27, 0.04);
   overflow: hidden;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+/* Kinyitott aktív foglalás — ugyanaz a hangsúly, mint a lezárt tabnál */
+.gp-booking-card.is-expanded {
+  background: linear-gradient(180deg, #ffffff 0%, #fbf7f2 100%);
+  border-color: rgba(197, 160, 89, 0.42);
+  box-shadow:
+    0 10px 28px rgba(45, 34, 27, 0.1),
+    inset 0 0 0 1px rgba(197, 160, 89, 0.12);
+}
+
+.gp-booking-card.is-expanded::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--gold, #c5a059), #8b5e3c);
+  z-index: 1;
 }
 
 .gp-booking-card-toggle {
@@ -34,6 +59,11 @@
   cursor: pointer;
   text-align: left;
   font-family: inherit;
+  transition: background 150ms ease;
+}
+
+.gp-booking-card-toggle:hover {
+  background: rgba(247, 243, 238, 0.55);
 }
 
 .gp-booking-card-toggle-main {
@@ -46,13 +76,7 @@
   font-family: "Playfair Display", serif;
   font-size: 1.05rem;
   color: #2d221b;
-  margin-bottom: 4px;
-}
-
-.gp-booking-card-toggle-summary {
-  display: block;
-  font-size: 0.82rem;
-  color: #6b5d52;
+  line-height: 1.35;
 }
 
 .gp-booking-card-toggle-meta {
@@ -72,6 +96,14 @@
   transform: rotate(180deg);
 }
 
+.gp-booking-card.is-expanded .gp-booking-card-toggle {
+  background: rgba(247, 243, 238, 0.9);
+}
+
+.gp-booking-card.is-expanded .gp-booking-card-toggle-title {
+  color: #8b5e3c;
+}
+
 .gp-booking-card-body {
   padding: 0 20px 20px;
   border-top: 1px solid rgba(200, 155, 99, 0.1);
@@ -79,7 +111,8 @@
 
 .gp-booking-card.is-expanded .gp-booking-card-body {
   padding-top: 16px;
-  background: rgba(255, 255, 255, 0.45);
+  border-top-color: rgba(200, 155, 99, 0.22);
+  background: rgba(255, 255, 255, 0.55);
 }
 
 .gp-booking-card.is-collapsed .gp-booking-card-body {
@@ -142,7 +175,7 @@
   font-weight: 600;
   font-size: 0.92rem;
   color: #2d221b;
-  margin-bottom: 2px;
+  line-height: 1.35;
 }
 
 .gp-booking-row.is-expanded .gp-booking-row-title {
